@@ -1,0 +1,9 @@
+{
+  "app": {
+    "name": "DirectStay"
+  },
+  "home": {
+    "subtitle": "Reservas directas y experiencia de estancia para alojamientos independientes.",
+    "foundationHint": "Base del proyecto lista — la interfaz se construirá por fases."
+  }
+}
