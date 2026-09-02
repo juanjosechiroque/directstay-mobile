@@ -30,6 +30,8 @@ never be reused as domain logic.
 
 ## Getting started
 
+**Prerequisites:** Node.js 24 (required). A `.nvmrc` pins the exact major version.
+
 ```bash
 npm install
 npm start

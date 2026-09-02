@@ -2,6 +2,7 @@
 
 ## Before writing any code
 
+- Node.js **24** is required (pinned via `.nvmrc`; DirectStay standardizes on Node 24).
 - Read the exact versioned docs: https://docs.expo.dev/versions/v57.0.0/ (Expo has changed across SDKs).
 - Read the project docs when they exist:
   - `docs/PRODUCT.md`
