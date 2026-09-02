@@ -12,7 +12,6 @@ units
 unit_images
 availability_blocks
 profiles
-booking_holds
 bookings
 payments
 ```
@@ -21,7 +20,7 @@ Relationships:
 
 ```text
 auth.users → profiles → bookings → payments
-organizations → properties → units → {unit_images, availability_blocks, booking_holds, bookings}
+organizations → properties → units → {unit_images, availability_blocks, bookings}
 ```
 
 No `stays`, `extras`, `booking_extras`, `service_requests`, `reviews`, `host_chat`,
@@ -36,7 +35,8 @@ No `stays`, `extras`, `booking_extras`, `service_requests`, `reviews`, `host_cha
 - `properties` stores its timezone as data (`America/Lima` for the demo) and its
   check-in/check-out times and currency. Demo config: check-in 15:00, checkout 12:00,
   USD. These are property data, not hardcoded domain values.
-- Holding expiration is stored as `timestamptz` (`created_at + 5 minutes`).
+- A pending booking stores its inventory-retention expiry in
+  `bookings.hold_expires_at` (`created_at + exactly 5 minutes`, as `timestamptz`).
 
 ## Money and pricing (frozen)
 
@@ -54,21 +54,29 @@ No `stays`, `extras`, `booking_extras`, `service_requests`, `reviews`, `host_cha
 Server-authoritative. At minimum it considers:
 
 - unit active status and guest capacity
-- confirmed bookings
-- active non-expired booking holds
-- unpaid, non-canceled bookings (`PENDING_PAYMENT`)
+- `CONFIRMED` bookings
+- `PENDING_PAYMENT` bookings whose `hold_expires_at` has not passed
 - availability blocks
 
+`CANCELED` and `REFUNDED` bookings never block inventory.
+
 `availability_blocks` represent dates where a unit cannot be booked for non-booking
-reasons (e.g. maintenance). They are not bookings.
+reasons (e.g. maintenance). They are not bookings. Their creation must validate
+transactionally that their date range does not overlap an inventory-blocking booking
+for the same unit.
 
-## Booking hold (frozen)
+## Booking creation and inventory retention (frozen)
 
-- Duration: exactly 5 minutes. States: `ACTIVE`, `CONSUMED`, `EXPIRED`, `RELEASED`.
-- Only `ACTIVE` holds prevent another valid overlapping hold or booking for the same.
-- A bookings row is created **in the same transaction as the hold**
-  (`booking_holds.booking_id`, UNIQUE → one booking per hold).
-- When a hold expires, its `PENDING_PAYMENT` booking is auto-`CANCELED`
+- A reservation is created directly as a `bookings` row in `PENDING_PAYMENT`; there is
+  no separate hold entity or table.
+- `hold_expires_at` retains the unit for exactly 5 minutes. A non-expired
+  `PENDING_PAYMENT` booking blocks inventory; an expired one does not.
+- Before creating a booking, the transactional RPC first cancels expired
+  `PENDING_PAYMENT` bookings for that unit, then creates the new booking. This is the
+  primary guarantee that expired rows no longer prevent a valid overlapping claim.
+- A scheduled job may cancel expired pending bookings as cleanup only; it is not the
+  concurrency guarantee.
+- On expiry, the pending booking is auto-`CANCELED`
   (`cancellation_reason = HOLD_EXPIRED`) so availability is released.
 - A payment that lands after cancellation is automatically refunded (never confirmed
   against a slot the server can no longer guarantee).
@@ -79,7 +87,7 @@ States: `PENDING_PAYMENT`, `CONFIRMED`, `CANCELED`, `REFUNDED`.
 
 ```text
 PENDING_PAYMENT ──────────────→ CONFIRMED   (Payment SUCCEEDED via webhook)
-PENDING_PAYMENT ──────────────→ CANCELED    (never paid: hold expired, user abandoned, system)
+PENDING_PAYMENT ──────────────→ CANCELED    (never paid: retention expired, user abandoned, system)
 CONFIRMED ───────────────────→ REFUNDED    (full refund completed)
 ```
 
@@ -99,8 +107,11 @@ States: `CREATED`, `PROCESSING`, `REQUIRES_ACTION`, `SUCCEEDED`, `FAILED`, `REFU
 - One row per Stripe PaymentIntent (unique PI id); retries create new rows.
 - At most one `SUCCEEDED` payment per booking (partial unique index).
 - Confirmation is **webhook-authoritative**. The client never confirms a booking from a
-  PaymentSheet result. Idempotency: unique `stripe_event_id` on processed events;
-  repeated webhooks cause no duplicate side effects.
+  PaymentSheet result. Before confirming, the webhook transaction verifies that the
+  booking remains `PENDING_PAYMENT` and that `hold_expires_at` has not passed. If it
+  has expired, it cancels the booking and requests a refund. Idempotency: unique
+  `stripe_event_id` on processed events; repeated webhooks cause no duplicate side
+  effects.
 
 ## Cancellation / refund (frozen)
 
@@ -116,11 +127,12 @@ Booking REFUNDED`.
 > Two guests must never end up with valid overlapping bookings for the same unit and
 > date range.
 
-Mechanism (see docs/ARCHITECTURE.md): `btree_gist` + **partial GiST exclusion
-constraints** over `daterange` on both `booking_holds` (active) and `bookings`
-(`PENDING_PAYMENT` / `CONFIRMED`), enforced by the database. Combined with "one
-booking per hold" and "a booking is only created under an ACTIVE hold", overlapping
-claims are physically prevented, not merely checked in application code.
+Mechanism (see docs/ARCHITECTURE.md): `btree_gist` + a **partial GiST exclusion
+constraint** over `bookings.daterange(check_in, check_out, '[)')` for
+`PENDING_PAYMENT` and `CONFIRMED`, enforced by the database. The transactional
+creation RPC cancels expired pending bookings for the unit before it inserts. Together,
+these rules physically prevent overlapping claims, rather than merely checking them in
+application code.
 
 ## Security posture
 
