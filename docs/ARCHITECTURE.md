@@ -22,17 +22,17 @@ Stripe
 
 ## Who does what
 
-| Capability                           | Where                                     | Why                                           |
-| ------------------------------------ | ----------------------------------------- | --------------------------------------------- |
-| Render screens, forms, navigation    | Mobile                                    | only place with the UI                        |
-| Validate form input locally          | Mobile                                    | instant UX feedback (Zod)                     |
-| Eventual truth for bookings/payments | PostgreSQL                                | transactional integrity                       |
-| Search availability                  | PostgreSQL RPC (`search_available_units`) | server-authoritative, atomic                  |
+| Capability                           | Where                                     | Why                                            |
+| ------------------------------------ | ----------------------------------------- | ---------------------------------------------- |
+| Render screens, forms, navigation    | Mobile                                    | only place with the UI                         |
+| Validate form input locally          | Mobile                                    | instant UX feedback (Zod)                      |
+| Eventual truth for bookings/payments | PostgreSQL                                | transactional integrity                        |
+| Search availability                  | PostgreSQL RPC (`search_available_units`) | server-authoritative, atomic                   |
 | Create booking                       | PostgreSQL RPC (`create_booking`)         | single transaction; expires stale pending rows |
-| Create PaymentIntent                 | Edge Function                             | needs Stripe secret key                       |
-| Confirm booking from payment         | Stripe webhook → Edge Function/RPC        | authoritative; signature verified; idempotent |
-| Refund                               | Edge Function (`refund_payment`)          | needs Stripe secret key; idempotent           |
-| Read own bookings                    | PostgreSQL + RLS                          | row-level guest isolation                     |
+| Create PaymentIntent                 | Edge Function                             | needs Stripe secret key                        |
+| Confirm booking from payment         | Stripe webhook → Edge Function/RPC        | authoritative; signature verified; idempotent  |
+| Refund                               | Edge Function (`refund_payment`)          | needs Stripe secret key; idempotent            |
+| Read own bookings                    | PostgreSQL + RLS                          | row-level guest isolation                      |
 
 Not every backend operation becomes an Edge Function: plain reads stay in the client
 through RLS; multi-record transactional operations live in PostgreSQL RPCs; only
