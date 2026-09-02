@@ -47,9 +47,9 @@ npm run format:check
 
 ## Git workflow
 
-- Work on a dedicated branch per cohesive change (e.g. `codex/descriptive-name`).
+- Work directly on `main`. Do not create, switch to, or use task branches.
 - Use exactly one commit per cohesive change by default. Split work into multiple commits only when
   Codex proposes it and the user explicitly approves the exception.
 - The user creates the commit. Codex only edits the requested files and, when handing off a
   cohesive change, provides exactly two suggested commit messages.
-- Do not merge to main automatically.
+- Do not merge branches automatically; all cohesive changes already land in `main`.

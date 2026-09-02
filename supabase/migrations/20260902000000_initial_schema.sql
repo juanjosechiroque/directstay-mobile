@@ -1,6 +1,7 @@
 begin;
 
 create extension if not exists btree_gist;
+create extension if not exists pgcrypto;
 
 create type public.booking_status as enum (
   'PENDING_PAYMENT',
@@ -80,6 +81,28 @@ create table public.profiles (
   check (display_name is null or btrim(display_name) <> ''),
   check (phone is null or btrim(phone) <> '')
 );
+
+-- Profiles are created only as a consequence of a new authenticated user. Clients
+-- never receive an INSERT policy, so they cannot choose a different auth.users id.
+create function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  insert into public.profiles (id)
+  values (new.id);
+
+  return new;
+end;
+$$;
+
+revoke execute on function public.handle_new_user() from public, anon, authenticated;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
 
 create table public.bookings (
   id uuid primary key default gen_random_uuid(),
@@ -209,8 +232,19 @@ create unique index payments_one_succeeded_payment_per_booking_idx
   on public.payments (booking_id) where (status = 'SUCCEEDED');
 create index availability_blocks_unit_id_check_in_check_out_idx
   on public.availability_blocks (unit_id, check_in, check_out);
-create index availability_blocks_unit_id_date_range_idx
-  on public.availability_blocks using gist (unit_id, date_range);
+
+revoke all on table public.organizations from anon, authenticated;
+revoke all on table public.properties from anon, authenticated;
+revoke all on table public.units from anon, authenticated;
+revoke all on table public.unit_images from anon, authenticated;
+revoke all on table public.profiles from anon, authenticated;
+revoke all on table public.bookings from anon, authenticated;
+revoke all on table public.payments from anon, authenticated;
+revoke all on table public.availability_blocks from anon, authenticated;
+
+grant select on table public.properties, public.units, public.unit_images to authenticated;
+grant select, update (display_name, phone) on table public.profiles to authenticated;
+grant select on table public.bookings to authenticated;
 
 alter table public.organizations enable row level security;
 alter table public.properties enable row level security;
@@ -231,13 +265,27 @@ create policy "Authenticated users can read active units"
   on public.units
   for select
   to authenticated
-  using (is_active);
+  using (
+    is_active
+    and exists (
+      select 1
+      from public.properties
+      where properties.id = units.property_id
+        and properties.is_active
+    )
+  );
 
 create policy "Authenticated users can read unit images"
   on public.unit_images
   for select
   to authenticated
-  using (true);
+  using (
+    exists (
+      select 1
+      from public.units
+      where units.id = unit_images.unit_id
+    )
+  );
 
 create policy "Users can read their own profile"
   on public.profiles
