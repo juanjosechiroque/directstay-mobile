@@ -4,6 +4,6 @@
   },
   "home": {
     "subtitle": "Reservas directas y experiencia de estancia para alojamientos independientes.",
-    "foundationHint": "Base del proyecto lista — la interfaz se construirá por fases."
+    "prompt": "Encuentra y reserva tu próxima estancia."
   }
 }

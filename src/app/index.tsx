@@ -8,7 +8,7 @@ export default function HomeScreen() {
     <View style={styles.screen}>
       <Text style={styles.appName}>{t('app.name')}</Text>
       <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
-      <Text style={styles.hint}>{t('home.foundationHint')}</Text>
+      <Text style={styles.hint}>{t('home.prompt')}</Text>
     </View>
   );
 }

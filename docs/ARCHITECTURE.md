@@ -9,7 +9,7 @@ touches trusted secrets or shared invariants runs server-side.
 Mobile app (React Native / Expo Router)
    │
    ├── UI state (React state / React Hook Form)
-   ├── server state (TanStack Query; introduced with the backend phases)
+   ├── server state (TanStack Query)
    │
 Supabase
    ├── PostgreSQL (schema, constraints, RLS, RPC)
@@ -52,7 +52,7 @@ src/
 
 - All user-facing strings go through i18next. Spanish (`es`) is the default locale.
 - `src/i18n/locales/{es,en}.json`; screens never hardcode copy.
-- Device-language auto-detection is intentionally deferred (V1 launches in Spanish).
+- Device-language auto-detection is intentionally deferred (the app launches in Spanish).
 - A locale-parity test fails CI if `es` and `en` drift apart.
 
 ## Environments
@@ -87,5 +87,5 @@ WHERE (status IN ('PENDING_PAYMENT','CONFIRMED'))`
 4. The final race (payment lands after hold expiry) is closed in the webhook handler:
    re-validate the slot under a transaction; on conflict, auto-refund.
 
-This is documented in detail when the booking-holds phase ships, and demoed with two
+This is documented alongside the booking-holds implementation, and demoed with two
 devices / concurrent requests.

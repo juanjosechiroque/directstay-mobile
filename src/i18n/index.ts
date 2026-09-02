@@ -16,7 +16,7 @@ const resources = {
 
 const i18n = createInstance();
 
-// DirectStay V1 always launches in Spanish. Device-language auto-detection is a
+// DirectStay always launches in Spanish. Device-language auto-detection is a
 // product decision that is intentionally deferred; the architecture already
 // allows adding it without touching any screen (see docs/DOMAIN.md).
 void i18n.use(initReactI18next).init({

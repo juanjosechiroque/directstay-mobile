@@ -25,7 +25,7 @@ organizations → properties → units → {unit_images, availability_blocks, bo
 ```
 
 No `stays`, `extras`, `booking_extras`, `service_requests`, `reviews`, `host_chat`,
-`housekeeping` tables in V1.
+`housekeeping` tables.
 
 ## Dates and timezone (frozen)
 
@@ -43,7 +43,7 @@ No `stays`, `extras`, `booking_extras`, `service_requests`, `reviews`, `host_cha
 - Persist money in integer minor units (USD 120.00 → `12000`) plus a `currency` column.
   Column naming convention: `*_minor` (e.g. `nightly_rate_minor`, `total_amount_minor`).
   Never floating point.
-- V1 pricing: `nightly rate × number of nights`. No taxes, fees, discounts, promotions,
+- Pricing: `nightly rate × number of nights`. No taxes, fees, discounts, promotions,
   loyalty, dynamic or occupancy pricing.
 - The server is authoritative over the final payable amount; the client never supplies
   a trusted price. A booking preserves a **pricing snapshot** so historical bookings
@@ -109,7 +109,7 @@ States: `CREATED`, `PROCESSING`, `REQUIRES_ACTION`, `SUCCEEDED`, `FAILED`, `REFU
 - Eligible: `CONFIRMED → request cancellation → Stripe refund → Payment REFUNDED →
 Booking REFUNDED`.
 - Inside the final 24 hours the app offers only contact the property (WhatsApp / Call).
-- V1 has no partial refunds, penalties, percentages, non-refundable rates or policy tiers.
+- No partial refunds, penalties, percentages, non-refundable rates or policy tiers.
 
 ## Concurrency invariant
 

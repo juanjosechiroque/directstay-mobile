@@ -22,11 +22,11 @@ never be reused as domain logic.
 - React Native + Expo (SDK 57) + Expo Router
 - TypeScript (strict)
 - i18n: i18next + react-i18next (Spanish default, i18n-ready)
-- Server state: TanStack Query (added in backend phases)
+- Server state: TanStack Query
 - Testing: Jest + jest-expo
 - Lint/format: ESLint (`expo lint`) + Prettier
 - CI: GitHub Actions
-- Later phases: Supabase (Auth/RPC/RLS/Edge Functions) and Stripe PaymentSheet
+- Supabase (Auth/RPC/RLS/Edge Functions) and Stripe PaymentSheet
 
 ## Getting started
 
