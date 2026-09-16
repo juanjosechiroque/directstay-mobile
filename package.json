@@ -19,6 +19,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.103.1",
     "expo": "~57.0.19",
     "expo-constants": "~57.0.17",
     "expo-dev-client": "~57.0.18",

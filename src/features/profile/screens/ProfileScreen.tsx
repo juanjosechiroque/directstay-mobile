@@ -1,0 +1,100 @@
+import Constants from 'expo-constants';
+import { useTranslation } from 'react-i18next';
+import { StyleSheet, Text } from 'react-native';
+
+import { Badge, Card, ErrorState, InfoRow, LoadingState, Screen, Section } from '@/components';
+import { DemoStateSwitch } from '@/features/profile/components/DemoStateSwitch';
+import { LanguageSwitch } from '@/features/profile/components/LanguageSwitch';
+import { useProfile } from '@/features/profile/queries/use-profile';
+import { formatIsoDate } from '@/lib/dates';
+import { getErrorCode } from '@/lib/errors';
+import { colors, fontSize, spacing } from '@/lib/theme';
+
+export function ProfileScreen() {
+  const { t, i18n } = useTranslation();
+  const profileQuery = useProfile();
+
+  if (profileQuery.isLoading) {
+    return (
+      <Screen>
+        <Text style={styles.title}>{t('profile.title')}</Text>
+        <LoadingState message={t('common.loading')} />
+      </Screen>
+    );
+  }
+
+  if (profileQuery.isError || !profileQuery.data) {
+    return (
+      <Screen>
+        <Text style={styles.title}>{t('profile.title')}</Text>
+        <ErrorState
+          title={t('error.title')}
+          message={profileQuery.error ? t(getErrorCode(profileQuery.error)) : undefined}
+          retryLabel={t('common.retry')}
+          onRetry={() => void profileQuery.refetch()}
+        />
+      </Screen>
+    );
+  }
+
+  const profile = profileQuery.data;
+
+  return (
+    <Screen scroll>
+      <Text style={styles.title}>{t('profile.title')}</Text>
+      <Text style={styles.subtitle}>{t('profile.demoAccount')}</Text>
+
+      <Card>
+        <Badge label={t('profile.demoAccount')} tone="accent" />
+        <InfoRow label={t('profile.nameLabel')} value={profile.displayName} />
+        <InfoRow label={t('profile.emailLabel')} value={profile.email} />
+        {profile.phone ? <InfoRow label={t('profile.phoneLabel')} value={profile.phone} /> : null}
+        <InfoRow
+          label={t('profile.memberSinceLabel')}
+          value={formatIsoDate(profile.memberSince, i18n.language)}
+        />
+      </Card>
+
+      <Section title={t('profile.languageTitle')}>
+        <LanguageSwitch />
+      </Section>
+
+      <Section title={t('profile.demoStatesTitle')} subtitle={t('profile.demoStatesMessage')}>
+        <DemoStateSwitch />
+      </Section>
+
+      <Section title={t('profile.aboutTitle')}>
+        <Card>
+          <Text style={styles.aboutLine}>
+            {t('profile.aboutVersion', { version: Constants.expoConfig?.version ?? '1.0.0' })}
+          </Text>
+          <Text style={styles.aboutMuted}>{t('profile.aboutStack')}</Text>
+        </Card>
+      </Section>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  title: {
+    fontSize: fontSize.xxl,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  subtitle: {
+    fontSize: fontSize.md,
+    color: colors.textMuted,
+    marginTop: spacing.xs,
+    marginBottom: spacing.lg,
+  },
+  aboutLine: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  aboutMuted: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    marginTop: spacing.xs,
+  },
+});

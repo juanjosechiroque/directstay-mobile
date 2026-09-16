@@ -7,9 +7,7 @@ describe('i18n index', () => {
   });
 
   it('returns Spanish translations by default', () => {
-    expect(i18n.t('home.subtitle')).toBe(
-      'Reservas directas y experiencia de estancia para alojamientos independientes.',
-    );
+    expect(i18n.t('home.searchCta')).toBe('Buscar disponibilidad');
   });
 
   it('returns the key itself when a translation is missing', () => {
@@ -18,17 +16,13 @@ describe('i18n index', () => {
 
   it('falls back to the default locale for unsupported languages', async () => {
     await i18n.changeLanguage('fr');
-    expect(i18n.t('home.subtitle')).toBe(
-      'Reservas directas y experiencia de estancia para alojamientos independientes.',
-    );
+    expect(i18n.t('home.searchCta')).toBe('Buscar disponibilidad');
     await i18n.changeLanguage(DEFAULT_LOCALE);
   });
 
   it('resolves English translations when the language changes', async () => {
     await i18n.changeLanguage('en');
-    expect(i18n.t('home.subtitle')).toBe(
-      'Direct booking and stay experience for independent accommodations.',
-    );
+    expect(i18n.t('home.searchCta')).toBe('Check availability');
     await i18n.changeLanguage(DEFAULT_LOCALE);
   });
 });
