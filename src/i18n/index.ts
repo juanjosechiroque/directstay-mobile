@@ -1,13 +1,13 @@
 import { createInstance } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@/lib/locale';
+
 import en from './locales/en.json';
 import es from './locales/es.json';
 
-export const DEFAULT_LOCALE = 'es';
-export const SUPPORTED_LOCALES = ['es', 'en'] as const;
-
-export type Locale = (typeof SUPPORTED_LOCALES)[number];
+export { DEFAULT_LOCALE, SUPPORTED_LOCALES };
+export type { Locale } from '@/lib/locale';
 
 const resources = {
   es: { translation: es },

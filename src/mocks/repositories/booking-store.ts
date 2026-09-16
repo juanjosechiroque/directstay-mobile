@@ -32,6 +32,32 @@ export function nextBookingId(): string {
   return `mock-${Date.now().toString(36)}-${sequence.toString(36)}`;
 }
 
+/**
+ * Applies the frozen retention rule: a `PENDING_PAYMENT` booking whose hold passed is
+ * auto-`CANCELED` with `HOLD_EXPIRED`, which releases inventory. Mirrors the server rule
+ * (a cleanup job is only a backup; the transactional path cancels expired holds first).
+ * Returns the ids that were expired so callers can report it.
+ */
+export function expireStaleHolds(now: Date): string[] {
+  const nowMs = now.getTime();
+  const expired = bookings
+    .filter(
+      (booking) =>
+        booking.status === 'PENDING_PAYMENT' && new Date(booking.holdExpiresAt).getTime() <= nowMs,
+    )
+    .map<Booking>((booking) => ({
+      ...booking,
+      status: 'CANCELED',
+      confirmedAt: null,
+      canceledAt: booking.holdExpiresAt,
+      cancellationReason: 'HOLD_EXPIRED',
+      refundedAt: null,
+    }));
+
+  expired.forEach(updateBooking);
+  return expired.map((booking) => booking.id);
+}
+
 export function resetMockBookingStore(): void {
   bookings = MOCK_BOOKINGS.map((booking) => clone(booking));
   sequence = 0;

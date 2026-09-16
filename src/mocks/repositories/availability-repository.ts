@@ -1,20 +1,29 @@
 import type { AvailabilityRepository } from '@/features/search/repository';
 import type { AvailabilityQuery, AvailableUnit } from '@/features/search/types';
+import { systemClock, type Clock } from '@/lib/clock';
 import { diffInNights } from '@/lib/dates';
+import type { Locale } from '@/lib/locale';
 
-import { MOCK_UNITS } from '../data/units';
+import { getMockUnits } from '../data/units';
 import { isUnitAvailable } from './availability-rules';
+import { expireStaleHolds } from './booking-store';
 import { clone } from './clone';
 import { assertMockSuccess, isEmptyScenario, simulateLatency } from './scenario';
 
 export class MockAvailabilityRepository implements AvailabilityRepository {
-  async searchAvailableUnits({
-    checkIn,
-    checkOut,
-    guests,
-  }: AvailabilityQuery): Promise<AvailableUnit[]> {
+  constructor(private readonly clock: Clock = systemClock) {}
+
+  async searchAvailableUnits(
+    { checkIn, checkOut, guests }: AvailabilityQuery,
+    locale: Locale,
+  ): Promise<AvailableUnit[]> {
     await simulateLatency();
     assertMockSuccess();
+
+    const now = this.clock.now();
+    // Expired holds must not retain inventory; transform them before searching.
+    expireStaleHolds(now);
+
     if (isEmptyScenario()) {
       return [];
     }
@@ -24,15 +33,14 @@ export class MockAvailabilityRepository implements AvailabilityRepository {
       throw new Error('Invalid date range supplied to availability search');
     }
 
-    const now = Date.now();
-    const available = MOCK_UNITS.filter((unit) =>
-      isUnitAvailable(unit.id, checkIn, checkOut, guests, now),
-    ).map<AvailableUnit>((unit) => ({
-      unit,
-      nights,
-      totalAmountMinor: unit.nightlyRateMinor * nights,
-      currency: unit.currency,
-    }));
+    const available = getMockUnits(locale)
+      .filter((unit) => isUnitAvailable(unit.id, checkIn, checkOut, guests, now.getTime()))
+      .map<AvailableUnit>((unit) => ({
+        unit,
+        nights,
+        totalAmountMinor: unit.nightlyRateMinor * nights,
+        currency: unit.currency,
+      }));
 
     return clone(available);
   }

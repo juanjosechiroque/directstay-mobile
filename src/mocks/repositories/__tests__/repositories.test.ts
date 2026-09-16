@@ -39,72 +39,74 @@ afterEach(() => {
 
 describe('property repository', () => {
   it('serves the demo catalog through the contract', async () => {
-    const data = await property.getProperty();
+    const data = await property.getProperty('es');
     expect(data.name).toBe('Ayni Mountain Cabins');
     expect(data.currency).toBe('USD');
     expect(data.checkInTime).toBe('15:00');
   });
 
   it('lists the four demo units with integer minor-unit rates', async () => {
-    const units = await property.listUnits();
+    const units = await property.listUnits('es');
     expect(units.map((unit) => unit.name)).toEqual(['Killa', 'Inti', 'Wayra', 'Sumaq']);
     expect(units[0].nightlyRateMinor).toBe(12000);
     expect(Number.isInteger(units[0].nightlyRateMinor)).toBe(true);
   });
 
   it('returns null for an unknown unit', async () => {
-    await expect(property.getUnit('does-not-exist')).resolves.toBeNull();
+    await expect(property.getUnit('does-not-exist', 'es')).resolves.toBeNull();
   });
 });
 
 describe('availability repository', () => {
   it('returns every compatible unit with a price snapshot', async () => {
-    const results = await availability.searchAvailableUnits({
-      checkIn: farCheckIn,
-      checkOut: farCheckOut,
-      guests: 2,
-    });
+    const results = await availability.searchAvailableUnits(
+      { checkIn: farCheckIn, checkOut: farCheckOut, guests: 2 },
+      'es',
+    );
     expect(results).toHaveLength(4);
     expect(results[0].nights).toBe(3);
     expect(results[0].totalAmountMinor).toBe(results[0].unit.nightlyRateMinor * 3);
   });
 
   it('filters units by guest capacity', async () => {
-    const results = await availability.searchAvailableUnits({
-      checkIn: farCheckIn,
-      checkOut: farCheckOut,
-      guests: 5,
-    });
+    const results = await availability.searchAvailableUnits(
+      { checkIn: farCheckIn, checkOut: farCheckOut, guests: 5 },
+      'es',
+    );
     expect(results.map((result) => result.unit.name)).toEqual(['Sumaq']);
   });
 
   it('excludes a unit blocked by an overlapping booking but allows turnover', async () => {
-    const blocked = await availability.searchAvailableUnits({
-      checkIn: addDays(todayIso(), 13),
-      checkOut: addDays(todayIso(), 14),
-      guests: 2,
-    });
+    const blocked = await availability.searchAvailableUnits(
+      { checkIn: addDays(todayIso(), 13), checkOut: addDays(todayIso(), 14), guests: 2 },
+      'es',
+    );
     expect(blocked.map((result) => result.unit.name)).not.toContain('Killa');
 
-    const turnover = await availability.searchAvailableUnits({
-      checkIn: addDays(todayIso(), 15),
-      checkOut: addDays(todayIso(), 17),
-      guests: 2,
-    });
+    const turnover = await availability.searchAvailableUnits(
+      { checkIn: addDays(todayIso(), 15), checkOut: addDays(todayIso(), 17), guests: 2 },
+      'es',
+    );
     expect(turnover.map((result) => result.unit.name)).toContain('Killa');
   });
 
   it('honours the empty scenario', async () => {
     setMockScenario('empty');
     await expect(
-      availability.searchAvailableUnits({ checkIn: farCheckIn, checkOut: farCheckOut, guests: 2 }),
+      availability.searchAvailableUnits(
+        { checkIn: farCheckIn, checkOut: farCheckOut, guests: 2 },
+        'es',
+      ),
     ).resolves.toEqual([]);
   });
 
   it('throws an app error in the error scenario', async () => {
     setMockScenario('error');
     await expect(
-      availability.searchAvailableUnits({ checkIn: farCheckIn, checkOut: farCheckOut, guests: 2 }),
+      availability.searchAvailableUnits(
+        { checkIn: farCheckIn, checkOut: farCheckOut, guests: 2 },
+        'es',
+      ),
     ).rejects.toMatchObject({ code: 'error.generic' });
   });
 });
@@ -146,6 +148,7 @@ describe('booking repository', () => {
 
     const result = await booking.simulatePayment(created.id);
     expect(result.demo).toBe(true);
+    expect(result.outcome).toBe('CONFIRMED');
     expect(result.booking.status).toBe('CONFIRMED');
 
     const stored = await booking.getBooking(created.id);
@@ -219,12 +222,12 @@ describe('booking repository', () => {
 
 describe('stay repository', () => {
   it('derives stay information only for confirmed bookings', async () => {
-    const confirmedStay = await stay.getStay('55555555-5555-5555-5555-555555555501');
+    const confirmedStay = await stay.getStay('55555555-5555-5555-5555-555555555501', 'es');
     expect(confirmedStay?.booking.status).toBe('CONFIRMED');
     expect(confirmedStay?.property.name).toBe('Ayni Mountain Cabins');
     expect(confirmedStay?.property.wifi.network).toBe('AyniGuest');
 
-    const pendingStay = await stay.getStay('55555555-5555-5555-5555-555555555502');
+    const pendingStay = await stay.getStay('55555555-5555-5555-5555-555555555502', 'es');
     expect(pendingStay).toBeNull();
   });
 });
@@ -233,5 +236,35 @@ describe('profile repository', () => {
   it('returns the local demo profile', async () => {
     const data = await profile.getCurrentProfile();
     expect(data.email).toBe('valeria.demo@directstay.test');
+  });
+});
+
+describe('mock scenarios', () => {
+  it('empty only affects collections, not single resources', async () => {
+    setMockScenario('empty');
+    await expect(property.listUnits('es')).resolves.toEqual([]);
+    await expect(booking.listBookings()).resolves.toEqual([]);
+
+    const unit = await property.getUnit(KILLA_UNIT_ID, 'es');
+    expect(unit?.name).toBe('Killa');
+    const prop = await property.getProperty('es');
+    expect(prop.name).toBe('Ayni Mountain Cabins');
+    const quote = await booking.getQuote({
+      unitId: KILLA_UNIT_ID,
+      checkIn: farCheckIn,
+      checkOut: farCheckOut,
+      guestCount: 2,
+    });
+    expect(quote.totalAmountMinor).toBe(36000);
+  });
+
+  it('recovers after the error scenario is switched back to success', async () => {
+    setMockScenario('error');
+    await expect(property.getProperty('es')).rejects.toMatchObject({ code: 'error.generic' });
+
+    setMockScenario('success');
+    await expect(property.getProperty('es')).resolves.toMatchObject({
+      name: 'Ayni Mountain Cabins',
+    });
   });
 });

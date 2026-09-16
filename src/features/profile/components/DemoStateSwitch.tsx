@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -11,10 +12,19 @@ const SCENARIOS: MockScenario[] = ['success', 'slow', 'empty', 'error'];
  * Demo-only affordance: lets a reviewer switch the mock repositories between success,
  * loading (slow), empty and error states. It is bound to the mock bundle on purpose and
  * disappears together with it — production screens never read the scenario.
+ *
+ * Switching invalidates every query so the reviewer immediately sees the selected state,
+ * rather than waiting for `staleTime` to elapse.
  */
 export function DemoStateSwitch() {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const active = useMockScenario();
+
+  const handleSelect = (scenario: MockScenario) => {
+    setMockScenario(scenario);
+    void queryClient.invalidateQueries();
+  };
 
   return (
     <View style={styles.wrap}>
@@ -23,7 +33,7 @@ export function DemoStateSwitch() {
         return (
           <Pressable
             key={scenario}
-            onPress={() => setMockScenario(scenario)}
+            onPress={() => handleSelect(scenario)}
             accessibilityRole="button"
             accessibilityState={{ selected: isActive }}
             style={[styles.option, isActive && styles.optionActive]}

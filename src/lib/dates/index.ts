@@ -10,8 +10,22 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 export type IsoDate = string;
 
+/**
+ * Semantic validation: the shape alone is not enough. `2026-13-99` matches the regex but
+ * is not a real date, so we round-trip through UTC and compare.
+ */
 export function isIsoDate(value: string | null | undefined): value is IsoDate {
-  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+  const [year, month, day] = value.split('-').map(Number);
+  if (month < 1 || month > 12 || day < 1 || day > 31) {
+    return false;
+  }
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return (
+    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+  );
 }
 
 export function parseIsoDate(value: IsoDate): Date {
@@ -26,11 +40,72 @@ export function toIsoDate(date: Date): IsoDate {
   return `${year}-${month}-${day}`;
 }
 
+function pad(value: number): string {
+  return String(value).padStart(2, '0');
+}
+
+/** Today according to the device's local clock. */
 export function todayIso(now: Date = new Date()): IsoDate {
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
+export interface ZonedParts {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+  second: number;
+}
+
+/**
+ * Wall-clock parts of an instant in a given IANA timezone. Falls back to UTC if the
+ * runtime lacks timezone data, so a missing tz database never crashes the app.
+ */
+export function getZonedParts(instant: Date, timeZone: string): ZonedParts {
+  try {
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      hour12: false,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+    const parts = formatter.formatToParts(instant);
+    const read = (type: Intl.DateTimeFormatPartTypes): number => {
+      const match = parts.find((part) => part.type === type);
+      return match ? Number(match.value) : 0;
+    };
+    return {
+      year: read('year'),
+      month: read('month'),
+      day: read('day'),
+      hour: read('hour'),
+      minute: read('minute'),
+      second: read('second'),
+    };
+  } catch {
+    return {
+      year: instant.getUTCFullYear(),
+      month: instant.getUTCMonth() + 1,
+      day: instant.getUTCDate(),
+      hour: instant.getUTCHours(),
+      minute: instant.getUTCMinutes(),
+      second: instant.getUTCSeconds(),
+    };
+  }
+}
+
+/**
+ * Today according to the *property* timezone. Search defaults and minimum selectable
+ * dates must respect the property's calendar, not the traveller's device.
+ */
+export function todayIsoInTimeZone(timeZone: string, now: Date = new Date()): IsoDate {
+  const parts = getZonedParts(now, timeZone);
+  return `${parts.year}-${pad(parts.month)}-${pad(parts.day)}`;
 }
 
 export function addDays(value: IsoDate, days: number): IsoDate {

@@ -1,5 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import {
+  invalidateAfterBookingCanceled,
+  invalidateAfterBookingCreated,
+} from '@/features/booking/queries/invalidation';
+import { bookingKeys } from '@/features/booking/queries/keys';
 import type {
   Booking,
   CreateBookingInput,
@@ -8,20 +13,7 @@ import type {
 } from '@/features/booking/types';
 import { useRepositories } from '@/lib/repositories';
 
-export const bookingKeys = {
-  all: ['bookings'] as const,
-  lists: () => [...bookingKeys.all, 'list'] as const,
-  detail: (bookingId: string) => [...bookingKeys.all, 'detail', bookingId] as const,
-  quote: (request: QuoteRequest) =>
-    [
-      ...bookingKeys.all,
-      'quote',
-      request.unitId,
-      request.checkIn,
-      request.checkOut,
-      request.guestCount,
-    ] as const,
-};
+export { bookingKeys } from '@/features/booking/queries/keys';
 
 export function useQuote(request: QuoteRequest | null) {
   const { booking } = useRepositories();
@@ -31,6 +23,9 @@ export function useQuote(request: QuoteRequest | null) {
     ),
     queryFn: () => booking.getQuote(request as QuoteRequest),
     enabled: request !== null,
+    // A quote is a price snapshot; always revalidate it on mount so the flow never
+    // starts from a stale amount after the unit rate or availability changed.
+    staleTime: 0,
   });
 }
 
@@ -65,8 +60,7 @@ export function useStartDemoBooking() {
       return booking.simulatePayment(created.id);
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: bookingKeys.detail(result.booking.id) });
+      invalidateAfterBookingCreated(queryClient, result.booking.id);
     },
   });
 }
@@ -77,8 +71,7 @@ export function useCancelBooking() {
   return useMutation<Booking, unknown, string>({
     mutationFn: (bookingId) => booking.cancelBooking(bookingId),
     onSuccess: (updated) => {
-      queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: bookingKeys.detail(updated.id) });
+      invalidateAfterBookingCanceled(queryClient, updated.id);
     },
   });
 }

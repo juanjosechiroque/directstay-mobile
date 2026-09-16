@@ -3,6 +3,7 @@ export type {
   BookingStatus,
   CancellationReason,
   CreateBookingInput,
+  PaymentSimulationOutcome,
   PaymentSimulationResult,
   Quote,
   QuoteRequest,

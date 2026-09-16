@@ -1,4 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -12,6 +13,7 @@ import {
   ScreenHeader,
 } from '@/components';
 import { BookingStatusBadge } from '@/features/booking/components/BookingStatusBadge';
+import { useBookingDraft } from '@/features/booking/draft/booking-draft-context';
 import { useBooking } from '@/features/booking/queries/use-booking';
 import type { BookingStatus } from '@/features/booking/types';
 import { getErrorCode } from '@/lib/errors';
@@ -20,17 +22,23 @@ import { colors, fontSize, spacing } from '@/lib/theme';
 const MESSAGE_KEYS: Record<BookingStatus, { title: string; message: string }> = {
   CONFIRMED: { title: 'booking.confirmedTitle', message: 'booking.confirmedMessage' },
   PENDING_PAYMENT: { title: 'booking.pendingTitle', message: 'booking.pendingMessage' },
-  CANCELED: { title: 'booking.pendingTitle', message: 'booking.canceledMessage' },
+  CANCELED: { title: 'booking.expiredTitle', message: 'booking.expiredMessage' },
   REFUNDED: { title: 'booking.pendingTitle', message: 'booking.refundedMessage' },
 };
 
 export function BookingResultScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { clear } = useBookingDraft();
   const params = useLocalSearchParams<{ bookingId?: string }>();
   const bookingId = typeof params.bookingId === 'string' ? params.bookingId : undefined;
 
   const bookingQuery = useBooking(bookingId);
+
+  // The flow is complete: drop the in-memory guest draft (no PII lingers in the app).
+  useEffect(() => {
+    clear();
+  }, [clear]);
 
   if (bookingQuery.isLoading) {
     return (

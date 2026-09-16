@@ -6,14 +6,16 @@ import type {
   Quote,
   QuoteRequest,
 } from '@/features/booking/types';
-import { isCancellationEligible } from '@/lib/dates/cancellation';
+import { systemClock, type Clock } from '@/lib/clock';
 import { diffInNights } from '@/lib/dates';
+import { isCancellationEligible } from '@/lib/dates/cancellation';
 import { AppError } from '@/lib/errors';
 
-import { MOCK_PROPERTY, DEMO_PROFILE_ID } from '../data/property';
-import { findMockUnit } from '../data/units';
+import { MOCK_PROPERTY_BASE, DEMO_PROFILE_ID } from '../data/property';
+import { findMockUnitSeed } from '../data/units';
 import { isUnitAvailable } from './availability-rules';
 import {
+  expireStaleHolds,
   findBooking,
   insertBooking,
   listAllBookings,
@@ -26,8 +28,10 @@ import { assertMockSuccess, isEmptyScenario, simulateLatency } from './scenario'
 const HOLD_MINUTES = 5;
 
 export class MockBookingRepository implements BookingRepository {
+  constructor(private readonly clock: Clock = systemClock) {}
+
   private buildQuote({ unitId, checkIn, checkOut, guestCount }: QuoteRequest): Quote {
-    const unit = findMockUnit(unitId);
+    const unit = findMockUnitSeed(unitId);
     if (!unit) {
       throw new AppError('error.notFound');
     }
@@ -60,18 +64,24 @@ export class MockBookingRepository implements BookingRepository {
     await simulateLatency();
     assertMockSuccess();
 
+    const now = this.clock.now();
+    // Cancel expired holds for the unit before claiming new inventory.
+    expireStaleHolds(now);
+
     const quote = this.buildQuote(input);
-    if (!isUnitAvailable(quote.unitId, quote.checkIn, quote.checkOut, quote.guestCount)) {
+    if (
+      !isUnitAvailable(quote.unitId, quote.checkIn, quote.checkOut, quote.guestCount, now.getTime())
+    ) {
       throw new AppError('error.unavailable');
     }
 
-    const createdAt = new Date();
-    const holdExpiresAt = new Date(createdAt.getTime() + HOLD_MINUTES * 60_000);
+    const holdExpiresAt = new Date(now.getTime() + HOLD_MINUTES * 60_000);
+    const unit = findMockUnitSeed(quote.unitId);
     const booking: Booking = {
       id: nextBookingId(),
       guestProfileId: DEMO_PROFILE_ID,
       unitId: quote.unitId,
-      unitName: findMockUnit(quote.unitId)?.name ?? quote.unitId,
+      unitName: unit?.name ?? quote.unitId,
       status: 'PENDING_PAYMENT',
       checkIn: quote.checkIn,
       checkOut: quote.checkOut,
@@ -84,7 +94,7 @@ export class MockBookingRepository implements BookingRepository {
       nightlyRateMinor: quote.nightlyRateMinor,
       totalAmountMinor: quote.totalAmountMinor,
       holdExpiresAt: holdExpiresAt.toISOString(),
-      createdAt: createdAt.toISOString(),
+      createdAt: now.toISOString(),
       confirmedAt: null,
       canceledAt: null,
       cancellationReason: null,
@@ -99,10 +109,19 @@ export class MockBookingRepository implements BookingRepository {
     await simulateLatency();
     assertMockSuccess();
 
+    const now = this.clock.now();
+    expireStaleHolds(now);
+
     const booking = findBooking(bookingId);
     if (!booking) {
       throw new AppError('error.notFound');
     }
+
+    // A demo payment never confirms an expired hold: the booking stays CANCELED/HOLD_EXPIRED.
+    if (booking.status === 'CANCELED' && booking.cancellationReason === 'HOLD_EXPIRED') {
+      return clone({ booking, demo: true, outcome: 'EXPIRED' });
+    }
+
     if (booking.status !== 'PENDING_PAYMENT') {
       throw new AppError('error.validation');
     }
@@ -112,15 +131,16 @@ export class MockBookingRepository implements BookingRepository {
     const confirmed: Booking = {
       ...booking,
       status: 'CONFIRMED',
-      confirmedAt: new Date().toISOString(),
+      confirmedAt: now.toISOString(),
     };
     updateBooking(confirmed);
-    return clone({ booking: confirmed, demo: true });
+    return clone({ booking: confirmed, demo: true, outcome: 'CONFIRMED' });
   }
 
   async listBookings(): Promise<Booking[]> {
     await simulateLatency();
     assertMockSuccess();
+    expireStaleHolds(this.clock.now());
     if (isEmptyScenario()) {
       return [];
     }
@@ -134,6 +154,7 @@ export class MockBookingRepository implements BookingRepository {
   async getBooking(bookingId: string): Promise<Booking | null> {
     await simulateLatency();
     assertMockSuccess();
+    expireStaleHolds(this.clock.now());
     const booking = findBooking(bookingId);
     if (!booking || booking.guestProfileId !== DEMO_PROFILE_ID) {
       return null;
@@ -145,6 +166,9 @@ export class MockBookingRepository implements BookingRepository {
     await simulateLatency();
     assertMockSuccess();
 
+    const now = this.clock.now();
+    expireStaleHolds(now);
+
     const booking = findBooking(bookingId);
     if (!booking) {
       throw new AppError('error.notFound');
@@ -154,8 +178,9 @@ export class MockBookingRepository implements BookingRepository {
     }
     const eligible = isCancellationEligible({
       checkIn: booking.checkIn,
-      checkInTime: MOCK_PROPERTY.checkInTime,
-      timeZone: MOCK_PROPERTY.timezone,
+      checkInTime: MOCK_PROPERTY_BASE.checkInTime,
+      timeZone: MOCK_PROPERTY_BASE.timezone,
+      now,
     });
     if (!eligible) {
       throw new AppError('error.cancelNotAllowed');
@@ -165,7 +190,7 @@ export class MockBookingRepository implements BookingRepository {
     const refunded: Booking = {
       ...booking,
       status: 'REFUNDED',
-      refundedAt: new Date().toISOString(),
+      refundedAt: now.toISOString(),
     };
     updateBooking(refunded);
     return clone(refunded);

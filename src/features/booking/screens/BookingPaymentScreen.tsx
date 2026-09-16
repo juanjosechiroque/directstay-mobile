@@ -1,72 +1,64 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
-import {
-  Badge,
-  Button,
-  Card,
-  EmptyState,
-  LoadingState,
-  PriceText,
-  Screen,
-  ScreenHeader,
-} from '@/components';
-import { useQuote, useStartDemoBooking } from '@/features/booking/queries/use-booking';
-import { getErrorCode } from '@/lib/errors';
+import { Badge, Button, Card, EmptyState, Screen, ScreenHeader } from '@/components';
+import { QuoteSummary } from '@/features/booking/components/QuoteSummary';
+import { useBookingDraft } from '@/features/booking/draft/booking-draft-context';
+import { useStartDemoBooking } from '@/features/booking/queries/use-booking';
+import { useBookingQuote } from '@/features/booking/queries/use-booking-quote';
 import { colors, fontSize, radius, spacing } from '@/lib/theme';
-import { toIsoDateParam, toPositiveIntParam } from '@/lib/validation';
 
 export function BookingPaymentScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const params = useLocalSearchParams<{
-    unitId?: string;
-    checkIn?: string;
-    checkOut?: string;
-    guests?: string;
-    fullName?: string;
-    email?: string;
-    phone?: string;
-  }>();
-
-  const unitId = typeof params.unitId === 'string' ? params.unitId : undefined;
-  const checkIn = toIsoDateParam(params.checkIn);
-  const checkOut = toIsoDateParam(params.checkOut);
-  const guests = toPositiveIntParam(params.guests);
-  const fullName = params.fullName ?? '';
-  const email = params.email ?? '';
-  const phone = params.phone ?? '';
-
-  const quoteQuery = useQuote(
-    unitId && checkIn && checkOut && guests
-      ? { unitId, checkIn, checkOut, guestCount: guests }
-      : null,
-  );
+  const { stay, guest } = useBookingDraft();
   const payment = useStartDemoBooking();
 
-  if (!unitId || !checkIn || !checkOut || !guests || !fullName || !email) {
+  const quoteState = useBookingQuote(
+    stay
+      ? {
+          unitId: stay.unitId,
+          checkIn: stay.checkIn,
+          checkOut: stay.checkOut,
+          guestCount: stay.guestCount,
+        }
+      : null,
+  );
+
+  if (!stay || !guest) {
     return (
       <Screen>
         <ScreenHeader title={t('booking.paymentTitle')} />
-        <EmptyState title={t('error.title')} message={t('error.validation')} />
+        <EmptyState
+          title={t('booking.draftMissingTitle')}
+          message={t('booking.draftMissingMessage')}
+        />
+        <Button title={t('booking.goToSearch')} onPress={() => router.replace('/search')} />
       </Screen>
     );
   }
 
+  const canPay = quoteState.isReady && !payment.isPending;
+
   const handlePay = () => {
+    if (!quoteState.isReady) {
+      return;
+    }
     payment.mutate(
       {
-        unitId,
-        checkIn,
-        checkOut,
-        guestCount: guests,
-        guestName: fullName,
-        guestEmail: email,
-        guestPhone: phone.trim() ? phone.trim() : null,
+        unitId: stay.unitId,
+        checkIn: stay.checkIn,
+        checkOut: stay.checkOut,
+        guestCount: stay.guestCount,
+        guestName: guest.fullName,
+        guestEmail: guest.email,
+        guestPhone: guest.phone ? guest.phone : null,
       },
       {
         onSuccess: (result) => {
+          // The draft is cleared on the result screen so this screen does not flash its
+          // "missing draft" guard while it is being replaced.
           router.replace({
             pathname: '/booking/result',
             params: { bookingId: result.booking.id },
@@ -85,23 +77,12 @@ export function BookingPaymentScreen() {
         <Text style={styles.demoNotice}>{t('booking.demoNotice')}</Text>
       </Card>
 
-      {quoteQuery.isLoading ? <LoadingState message={t('common.loading')} /> : null}
-
-      {quoteQuery.data ? (
-        <Card style={styles.amountCard}>
-          <Text style={styles.amountLabel}>{t('booking.amountLabel')}</Text>
-          <PriceText
-            amountMinor={quoteQuery.data.totalAmountMinor}
-            currency={quoteQuery.data.currency}
-            size="lg"
-          />
-        </Card>
-      ) : null}
+      <QuoteSummary state={quoteState} size="lg" />
 
       {payment.isError ? (
         <View style={styles.errorBox}>
           <Text style={styles.errorTitle}>{t('booking.paymentErrorTitle')}</Text>
-          <Text style={styles.errorMessage}>{t(getErrorCode(payment.error))}</Text>
+          <Text style={styles.errorMessage}>{t('booking.paymentErrorMessage')}</Text>
         </View>
       ) : null}
 
@@ -111,7 +92,7 @@ export function BookingPaymentScreen() {
           size="lg"
           fullWidth
           loading={payment.isPending}
-          disabled={!quoteQuery.data || payment.isPending}
+          disabled={!canPay}
           onPress={handlePay}
         />
         <Text style={styles.note}>{t('booking.demoNote')}</Text>
@@ -131,14 +112,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     color: colors.text,
     lineHeight: 20,
-  },
-  amountCard: {
-    gap: spacing.xs,
-  },
-  amountLabel: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    fontWeight: '600',
   },
   errorBox: {
     marginTop: spacing.lg,

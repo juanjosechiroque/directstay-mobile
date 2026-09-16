@@ -1,4 +1,4 @@
-import { hasErrors, validateGuestForm, validateSearchCriteria } from '../index';
+import { hasErrors, toIsoDateParam, validateGuestForm, validateSearchCriteria } from '../index';
 
 describe('search criteria validation', () => {
   const base = { checkIn: '2026-09-10', checkOut: '2026-09-12', guests: 2, maxGuests: 4 };
@@ -63,5 +63,19 @@ describe('guest form validation', () => {
   it('detects when errors exist', () => {
     expect(hasErrors({})).toBe(false);
     expect(hasErrors({ email: 'validation.emailInvalid' })).toBe(true);
+  });
+});
+
+describe('route date params', () => {
+  it('accepts a real business date', () => {
+    expect(toIsoDateParam('2026-09-10')).toBe('2026-09-10');
+  });
+
+  it('rejects impossible dates instead of passing them through', () => {
+    expect(toIsoDateParam('2026-13-99')).toBeNull();
+    expect(toIsoDateParam('2026-02-30')).toBeNull();
+    expect(toIsoDateParam('not-a-date')).toBeNull();
+    expect(toIsoDateParam(undefined)).toBeNull();
+    expect(toIsoDateParam(['2026-09-10', '2026-09-11'])).toBeNull();
   });
 });

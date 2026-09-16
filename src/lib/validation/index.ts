@@ -1,4 +1,4 @@
-import { diffInNights } from '@/lib/dates';
+import { diffInNights, isIsoDate } from '@/lib/dates';
 
 /**
  * Local form validation.
@@ -80,11 +80,12 @@ export function validateGuestForm(input: GuestFormInput): GuestFormErrors {
   return errors;
 }
 
+/**
+ * Route params are untrusted input: an impossible date such as `2026-13-99` must become
+ * a validation state, never a silently wrong calculation.
+ */
 export function toIsoDateParam(value: string | string[] | undefined): string | null {
-  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    return null;
-  }
-  return value;
+  return typeof value === 'string' && isIsoDate(value) ? value : null;
 }
 
 export function toPositiveIntParam(value: string | string[] | undefined): number | null {

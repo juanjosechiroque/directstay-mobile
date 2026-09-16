@@ -1,50 +1,46 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { Button, Card, EmptyState, PriceText, Screen, ScreenHeader, TextField } from '@/components';
-import { useQuote } from '@/features/booking/queries/use-booking';
+import { Button, Card, EmptyState, Screen, ScreenHeader, TextField } from '@/components';
+import { QuoteSummary } from '@/features/booking/components/QuoteSummary';
+import { useBookingDraft } from '@/features/booking/draft/booking-draft-context';
+import { useBookingQuote } from '@/features/booking/queries/use-booking-quote';
 import { colors, fontSize, spacing } from '@/lib/theme';
-import {
-  hasErrors,
-  toIsoDateParam,
-  toPositiveIntParam,
-  validateGuestForm,
-  type GuestFormErrors,
-} from '@/lib/validation';
+import { hasErrors, validateGuestForm, type GuestFormErrors } from '@/lib/validation';
 
 export function BookingGuestScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const params = useLocalSearchParams<{
-    unitId?: string;
-    checkIn?: string;
-    checkOut?: string;
-    guests?: string;
-  }>();
+  const { stay, guest, setGuest } = useBookingDraft();
 
-  const unitId = typeof params.unitId === 'string' ? params.unitId : undefined;
-  const checkIn = toIsoDateParam(params.checkIn);
-  const checkOut = toIsoDateParam(params.checkOut);
-  const guests = toPositiveIntParam(params.guests);
+  // Reuse any previously entered guest data (e.g. coming back from payment).
+  const [fullName, setFullName] = useState(guest?.fullName ?? '');
+  const [email, setEmail] = useState(guest?.email ?? '');
+  const [phone, setPhone] = useState(guest?.phone ?? '');
+  const [errors, setErrors] = useState<GuestFormErrors>({});
 
-  const quoteQuery = useQuote(
-    unitId && checkIn && checkOut && guests
-      ? { unitId, checkIn, checkOut, guestCount: guests }
+  const quoteState = useBookingQuote(
+    stay
+      ? {
+          unitId: stay.unitId,
+          checkIn: stay.checkIn,
+          checkOut: stay.checkOut,
+          guestCount: stay.guestCount,
+        }
       : null,
   );
 
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [errors, setErrors] = useState<GuestFormErrors>({});
-
-  if (!unitId || !checkIn || !checkOut || !guests) {
+  if (!stay) {
     return (
       <Screen>
         <ScreenHeader title={t('booking.guestTitle')} />
-        <EmptyState title={t('error.title')} message={t('error.validation')} />
+        <EmptyState
+          title={t('booking.draftMissingTitle')}
+          message={t('booking.draftMissingMessage')}
+        />
+        <Button title={t('booking.goToSearch')} onPress={() => router.replace('/search')} />
       </Screen>
     );
   }
@@ -52,13 +48,11 @@ export function BookingGuestScreen() {
   const handleSubmit = () => {
     const nextErrors = validateGuestForm({ fullName, email, phone });
     setErrors(nextErrors);
-    if (hasErrors(nextErrors)) {
+    if (hasErrors(nextErrors) || !quoteState.isReady) {
       return;
     }
-    router.push({
-      pathname: '/booking/payment',
-      params: { unitId, checkIn, checkOut, guests: String(guests), fullName, email, phone },
-    });
+    setGuest({ fullName: fullName.trim(), email: email.trim(), phone: phone.trim() });
+    router.push('/booking/payment');
   };
 
   return (
@@ -112,18 +106,18 @@ export function BookingGuestScreen() {
         />
       </Card>
 
-      {quoteQuery.data ? (
-        <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>{t('booking.totalLabel')}</Text>
-          <PriceText
-            amountMinor={quoteQuery.data.totalAmountMinor}
-            currency={quoteQuery.data.currency}
-          />
-        </View>
-      ) : null}
+      <View style={styles.quote}>
+        <QuoteSummary state={quoteState} />
+      </View>
 
       <View style={styles.footer}>
-        <Button title={t('booking.guestContinueCta')} size="lg" fullWidth onPress={handleSubmit} />
+        <Button
+          title={t('booking.guestContinueCta')}
+          size="lg"
+          fullWidth
+          disabled={!quoteState.isReady}
+          onPress={handleSubmit}
+        />
       </View>
     </Screen>
   );
@@ -138,17 +132,8 @@ const styles = StyleSheet.create({
   form: {
     gap: spacing.lg,
   },
-  totalRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  quote: {
     marginTop: spacing.xl,
-    paddingHorizontal: spacing.xs,
-  },
-  totalLabel: {
-    fontSize: fontSize.md,
-    fontWeight: '700',
-    color: colors.text,
   },
   footer: {
     marginTop: spacing.lg,

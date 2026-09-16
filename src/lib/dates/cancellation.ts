@@ -1,4 +1,4 @@
-import { addDays, parseIsoDate, type IsoDate } from '@/lib/dates';
+import { addDays, getZonedParts, parseIsoDate, type IsoDate } from '@/lib/dates';
 
 /**
  * Cancellation eligibility (frozen domain rule).
@@ -10,52 +10,6 @@ import { addDays, parseIsoDate, type IsoDate } from '@/lib/dates';
  * This helper is pure and timezone-aware: it converts "now" into the property's wall
  * clock before comparing, so it works regardless of the device timezone.
  */
-
-export interface ZonedParts {
-  year: number;
-  month: number;
-  day: number;
-  hour: number;
-  minute: number;
-  second: number;
-}
-
-export function getZonedParts(instant: Date, timeZone: string): ZonedParts {
-  try {
-    const formatter = new Intl.DateTimeFormat('en-US', {
-      timeZone,
-      hour12: false,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
-    const parts = formatter.formatToParts(instant);
-    const read = (type: Intl.DateTimeFormatPartTypes): number => {
-      const match = parts.find((part) => part.type === type);
-      return match ? Number(match.value) : 0;
-    };
-    return {
-      year: read('year'),
-      month: read('month'),
-      day: read('day'),
-      hour: read('hour'),
-      minute: read('minute'),
-      second: read('second'),
-    };
-  } catch {
-    return {
-      year: instant.getUTCFullYear(),
-      month: instant.getUTCMonth() + 1,
-      day: instant.getUTCDate(),
-      hour: instant.getUTCHours(),
-      minute: instant.getUTCMinutes(),
-      second: instant.getUTCSeconds(),
-    };
-  }
-}
 
 export interface CancellationEligibilityInput {
   checkIn: IsoDate;

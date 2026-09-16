@@ -13,30 +13,6 @@ import { colors, fontSize, spacing } from '@/lib/theme';
 export function ProfileScreen() {
   const { t, i18n } = useTranslation();
   const profileQuery = useProfile();
-
-  if (profileQuery.isLoading) {
-    return (
-      <Screen>
-        <Text style={styles.title}>{t('profile.title')}</Text>
-        <LoadingState message={t('common.loading')} />
-      </Screen>
-    );
-  }
-
-  if (profileQuery.isError || !profileQuery.data) {
-    return (
-      <Screen>
-        <Text style={styles.title}>{t('profile.title')}</Text>
-        <ErrorState
-          title={t('error.title')}
-          message={profileQuery.error ? t(getErrorCode(profileQuery.error)) : undefined}
-          retryLabel={t('common.retry')}
-          onRetry={() => void profileQuery.refetch()}
-        />
-      </Screen>
-    );
-  }
-
   const profile = profileQuery.data;
 
   return (
@@ -44,16 +20,31 @@ export function ProfileScreen() {
       <Text style={styles.title}>{t('profile.title')}</Text>
       <Text style={styles.subtitle}>{t('profile.demoAccount')}</Text>
 
-      <Card>
-        <Badge label={t('profile.demoAccount')} tone="accent" />
-        <InfoRow label={t('profile.nameLabel')} value={profile.displayName} />
-        <InfoRow label={t('profile.emailLabel')} value={profile.email} />
-        {profile.phone ? <InfoRow label={t('profile.phoneLabel')} value={profile.phone} /> : null}
-        <InfoRow
-          label={t('profile.memberSinceLabel')}
-          value={formatIsoDate(profile.memberSince, i18n.language)}
-        />
-      </Card>
+      {profileQuery.isLoading ? <LoadingState message={t('common.loading')} /> : null}
+
+      {profileQuery.isError || (!profileQuery.isLoading && !profile) ? (
+        <Card>
+          <ErrorState
+            title={t('error.title')}
+            message={profileQuery.error ? t(getErrorCode(profileQuery.error)) : undefined}
+            retryLabel={t('common.retry')}
+            onRetry={() => void profileQuery.refetch()}
+          />
+        </Card>
+      ) : null}
+
+      {profile ? (
+        <Card>
+          <Badge label={t('profile.demoAccount')} tone="accent" />
+          <InfoRow label={t('profile.nameLabel')} value={profile.displayName} />
+          <InfoRow label={t('profile.emailLabel')} value={profile.email} />
+          {profile.phone ? <InfoRow label={t('profile.phoneLabel')} value={profile.phone} /> : null}
+          <InfoRow
+            label={t('profile.memberSinceLabel')}
+            value={formatIsoDate(profile.memberSince, i18n.language)}
+          />
+        </Card>
+      ) : null}
 
       <Section title={t('profile.languageTitle')}>
         <LanguageSwitch />

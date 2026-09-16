@@ -2,7 +2,13 @@ import type { Booking, BookingStatus, CancellationReason } from '@/features/book
 import { addDays, diffInNights, todayIso, type IsoDate } from '@/lib/dates';
 
 import { DEMO_PROFILE_ID, OTHER_GUEST_PROFILE_ID } from './property';
-import { INTI_UNIT_ID, KILLA_UNIT_ID, SUMAQ_UNIT_ID, WAYRA_UNIT_ID, findMockUnit } from './units';
+import {
+  INTI_UNIT_ID,
+  KILLA_UNIT_ID,
+  SUMAQ_UNIT_ID,
+  WAYRA_UNIT_ID,
+  findMockUnitSeed,
+} from './units';
 
 /**
  * DEMO / MOCK DATA ONLY — seeded bookings for the local demo profile and for fictional
@@ -34,7 +40,7 @@ interface SeedBookingInput {
 }
 
 function seedBooking(input: SeedBookingInput): Booking {
-  const unit = findMockUnit(input.unitId);
+  const unit = findMockUnitSeed(input.unitId);
   if (!unit) {
     throw new Error(`Unknown mock unit: ${input.unitId}`);
   }

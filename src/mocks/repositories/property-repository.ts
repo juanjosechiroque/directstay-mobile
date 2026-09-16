@@ -1,41 +1,32 @@
 import type { PropertyRepository } from '@/features/property/repository';
 import type { Property, Unit } from '@/features/property/types';
-import { AppError } from '@/lib/errors';
+import type { Locale } from '@/lib/locale';
 
-import { MOCK_PROPERTY } from '../data/property';
-import { MOCK_UNITS, findMockUnit } from '../data/units';
+import { getMockProperty } from '../data/property';
+import { findMockUnit, getMockUnits } from '../data/units';
 import { clone } from './clone';
 import { assertMockSuccess, isEmptyScenario, simulateLatency } from './scenario';
 
 export class MockPropertyRepository implements PropertyRepository {
-  async getProperty(): Promise<Property> {
+  async getProperty(locale: Locale): Promise<Property> {
     await simulateLatency();
     assertMockSuccess();
-    return clone(MOCK_PROPERTY);
+    return clone(getMockProperty(locale));
   }
 
-  async listUnits(): Promise<Unit[]> {
+  async listUnits(locale: Locale): Promise<Unit[]> {
     await simulateLatency();
     assertMockSuccess();
     if (isEmptyScenario()) {
       return [];
     }
-    return clone(MOCK_UNITS);
+    return clone(getMockUnits(locale));
   }
 
-  async getUnit(unitId: string): Promise<Unit | null> {
+  async getUnit(unitId: string, locale: Locale): Promise<Unit | null> {
     await simulateLatency();
     assertMockSuccess();
-    const unit = findMockUnit(unitId);
-    if (!unit) {
-      return null;
-    }
-    return clone(unit);
-  }
-}
-
-export function assertUnitExists(unitId: string): void {
-  if (!findMockUnit(unitId)) {
-    throw new AppError('error.notFound');
+    const unit = findMockUnit(unitId, locale);
+    return unit ? clone(unit) : null;
   }
 }

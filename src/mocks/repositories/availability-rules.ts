@@ -3,7 +3,7 @@ import type { IsoDate } from '@/lib/dates';
 import { rangesOverlap } from '@/lib/dates';
 
 import { MOCK_AVAILABILITY_BLOCKS } from '../data/availability-blocks';
-import { findMockUnit } from '../data/units';
+import { findMockUnitSeed } from '../data/units';
 import { listAllBookings } from './booking-store';
 
 /**
@@ -28,7 +28,7 @@ export function isUnitAvailable(
   guests: number,
   now: number = Date.now(),
 ): boolean {
-  const unit = findMockUnit(unitId);
+  const unit = findMockUnitSeed(unitId);
   if (!unit || unit.maxGuests < guests) {
     return false;
   }

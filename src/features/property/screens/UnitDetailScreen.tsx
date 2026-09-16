@@ -19,7 +19,7 @@ import { useUnit } from '@/features/property/queries/use-property';
 import type { AmenityCode } from '@/features/property/types';
 import { getErrorCode } from '@/lib/errors';
 import { colors, fontSize, radius, shadows, spacing } from '@/lib/theme';
-import { toPositiveIntParam } from '@/lib/validation';
+import { toIsoDateParam, toPositiveIntParam } from '@/lib/validation';
 
 export function UnitDetailScreen() {
   const { t } = useTranslation();
@@ -34,8 +34,8 @@ export function UnitDetailScreen() {
 
   const unitId = typeof params.unitId === 'string' ? params.unitId : undefined;
   const unitQuery = useUnit(unitId);
-  const checkIn = typeof params.checkIn === 'string' ? params.checkIn : undefined;
-  const checkOut = typeof params.checkOut === 'string' ? params.checkOut : undefined;
+  const checkIn = toIsoDateParam(params.checkIn);
+  const checkOut = toIsoDateParam(params.checkOut);
   const guests = toPositiveIntParam(params.guests);
 
   const galleryWidth = Math.min(width - spacing.lg * 2, 420);

@@ -1,10 +1,12 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { Button, EmptyState, ErrorState, LoadingState, Screen, ScreenHeader } from '@/components';
-import { useQuote } from '@/features/booking/queries/use-booking';
 import { StaySummaryCard } from '@/features/booking/components/StaySummaryCard';
+import { useBookingDraft } from '@/features/booking/draft/booking-draft-context';
+import { useQuote } from '@/features/booking/queries/use-booking';
 import { useUnit } from '@/features/property/queries/use-property';
 import { getErrorCode } from '@/lib/errors';
 import { colors, fontSize, spacing } from '@/lib/theme';
@@ -13,6 +15,7 @@ import { toIsoDateParam, toPositiveIntParam } from '@/lib/validation';
 export function BookingReviewScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { setStay, setQuote } = useBookingDraft();
   const params = useLocalSearchParams<{
     unitId?: string;
     checkIn?: string;
@@ -31,12 +34,28 @@ export function BookingReviewScreen() {
       ? { unitId, checkIn, checkOut, guestCount: guests }
       : null;
   const quoteQuery = useQuote(quoteRequest);
+  const quote = quoteQuery.data;
+
+  // Route params here carry only identifiers/business dates (no PII). Capture them in the
+  // in-memory draft so later steps no longer need navigation params.
+  useEffect(() => {
+    if (unitId && checkIn && checkOut && guests) {
+      setStay({ unitId, checkIn, checkOut, guestCount: guests });
+    }
+  }, [unitId, checkIn, checkOut, guests, setStay]);
+
+  useEffect(() => {
+    if (quote) {
+      setQuote(quote);
+    }
+  }, [quote, setQuote]);
 
   if (!unitId || !checkIn || !checkOut || !guests) {
     return (
       <Screen>
         <ScreenHeader title={t('booking.reviewTitle')} />
         <EmptyState title={t('error.title')} message={t('error.validation')} />
+        <Button title={t('booking.goToSearch')} onPress={() => router.replace('/search')} />
       </Screen>
     );
   }
@@ -89,12 +108,7 @@ export function BookingReviewScreen() {
           title={t('booking.continueCta')}
           size="lg"
           fullWidth
-          onPress={() =>
-            router.push({
-              pathname: '/booking/guest',
-              params: { unitId, checkIn, checkOut, guests: String(guests) },
-            })
-          }
+          onPress={() => router.push('/booking/guest')}
         />
       </View>
     </Screen>
