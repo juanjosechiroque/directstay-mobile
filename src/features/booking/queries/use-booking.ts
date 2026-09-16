@@ -1,16 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import {
-  invalidateAfterBookingCanceled,
-  invalidateAfterBookingCreated,
-} from '@/features/booking/queries/invalidation';
+import { invalidateAfterBookingCanceled } from '@/features/booking/queries/invalidation';
 import { bookingKeys } from '@/features/booking/queries/keys';
-import type {
-  Booking,
-  CreateBookingInput,
-  PaymentSimulationResult,
-  QuoteRequest,
-} from '@/features/booking/types';
+import type { Booking, QuoteRequest } from '@/features/booking/types';
 import { useRepositories } from '@/lib/repositories';
 
 export { bookingKeys } from '@/features/booking/queries/keys';
@@ -47,24 +39,11 @@ export function useBooking(bookingId: string | undefined) {
 }
 
 /**
- * Creates the booking as `PENDING_PAYMENT` and runs the mocked payment in one async
- * operation. In production these become two distinct server calls: `create_booking` RPC
- * and a Stripe PaymentSheet flow whose confirmation only arrives via webhook.
+ * Cancellation is a server-authoritative, refund-triggering operation that is not enabled
+ * until the payments phase. This hook exists so the intent is represented in the data
+ * layer, but the server rejects it and the UI must direct the guest to contact the
+ * property instead of implying an in-app cancellation.
  */
-export function useStartDemoBooking() {
-  const { booking } = useRepositories();
-  const queryClient = useQueryClient();
-  return useMutation<PaymentSimulationResult, unknown, CreateBookingInput>({
-    mutationFn: async (input) => {
-      const created = await booking.createBooking(input);
-      return booking.simulatePayment(created.id);
-    },
-    onSuccess: (result) => {
-      invalidateAfterBookingCreated(queryClient, result.booking.id);
-    },
-  });
-}
-
 export function useCancelBooking() {
   const { booking } = useRepositories();
   const queryClient = useQueryClient();

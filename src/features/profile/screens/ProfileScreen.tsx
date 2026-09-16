@@ -1,24 +1,37 @@
 import Constants from 'expo-constants';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { Badge, Card, ErrorState, InfoRow, LoadingState, Screen, Section } from '@/components';
-import { DemoStateSwitch } from '@/features/profile/components/DemoStateSwitch';
+import { Button, Card, ErrorState, InfoRow, LoadingState, Screen, Section } from '@/components';
 import { LanguageSwitch } from '@/features/profile/components/LanguageSwitch';
 import { useProfile } from '@/features/profile/queries/use-profile';
+import { useAuthActions, useSession } from '@/features/auth/queries/use-session';
+import { useSessionGuard } from '@/features/auth/guards/use-session-guard';
 import { formatIsoDate } from '@/lib/dates';
 import { getErrorCode } from '@/lib/errors';
 import { colors, fontSize, spacing } from '@/lib/theme';
 
 export function ProfileScreen() {
   const { t, i18n } = useTranslation();
+  const guard = useSessionGuard('/profile');
   const profileQuery = useProfile();
+  const { user } = useSession();
+  const { signOut } = useAuthActions();
   const profile = profileQuery.data;
+
+  if (guard !== 'signedIn') {
+    return (
+      <Screen scroll>
+        <Text style={styles.title}>{t('profile.title')}</Text>
+        <LoadingState message={t('common.loading')} />
+      </Screen>
+    );
+  }
 
   return (
     <Screen scroll>
       <Text style={styles.title}>{t('profile.title')}</Text>
-      <Text style={styles.subtitle}>{t('profile.demoAccount')}</Text>
+      <Text style={styles.subtitle}>{t('profile.accountSubtitle')}</Text>
 
       {profileQuery.isLoading ? <LoadingState message={t('common.loading')} /> : null}
 
@@ -35,14 +48,15 @@ export function ProfileScreen() {
 
       {profile ? (
         <Card>
-          <Badge label={t('profile.demoAccount')} tone="accent" />
           <InfoRow label={t('profile.nameLabel')} value={profile.displayName} />
-          <InfoRow label={t('profile.emailLabel')} value={profile.email} />
+          <InfoRow label={t('profile.emailLabel')} value={profile.email || user?.email || ''} />
           {profile.phone ? <InfoRow label={t('profile.phoneLabel')} value={profile.phone} /> : null}
-          <InfoRow
-            label={t('profile.memberSinceLabel')}
-            value={formatIsoDate(profile.memberSince, i18n.language)}
-          />
+          {profile.memberSince ? (
+            <InfoRow
+              label={t('profile.memberSinceLabel')}
+              value={formatIsoDate(profile.memberSince, i18n.language)}
+            />
+          ) : null}
         </Card>
       ) : null}
 
@@ -50,8 +64,15 @@ export function ProfileScreen() {
         <LanguageSwitch />
       </Section>
 
-      <Section title={t('profile.demoStatesTitle')} subtitle={t('profile.demoStatesMessage')}>
-        <DemoStateSwitch />
+      <Section title={t('profile.sessionTitle')}>
+        <View style={styles.session}>
+          <Button
+            title={t('auth.signOutCta')}
+            variant="danger"
+            fullWidth
+            onPress={() => void signOut()}
+          />
+        </View>
       </Section>
 
       <Section title={t('profile.aboutTitle')}>
@@ -77,6 +98,9 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: spacing.xs,
     marginBottom: spacing.lg,
+  },
+  session: {
+    gap: spacing.md,
   },
   aboutLine: {
     fontSize: fontSize.sm,

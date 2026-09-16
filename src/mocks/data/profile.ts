@@ -1,12 +1,12 @@
-import type { DemoProfile } from '@/features/profile/types';
+import type { GuestProfile } from '@/features/profile/types';
 
 import { DEMO_PROFILE_ID } from './property';
 
 /**
- * DEMO / MOCK DATA ONLY — local demo profile/session. No real authentication exists.
- * A future SupabaseProfileRepository would read the owner-scoped `profiles` row instead.
+ * DEMO / MOCK FIXTURE DATA (tests only) — local demo profile. Not used at runtime; the
+ * Supabase adapter reads the owner-scoped `profiles` row from an authenticated session.
  */
-export const MOCK_PROFILE: DemoProfile = {
+export const MOCK_PROFILE: GuestProfile = {
   id: DEMO_PROFILE_ID,
   displayName: 'Valeria Quispe',
   email: 'valeria.demo@directstay.test',

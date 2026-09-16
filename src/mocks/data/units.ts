@@ -1,12 +1,12 @@
-import type { AmenityCode, Unit, UnitImage } from '@/features/property/types';
+import type { AmenityCode, Unit, CatalogImage } from '@/features/property/types';
 import type { Locale } from '@/lib/locale';
 
 import { PROPERTY_ID } from './property';
 
 /**
- * DEMO / MOCK DATA ONLY — fictional Ayni Mountain Cabins units (Killa, Inti, Wayra,
- * Sumaq). Nightly rates match `supabase/seed.sql` and use integer USD minor units.
- * Unit names are proper nouns; the descriptive copy is localized per locale.
+ * DEMO / MOCK FIXTURE DATA (tests only) — fictional Ayni Mountain Cabins units (Killa,
+ * Inti, Wayra, Sumaq). Nightly rates use integer USD minor units. Unit names are proper
+ * nouns; the descriptive copy is localized per locale.
  */
 
 export const KILLA_UNIT_ID = '33333333-3333-3333-3333-333333333301';
@@ -28,8 +28,16 @@ export interface MockUnitSeed {
   nightlyRateMinor: number;
   currency: string;
   amenities: AmenityCode[];
-  images: UnitImage[];
+  images: CatalogImage[];
   content: Record<Locale, UnitLocalizedContent>;
+}
+
+function placeholderImages(prefix: string, count: number): CatalogImage[] {
+  return Array.from({ length: count }, (_, index) => ({
+    id: `${prefix}-${index + 1}`,
+    url: null,
+    altText: null,
+  }));
 }
 
 export const MOCK_UNIT_SEEDS: MockUnitSeed[] = [
@@ -42,11 +50,7 @@ export const MOCK_UNIT_SEEDS: MockUnitSeed[] = [
     nightlyRateMinor: 12000,
     currency: 'USD',
     amenities: ['wifi', 'fireplace', 'mountain_view', 'private_bathroom', 'heating'],
-    images: [
-      { id: 'killa-1', from: '#2F5D50', to: '#8FB39C' },
-      { id: 'killa-2', from: '#26453C', to: '#6E8F7C' },
-      { id: 'killa-3', from: '#3A5B4A', to: '#A8C3AE' },
-    ],
+    images: placeholderImages('killa', 3),
     content: {
       es: {
         summary: 'Cabaña íntima para dos, con chimenea y vista a la montaña.',
@@ -69,11 +73,7 @@ export const MOCK_UNIT_SEEDS: MockUnitSeed[] = [
     nightlyRateMinor: 18000,
     currency: 'USD',
     amenities: ['wifi', 'kitchenette', 'terrace', 'private_bathroom', 'heating', 'family_friendly'],
-    images: [
-      { id: 'inti-1', from: '#B4713D', to: '#E8C69C' },
-      { id: 'inti-2', from: '#9A5C2E', to: '#DDB484' },
-      { id: 'inti-3', from: '#C58148', to: '#F0D4AE' },
-    ],
+    images: placeholderImages('inti', 3),
     content: {
       es: {
         summary: 'Cabaña familiar con cocina, terraza y espacio para cuatro.',
@@ -96,11 +96,7 @@ export const MOCK_UNIT_SEEDS: MockUnitSeed[] = [
     nightlyRateMinor: 15000,
     currency: 'USD',
     amenities: ['wifi', 'fireplace', 'terrace', 'mountain_view', 'private_bathroom'],
-    images: [
-      { id: 'wayra-1', from: '#3C5A7A', to: '#A6BED6' },
-      { id: 'wayra-2', from: '#2E4A66', to: '#8FA9C4' },
-      { id: 'wayra-3', from: '#49688A', to: '#BCD2E5' },
-    ],
+    images: placeholderImages('wayra', 3),
     content: {
       es: {
         summary: 'Refugio de tres plazas con chimenea y terraza al valle.',
@@ -131,11 +127,7 @@ export const MOCK_UNIT_SEEDS: MockUnitSeed[] = [
       'heating',
       'family_friendly',
     ],
-    images: [
-      { id: 'sumaq-1', from: '#5B4636', to: '#C9AC8C' },
-      { id: 'sumaq-2', from: '#6E5540', to: '#D8BE9E' },
-      { id: 'sumaq-3', from: '#4A3829', to: '#B99A78' },
-    ],
+    images: placeholderImages('sumaq', 3),
     content: {
       es: {
         summary: 'Cabaña grande para grupos, con cocina y terraza panorámica.',

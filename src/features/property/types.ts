@@ -2,34 +2,48 @@
  * Property & unit domain types.
  *
  * These types are intentionally independent from React Native, Supabase and Stripe so
- * they can travel between a mock repository and a future Supabase-backed adapter
- * without changes. Demo content (names, descriptions) is data, not translation copy.
+ * they can travel between a mock repository (tests) and the Supabase adapter without
+ * changes. Demo content (names, descriptions) is data, not translation copy.
+ *
+ * Private stay data (Wi-Fi, arrival instructions) is deliberately NOT part of `Property`:
+ * the public catalog read model must never carry it. It lives in the stay feature and is
+ * fetched through the authenticated, CONFIRMED-only stay RPC.
  */
 
-export type AmenityCode =
-  | 'wifi'
-  | 'breakfast'
-  | 'private_bathroom'
-  | 'fireplace'
-  | 'mountain_view'
-  | 'terrace'
-  | 'heating'
-  | 'free_parking'
-  | 'kitchenette'
-  | 'family_friendly';
+export const AMENITY_CODES = [
+  'wifi',
+  'breakfast',
+  'private_bathroom',
+  'fireplace',
+  'mountain_view',
+  'terrace',
+  'heating',
+  'free_parking',
+  'kitchenette',
+  'family_friendly',
+] as const;
 
-export type HighlightCode =
-  'mountain_view' | 'local_hosts' | 'breakfast_included' | 'direct_booking' | 'nature';
+export type AmenityCode = (typeof AMENITY_CODES)[number];
+
+export const HIGHLIGHT_CODES = [
+  'mountain_view',
+  'local_hosts',
+  'breakfast_included',
+  'direct_booking',
+  'nature',
+] as const;
+
+export type HighlightCode = (typeof HIGHLIGHT_CODES)[number];
 
 /**
- * Local/mock image placeholder. `from`/`to` are gradient stops rendered natively so the
- * app never depends on remote images. A future Supabase adapter maps `unit_images`
- * storage paths to these records.
+ * Catalog image. `url` is a resolved public URL when a real asset exists; when it is
+ * `null` the UI renders a deterministic local placeholder (no unverified asset is ever
+ * presented as licensed). `altText` is localized by the read model.
  */
-export interface UnitImage {
+export interface CatalogImage {
   id: string;
-  from: string;
-  to: string;
+  url: string | null;
+  altText: string | null;
 }
 
 export interface Unit {
@@ -43,17 +57,13 @@ export interface Unit {
   nightlyRateMinor: number;
   currency: string;
   amenities: AmenityCode[];
-  images: UnitImage[];
+  images: CatalogImage[];
 }
 
-export interface PropertyWifi {
-  network: string;
-  password: string;
-}
-
+/** Public business contact for a property. Never guest PII. */
 export interface PropertyContact {
-  whatsapp: string;
-  phone: string;
+  whatsapp: string | null;
+  phone: string | null;
 }
 
 export interface Property {
@@ -68,9 +78,6 @@ export interface Property {
   checkOutTime: string;
   currency: string;
   highlights: HighlightCode[];
-  heroImage: UnitImage;
-  wifi: PropertyWifi;
-  breakfast: string;
-  directions: string;
+  heroImage: CatalogImage | null;
   contact: PropertyContact;
 }

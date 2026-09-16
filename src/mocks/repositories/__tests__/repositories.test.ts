@@ -224,8 +224,8 @@ describe('stay repository', () => {
   it('derives stay information only for confirmed bookings', async () => {
     const confirmedStay = await stay.getStay('55555555-5555-5555-5555-555555555501', 'es');
     expect(confirmedStay?.booking.status).toBe('CONFIRMED');
-    expect(confirmedStay?.property.name).toBe('Ayni Mountain Cabins');
-    expect(confirmedStay?.property.wifi.network).toBe('AyniGuest');
+    expect(confirmedStay?.propertyName).toBe('Ayni Mountain Cabins');
+    expect(confirmedStay?.information.wifiNetwork).toBe('AyniGuest');
 
     const pendingStay = await stay.getStay('55555555-5555-5555-5555-555555555502', 'es');
     expect(pendingStay).toBeNull();
@@ -235,7 +235,7 @@ describe('stay repository', () => {
 describe('profile repository', () => {
   it('returns the local demo profile', async () => {
     const data = await profile.getCurrentProfile();
-    expect(data.email).toBe('valeria.demo@directstay.test');
+    expect(data?.email).toBe('valeria.demo@directstay.test');
   });
 });
 

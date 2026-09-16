@@ -14,7 +14,7 @@ import {
   Section,
 } from '@/components';
 import { UnitCard } from '@/features/property/components/UnitCard';
-import { useProperty } from '@/features/property/queries/use-property';
+import { usePrimaryProperty } from '@/features/property/queries/use-property';
 import { DateField } from '@/features/search/components/DateField';
 import { GuestCounter } from '@/features/search/components/GuestCounter';
 import { useAvailabilitySearch } from '@/features/search/queries/use-availability-search';
@@ -28,7 +28,7 @@ export function SearchScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   // Search defaults follow the property's calendar, not the traveller's device timezone.
-  const propertyQuery = useProperty();
+  const propertyQuery = usePrimaryProperty();
   const today = propertyQuery.data ? todayIsoInTimeZone(propertyQuery.data.timezone) : todayIso();
 
   const [checkIn, setCheckIn] = useState<IsoDate | null>(null);

@@ -15,18 +15,27 @@ import {
   Section,
 } from '@/components';
 import { ContactActions } from '@/components/ContactActions';
+import { useSessionGuard } from '@/features/auth/guards/use-session-guard';
 import { useStay } from '@/features/stay/queries/use-stay';
 import { getErrorCode } from '@/lib/errors';
 import { colors, fontSize, spacing } from '@/lib/theme';
 
+/**
+ * My Stay.
+ *
+ * Every private field comes from the owner-scoped `get_stay_information` RPC, available
+ * only while the caller owns a CONFIRMED booking. When there is no confirmed booking the
+ * screen shows an empty state — never demo or another guest's data.
+ */
 export function StayScreen() {
   const { t } = useTranslation();
+  const guard = useSessionGuard('/bookings');
   const params = useLocalSearchParams<{ bookingId?: string }>();
   const bookingId = typeof params.bookingId === 'string' ? params.bookingId : undefined;
 
-  const stayQuery = useStay(bookingId);
+  const stayQuery = useStay(guard === 'signedIn' ? bookingId : undefined);
 
-  if (stayQuery.isLoading) {
+  if (guard !== 'signedIn' || stayQuery.isLoading) {
     return (
       <Screen>
         <ScreenHeader title={t('stay.title')} />
@@ -58,49 +67,56 @@ export function StayScreen() {
     );
   }
 
-  const { booking, property } = stayQuery.data;
+  const { booking, propertyName, checkInTime, checkOutTime, information } = stayQuery.data;
+  const notSet = t('common.notAvailable');
 
   return (
     <Screen scroll>
       <ScreenHeader title={t('stay.title')} />
 
       <Card>
+        <Text style={styles.property}>{propertyName}</Text>
         <Text style={styles.unit}>{booking.unitName}</Text>
         <DateRange checkIn={booking.checkIn} checkOut={booking.checkOut} style={styles.dates} />
       </Card>
 
       <Section title={t('stay.wifiTitle')}>
         <Card>
-          <InfoRow label={t('stay.wifiNetwork')} value={property.wifi.network} />
+          <InfoRow label={t('stay.wifiNetwork')} value={information.wifiNetwork ?? notSet} />
           <Divider />
-          <InfoRow label={t('stay.wifiPassword')} value={property.wifi.password} />
+          <InfoRow label={t('stay.wifiPassword')} value={information.wifiPassword ?? notSet} />
         </Card>
       </Section>
 
       <Section title={t('stay.breakfastTitle')}>
         <Card>
-          <Text style={styles.body}>{property.breakfast}</Text>
+          <Text style={styles.body}>{information.breakfastInfo ?? notSet}</Text>
         </Card>
       </Section>
 
       <Section title={t('stay.scheduleTitle')}>
         <Card>
-          <InfoRow label={t('stay.checkInLabel')} value={property.checkInTime} />
+          <InfoRow label={t('stay.checkInLabel')} value={checkInTime} />
           <Divider />
-          <InfoRow label={t('stay.checkOutLabel')} value={property.checkOutTime} />
+          <InfoRow label={t('stay.checkOutLabel')} value={checkOutTime} />
         </Card>
       </Section>
 
       <Section title={t('stay.directionsTitle')}>
         <Card>
-          <Text style={styles.body}>{property.directions}</Text>
+          <Text style={styles.body}>{information.checkinInstructions ?? notSet}</Text>
+          <Divider spaced />
+          <Text style={styles.body}>{information.directions ?? notSet}</Text>
         </Card>
       </Section>
 
       <Section title={t('stay.contactTitle')}>
         <Card style={styles.contactCard}>
-          <ContactActions whatsapp={property.contact.whatsapp} phone={property.contact.phone} />
-          <Text style={styles.note}>{t('stay.demoNote')}</Text>
+          <ContactActions
+            whatsapp={stayQuery.data.contactWhatsapp}
+            phone={stayQuery.data.contactPhone}
+          />
+          <Text style={styles.note}>{t('stay.privacyNote')}</Text>
         </Card>
       </Section>
     </Screen>
@@ -108,10 +124,16 @@ export function StayScreen() {
 }
 
 const styles = StyleSheet.create({
+  property: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    fontWeight: '600',
+  },
   unit: {
     fontSize: fontSize.xxl,
     fontWeight: '700',
     color: colors.text,
+    marginTop: spacing.xs,
   },
   dates: {
     marginTop: spacing.xs,

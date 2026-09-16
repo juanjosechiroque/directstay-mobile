@@ -5,13 +5,24 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Button, EmptyState, ErrorState, LoadingState, Screen } from '@/components';
 import { BookingCard } from '@/features/booking/components/BookingCard';
 import { useBookings } from '@/features/booking/queries/use-booking';
+import { useSessionGuard } from '@/features/auth/guards/use-session-guard';
 import { getErrorCode } from '@/lib/errors';
 import { colors, fontSize, spacing } from '@/lib/theme';
 
 export function MyBookingsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const guard = useSessionGuard('/bookings');
   const bookingsQuery = useBookings();
+
+  if (guard !== 'signedIn') {
+    return (
+      <Screen scroll>
+        <Text style={styles.title}>{t('bookings.title')}</Text>
+        <LoadingState message={t('common.loading')} />
+      </Screen>
+    );
+  }
 
   return (
     <Screen scroll>

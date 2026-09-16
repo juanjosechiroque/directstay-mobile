@@ -1,10 +1,10 @@
 export { Badge, type BadgeTone } from './Badge';
 export { Button, type ButtonSize, type ButtonVariant } from './Button';
 export { Card } from './Card';
+export { CatalogImage } from './CatalogImage';
 export { DateRange } from './DateRange';
 export { Divider } from './Divider';
 export { InfoRow } from './InfoRow';
-export { MockImage } from './MockImage';
 export { PriceText } from './PriceText';
 export { Screen } from './Screen';
 export { ScreenHeader } from './ScreenHeader';

@@ -18,6 +18,24 @@ select has_table('public'::name, 'bookings'::name, 'table bookings exists');
 select has_table('public'::name, 'payments'::name, 'table payments exists');
 select has_table('public'::name, 'availability_blocks'::name, 'table availability_blocks exists');
 
+-- ---- public catalog, localized content, licensed media and private stay info ----
+select has_table('public'::name, 'property_translations'::name, 'table property_translations exists');
+select has_table('public'::name, 'unit_translations'::name, 'table unit_translations exists');
+select has_table('public'::name, 'amenities'::name, 'table amenities exists');
+select has_table('public'::name, 'unit_amenities'::name, 'table unit_amenities exists');
+select has_table('public'::name, 'property_highlights'::name, 'table property_highlights exists');
+select has_table('public'::name, 'property_images'::name, 'table property_images exists');
+select has_table('public'::name, 'unit_image_translations'::name, 'table unit_image_translations exists');
+select has_table('public'::name, 'property_image_translations'::name, 'table property_image_translations exists');
+select has_table('public'::name, 'property_stay_information'::name, 'table property_stay_information exists');
+
+select has_column('public'::name, 'organizations'::name, 'slug'::name, 'organizations.slug exists');
+select has_column('public'::name, 'organizations'::name, 'is_active'::name, 'organizations.is_active exists');
+select has_column('public'::name, 'properties'::name, 'contact_whatsapp'::name, 'properties.contact_whatsapp exists');
+select has_column('public'::name, 'unit_images'::name, 'license'::name, 'unit_images.license exists');
+select has_column('public'::name, 'property_images'::name, 'license'::name, 'property_images.license exists');
+select has_column('public'::name, 'property_stay_information'::name, 'wifi_password'::name, 'property_stay_information.wifi_password exists');
+
 -- ---- enums and labels ----
 select has_type('public'::name, 'booking_status'::name, 'enum booking_status exists');
 select has_type('public'::name, 'payment_status'::name, 'enum payment_status exists');

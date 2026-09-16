@@ -1,11 +1,12 @@
-import type { DemoProfile } from '@/features/profile/types';
+import type { GuestProfile } from '@/features/profile/types';
 
 /**
- * Profile/session contract.
+ * Profile contract.
  *
- * The current implementation is a local demo profile — no real authentication. A future
- * `SupabaseProfileRepository` reads the owner-scoped `profiles` row.
+ * In the Supabase adapter this reads the owner-scoped `profiles` row plus the auth user
+ * email. It returns `null` when there is no authenticated session, so screens can rely on
+ * the session guard instead of fabricating a demo profile.
  */
 export interface ProfileRepository {
-  getCurrentProfile(): Promise<DemoProfile>;
+  getCurrentProfile(): Promise<GuestProfile | null>;
 }

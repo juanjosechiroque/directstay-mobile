@@ -12,7 +12,8 @@
     "loading": "Cargando…",
     "linkUnavailable": "No pudimos abrir el enlace en este dispositivo.",
     "seeDetails": "Ver detalle",
-    "notAvailable": "No disponible"
+    "notAvailable": "No disponible",
+    "contactUnavailable": "El alojamiento aún no publicó datos de contacto."
   },
   "tabs": {
     "home": "Inicio",
@@ -51,7 +52,9 @@
     "searchCta": "Buscar disponibilidad",
     "featuredTitle": "Cabañas destacadas",
     "featuredSubtitle": "Elige la unidad que mejor se adapte a tu viaje.",
-    "allUnits": "Ver todas las cabañas"
+    "allUnits": "Ver todas las cabañas",
+    "emptyTitle": "Catálogo no disponible",
+    "emptyMessage": "La organización configurada no tiene propiedades activas por ahora."
   },
   "search": {
     "title": "Buscar disponibilidad",
@@ -147,7 +150,12 @@
     "pendingMessage": "La reserva aún no está confirmada. Revisa Mis reservas para completarla.",
     "goToBooking": "Ver mi reserva",
     "goToBookings": "Ir a Mis reservas",
-    "demoNote": "Recuerda: todo este flujo es una simulación local, sin pagos reales."
+    "demoNote": "Recuerda: todo este flujo es una simulación local, sin pagos reales.",
+    "paymentsUnavailableBadge": "Pagos no habilitados",
+    "paymentsUnavailableTitle": "El pago aún no está habilitado",
+    "paymentsUnavailableMessage": "Todavía no procesamos pagos ni confirmamos reservas desde la app. Cuando el pago esté disponible, podrás reservar esta cabaña sin salir de DirectStay.",
+    "paymentsUnavailableCta": "Pago no disponible todavía",
+    "paymentsUnavailableNote": "No se creó ninguna reserva y no se realizó ningún cargo."
   },
   "bookings": {
     "title": "Mis reservas",
@@ -173,6 +181,7 @@
     "cancelingCta": "Cancelando…",
     "cancelNotAllowedTitle": "Cancelación no disponible",
     "cancelNotAllowedMessage": "Las reservas confirmadas se cancelan hasta 24 horas antes del check-in. Para cambios de último momento, contacta directamente al alojamiento.",
+    "cancelNotEnabledMessage": "La cancelación dentro de la app se habilitará junto con los pagos. Por ahora, escribe o llama al alojamiento.",
     "cancelDeadline": "Puedes cancelar hasta el {{date}}.",
     "cancelConfirmTitle": "Cancelar reserva",
     "cancelConfirmMessage": "Se solicitará el reembolso total. Esta acción no se puede deshacer.",
@@ -206,16 +215,29 @@
     "contactTitle": "Contacto",
     "whatsappCta": "WhatsApp",
     "callCta": "Llamar",
-    "demoNote": "Los enlaces de contacto son de demostración."
+    "demoNote": "Los enlaces de contacto son de demostración.",
+    "privacyNote": "Esta información es privada y solo se muestra a la reserva confirmada."
+  },
+  "auth": {
+    "loginTitle": "Inicia sesión",
+    "loginSubtitle": "Entra con tu correo para ver tus reservas y la información de tu estancia.",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "passwordHelper": "Mínimo 6 caracteres.",
+    "signInCta": "Entrar",
+    "signingInCta": "Entrando…",
+    "signOutCta": "Cerrar sesión"
   },
   "profile": {
     "title": "Perfil",
+    "accountSubtitle": "Tu cuenta de DirectStay.",
     "demoAccount": "Sesión de demostración",
     "nameLabel": "Nombre",
     "emailLabel": "Correo",
     "phoneLabel": "Teléfono",
     "memberSinceLabel": "Miembro desde",
     "languageTitle": "Idioma",
+    "sessionTitle": "Sesión",
     "languageEs": "Español",
     "languageEn": "English",
     "demoStatesTitle": "Estados de la demo",
@@ -240,7 +262,8 @@
     "nameTooShort": "El nombre es muy corto.",
     "emailRequired": "Escribe tu correo.",
     "emailInvalid": "El correo no parece válido.",
-    "phoneInvalid": "El teléfono no parece válido."
+    "phoneInvalid": "El teléfono no parece válido.",
+    "authCredentialsRequired": "Escribe tu correo y contraseña."
   },
   "error": {
     "title": "No pudimos cargar la información",
@@ -248,6 +271,14 @@
     "notFound": "No encontramos lo que buscabas.",
     "unavailable": "La cabaña ya no está disponible para esas fechas.",
     "cancelNotAllowed": "Esta reserva ya no se puede cancelar en la app.",
-    "validation": "Revisa los datos ingresados."
+    "validation": "Revisa los datos ingresados.",
+    "sessionRequired": "Inicia sesión para continuar.",
+    "paymentsNotEnabled": "El pago aún no está habilitado.",
+    "configuration": "Falta la configuración de la aplicación.",
+    "authInvalidCredentials": "El correo o la contraseña no son correctos.",
+    "authEmailInUse": "Ya existe una cuenta con ese correo.",
+    "authEmailNotConfirmed": "Confirma tu correo antes de entrar.",
+    "authWeakPassword": "La contraseña es demasiado débil.",
+    "authFailed": "No pudimos completar la autenticación. Inténtalo de nuevo."
   }
 }

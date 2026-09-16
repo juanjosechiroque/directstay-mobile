@@ -4,6 +4,7 @@ import { systemClock, type Clock } from '@/lib/clock';
 import { diffInNights } from '@/lib/dates';
 import type { Locale } from '@/lib/locale';
 
+import { MOCK_PROPERTY_BASE } from '../data/property';
 import { getMockUnits } from '../data/units';
 import { isUnitAvailable } from './availability-rules';
 import { expireStaleHolds } from './booking-store';
@@ -37,6 +38,10 @@ export class MockAvailabilityRepository implements AvailabilityRepository {
       .filter((unit) => isUnitAvailable(unit.id, checkIn, checkOut, guests, now.getTime()))
       .map<AvailableUnit>((unit) => ({
         unit,
+        propertyId: unit.propertyId,
+        propertyName: MOCK_PROPERTY_BASE.name,
+        propertySlug: MOCK_PROPERTY_BASE.slug,
+        propertyTimezone: MOCK_PROPERTY_BASE.timezone,
         nights,
         totalAmountMinor: unit.nightlyRateMinor * nights,
         currency: unit.currency,

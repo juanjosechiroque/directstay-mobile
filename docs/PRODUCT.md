@@ -26,14 +26,31 @@ around cabins or rooms.
 
 ## Scope
 
-- Property presentation; unit presentation
-- Date selection; guest count; availability search
-- Booking review; booking hold; payment; booking confirmation
-- Booking history; booking details; simple cancellation; Stripe refund
-- Pre-arrival information; directions; simple stay information
+- Public brand catalog: one organization with one or more properties
+- Property presentation; unit presentation; localized content and catalog media
+- Date selection; guest count; server-authoritative availability search
+- Sign-in and sign-out for accounts provisioned outside the mobile app
+- Booking history; booking details (reads)
+- Pre-arrival information; directions; simple stay information (owner + confirmed only)
 - WhatsApp contact; phone contact
-- Notifications; deep links
 - Spanish UI; i18n-ready architecture
+
+## Current phase
+
+Available today:
+
+- The catalog, property/unit detail and availability search are **public** (no sign-in).
+- Creating, viewing or managing a booking requires an email + password account.
+- My Bookings and My Stay read real account data; My Stay shows Wi-Fi/arrival information
+  only for a confirmed booking owned by the signed-in guest.
+
+Deliberately not enabled yet:
+
+- Payments, booking creation and booking confirmation. The app states this clearly and
+  never fakes a charge, a confirmation or a reservation. In-app cancellation (which
+  triggers a refund) is likewise not enabled; guests are directed to contact the property.
+- Self-service account registration and password recovery. Accounts and passwords are
+  provisioned outside the mobile app through Supabase administration.
 
 ## Explicit exclusions
 
@@ -49,13 +66,16 @@ informational stay content.
 
 ## My Stay experience
 
-No persisted `Stay` table. The stay experience is derived from a confirmed
-booking plus property-local time. It is deliberately simple: Wi-Fi, breakfast info,
-checkout info, and contact actions (WhatsApp / Call). No operational requests.
+No persisted `Stay` table. The stay experience is derived from a confirmed booking plus
+the property's **private stay information** (Wi-Fi, breakfast, arrival directions),
+readable only by the authenticated owner of that confirmed booking through a secure RPC.
+It is deliberately simple: Wi-Fi, breakfast info, checkout info, and contact actions
+(WhatsApp / Call). No operational requests.
 
 ## Demo business
 
-The demo/reference property is the fictional **Ayni Mountain Cabins** (Ayni
-Hospitality), Sacred Valley, Cusco, Peru, with the units Killa, Inti, Wayra and Sumaq.
-All demo information is fictional and is used for seed data, screenshots and testing
-only. It must never be hardcoded into reusable domain logic.
+The demo/reference brand is the fictional **Ayni Hospitality**, with two properties:
+**Ayni Mountain Cabins** (Sacred Valley / Urubamba, units Killa, Inti, Wayra, Sumaq) and
+**Ayni Cusco** (historic centre, units Sisa, Illapa). All demo information is fictional and
+is used for seed data, screenshots and testing only. It must never be hardcoded into
+reusable domain logic.
