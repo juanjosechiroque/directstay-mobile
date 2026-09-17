@@ -149,6 +149,13 @@ Deep-link scheme: `directstay`.
   slot has no asset yet, so it stays a `license = NULL` placeholder. The app renders a
   local gradient instead of presenting an unverified asset whenever a path doesn't
   resolve.
+- To add or replace a photo on an existing property/unit row, use
+  `scripts/ingest-catalog-photo.sh` (macOS only — needs `sips`). It resizes/compresses the
+  image, uploads it to `catalog-media`, and updates that row's license/author/source/
+  attribution and localized `alt_text` in one step. It never creates properties or units;
+  create the row first (seed or Studio), then run the script with `--table`, `--id` and
+  `--storage-path`. Requires `SUPABASE_SERVICE_ROLE_KEY` exported for that shell only —
+  never commit it. See the script header for the full flag list.
 
 ## Excluded scope
 
