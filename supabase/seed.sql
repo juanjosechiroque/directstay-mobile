@@ -195,47 +195,113 @@ values
 on conflict (property_id, highlight_code) do nothing;
 
 -- ---------------------------------------------------------------------------
--- Catalog media (PLACEHOLDERS — no licensed assets exist yet)
--- storage_path values are placeholders that intentionally do not resolve; the app falls
--- back to a deterministic local gradient. license/author/source_url stay NULL until a
--- verifiable asset is added, and verification_note records the pending work.
+-- Catalog media
+-- Each asset is a real photo from Wikimedia Commons under a license accepted by
+-- property_images_license_known / unit_images_license_known (CC BY or CC BY-SA), with
+-- author/source_url/attribution_text recorded and license_verified_at set. The uploaded
+-- files live under storage_path in the catalog-media bucket. Killa's second slot has no
+-- second asset yet, so it stays an unresolved placeholder (falls back to the gradient).
 -- ---------------------------------------------------------------------------
 insert into public.property_images (
-  id, property_id, storage_path, sort_order, license, verification_note
+  id, property_id, storage_path, sort_order, source_url, author, license,
+  attribution_text, license_verified_at
 )
 values
   ('aaaaaaaa-0000-0000-0000-000000000001', '22222222-2222-2222-2222-222222222222',
-   'placeholders/ayni-mountain-cabins/hero', 0, null,
-   'Placeholder pending licensed asset (CC0 / public domain / compatible commercial).'),
+   'ayni-mountain-cabins/hero.jpg', 0,
+   'https://commons.wikimedia.org/wiki/File:Sacred_Valley_(around_Pisaq),_Peru.jpg',
+   'Emmanuel DYAN', 'CC_BY', 'Photo by Emmanuel DYAN, CC BY 2.0, via Wikimedia Commons',
+   now()),
   ('aaaaaaaa-0000-0000-0000-000000000002', '22222222-2222-2222-2222-222222222223',
-   'placeholders/ayni-cusco/hero', 0, null,
+   'ayni-cusco/hero.jpg', 0,
+   'https://commons.wikimedia.org/wiki/File:Plaza_de_Armas_Cusco,_Peru.jpg',
+   'Karl Norling', 'CC_BY', 'Photo by Karl Norling, CC BY 2.0, via Wikimedia Commons',
+   now())
+on conflict (id) do update set
+  storage_path = excluded.storage_path,
+  source_url = excluded.source_url,
+  author = excluded.author,
+  license = excluded.license,
+  attribution_text = excluded.attribution_text,
+  license_verified_at = excluded.license_verified_at,
+  verification_note = null,
+  updated_at = now();
+
+insert into public.unit_images (
+  id, unit_id, storage_path, sort_order, source_url, author, license,
+  attribution_text, license_verified_at
+)
+values
+  ('bbbbbbbb-0000-0000-0000-000000000001', '33333333-3333-3333-3333-333333333301',
+   'ayni-mountain-cabins/killa-1.jpg', 0,
+   'https://commons.wikimedia.org/wiki/File:Conner-prairie-log-cabin-interior.jpg',
+   'Derek Jensen (Tysto)', 'CC_BY',
+   'Photo by Derek Jensen (Tysto), CC BY 2.5, via Wikimedia Commons', now()),
+  ('bbbbbbbb-0000-0000-0000-000000000003', '33333333-3333-3333-3333-333333333302',
+   'ayni-mountain-cabins/inti-1.jpg', 0,
+   'https://commons.wikimedia.org/wiki/File:Mountain_Cabin.jpg',
+   'Jacob Ekaineck', 'CC_BY_SA',
+   'Photo by Jacob Ekaineck, CC BY-SA 4.0, via Wikimedia Commons', now()),
+  ('bbbbbbbb-0000-0000-0000-000000000004', '33333333-3333-3333-3333-333333333303',
+   'ayni-mountain-cabins/wayra-1.jpg', 0,
+   'https://commons.wikimedia.org/wiki/File:Black_Moshannon_cabin_interior.jpg',
+   'Ruhrfisch', 'CC_BY_SA', 'Photo by Ruhrfisch, CC BY-SA 4.0, via Wikimedia Commons', now()),
+  ('bbbbbbbb-0000-0000-0000-000000000005', '33333333-3333-3333-3333-333333333304',
+   'ayni-mountain-cabins/sumaq-1.jpg', 0,
+   'https://commons.wikimedia.org/wiki/File:The_Sacred_Valley,_Peru-2_(8445855270).jpg',
+   'Murray Foubister', 'CC_BY_SA',
+   'Photo by Murray Foubister, CC BY-SA 2.0, via Wikimedia Commons', now()),
+  ('bbbbbbbb-0000-0000-0000-000000000006', '33333333-3333-3333-3333-333333333305',
+   'ayni-cusco/sisa-1.jpg', 0,
+   'https://commons.wikimedia.org/wiki/File:Cozy_bedroom_with_two_beds_window_and_wall_art_in_a_simple_setting.jpg',
+   'Nenad Stojković', 'CC_BY',
+   'Photo by Nenad Stojković, CC BY 2.0, via Wikimedia Commons', now()),
+  ('bbbbbbbb-0000-0000-0000-000000000007', '33333333-3333-3333-3333-333333333306',
+   'ayni-cusco/illapa-1.jpg', 0,
+   'https://commons.wikimedia.org/wiki/File:Bedroom_large_double_bed.jpg',
+   'IFERREIRO', 'CC_BY_SA', 'Photo by IFERREIRO, CC BY-SA 3.0, via Wikimedia Commons', now())
+on conflict (id) do update set
+  storage_path = excluded.storage_path,
+  source_url = excluded.source_url,
+  author = excluded.author,
+  license = excluded.license,
+  attribution_text = excluded.attribution_text,
+  license_verified_at = excluded.license_verified_at,
+  verification_note = null,
+  updated_at = now();
+
+-- Killa's second slot has no second licensed asset yet; keep it an explicit pending
+-- placeholder (falls back to the gradient) rather than dropping the row.
+insert into public.unit_images (id, unit_id, storage_path, sort_order, license, verification_note)
+values
+  ('bbbbbbbb-0000-0000-0000-000000000002', '33333333-3333-3333-3333-333333333301',
+   'placeholders/ayni-mountain-cabins/killa-2', 1, null,
    'Placeholder pending licensed asset (CC0 / public domain / compatible commercial).')
 on conflict (id) do nothing;
 
-insert into public.unit_images (id, unit_id, storage_path, sort_order, license, verification_note)
+insert into public.property_image_translations (image_id, locale, alt_text)
 values
-  ('bbbbbbbb-0000-0000-0000-000000000001', '33333333-3333-3333-3333-333333333301',
-   'placeholders/ayni-mountain-cabins/killa-1', 0, null,
-   'Placeholder pending licensed asset (CC0 / public domain / compatible commercial).'),
-  ('bbbbbbbb-0000-0000-0000-000000000002', '33333333-3333-3333-3333-333333333301',
-   'placeholders/ayni-mountain-cabins/killa-2', 1, null,
-   'Placeholder pending licensed asset (CC0 / public domain / compatible commercial).'),
-  ('bbbbbbbb-0000-0000-0000-000000000003', '33333333-3333-3333-3333-333333333302',
-   'placeholders/ayni-mountain-cabins/inti-1', 0, null,
-   'Placeholder pending licensed asset (CC0 / public domain / compatible commercial).'),
-  ('bbbbbbbb-0000-0000-0000-000000000004', '33333333-3333-3333-3333-333333333303',
-   'placeholders/ayni-mountain-cabins/wayra-1', 0, null,
-   'Placeholder pending licensed asset (CC0 / public domain / compatible commercial).'),
-  ('bbbbbbbb-0000-0000-0000-000000000005', '33333333-3333-3333-3333-333333333304',
-   'placeholders/ayni-mountain-cabins/sumaq-1', 0, null,
-   'Placeholder pending licensed asset (CC0 / public domain / compatible commercial).'),
-  ('bbbbbbbb-0000-0000-0000-000000000006', '33333333-3333-3333-3333-333333333305',
-   'placeholders/ayni-cusco/sisa-1', 0, null,
-   'Placeholder pending licensed asset (CC0 / public domain / compatible commercial).'),
-  ('bbbbbbbb-0000-0000-0000-000000000007', '33333333-3333-3333-3333-333333333306',
-   'placeholders/ayni-cusco/illapa-1', 0, null,
-   'Placeholder pending licensed asset (CC0 / public domain / compatible commercial).')
-on conflict (id) do nothing;
+  ('aaaaaaaa-0000-0000-0000-000000000001', 'es', 'Cabañas de madera en el Valle Sagrado, con vista a la montaña.'),
+  ('aaaaaaaa-0000-0000-0000-000000000001', 'en', 'Wooden cabins in the Sacred Valley, with mountain views.'),
+  ('aaaaaaaa-0000-0000-0000-000000000002', 'es', 'Fachada colonial en el centro histórico de Cusco.'),
+  ('aaaaaaaa-0000-0000-0000-000000000002', 'en', 'Colonial facade in Cusco''s historic centre.')
+on conflict (image_id, locale) do update set alt_text = excluded.alt_text;
+
+insert into public.unit_image_translations (image_id, locale, alt_text)
+values
+  ('bbbbbbbb-0000-0000-0000-000000000001', 'es', 'Interior de cabaña de madera con chimenea.'),
+  ('bbbbbbbb-0000-0000-0000-000000000001', 'en', 'Wood cabin interior with a fireplace.'),
+  ('bbbbbbbb-0000-0000-0000-000000000003', 'es', 'Cabaña de montaña vista desde el exterior.'),
+  ('bbbbbbbb-0000-0000-0000-000000000003', 'en', 'Mountain cabin seen from outside.'),
+  ('bbbbbbbb-0000-0000-0000-000000000004', 'es', 'Interior rústico de cabaña con chimenea de leña.'),
+  ('bbbbbbbb-0000-0000-0000-000000000004', 'en', 'Rustic cabin interior with a wood fireplace.'),
+  ('bbbbbbbb-0000-0000-0000-000000000005', 'es', 'Vista panorámica del Valle Sagrado.'),
+  ('bbbbbbbb-0000-0000-0000-000000000005', 'en', 'Panoramic view of the Sacred Valley.'),
+  ('bbbbbbbb-0000-0000-0000-000000000006', 'es', 'Habitación luminosa con dos camas y ventana.'),
+  ('bbbbbbbb-0000-0000-0000-000000000006', 'en', 'Bright room with two beds and a window.'),
+  ('bbbbbbbb-0000-0000-0000-000000000007', 'es', 'Habitación con cama matrimonial.'),
+  ('bbbbbbbb-0000-0000-0000-000000000007', 'en', 'Room with a double bed.')
+on conflict (image_id, locale) do update set alt_text = excluded.alt_text;
 
 -- ---------------------------------------------------------------------------
 -- Private stay information (no public read path)
