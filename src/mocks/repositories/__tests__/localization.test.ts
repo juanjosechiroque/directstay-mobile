@@ -25,8 +25,8 @@ describe('localized mock catalog', () => {
 
     expect(es.locationLabel).toContain('Valle Sagrado');
     expect(en.locationLabel).toContain('Sacred Valley');
-    expect(es.breakfast).not.toBe(en.breakfast);
-    expect(es.directions).not.toBe(en.directions);
+    expect(es.shortDescription).not.toBe(en.shortDescription);
+    expect(es.description).not.toBe(en.description);
 
     // Stable, locale-independent data must not change.
     expect(es.name).toBe(en.name);

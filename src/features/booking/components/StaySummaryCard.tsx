@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { Card, DateRange, Divider, InfoRow, MockImage, PriceText } from '@/components';
+import { Card, CatalogImage, DateRange, Divider, InfoRow, PriceText } from '@/components';
 import type { Quote } from '@/features/booking/types';
 import type { Unit } from '@/features/property/types';
 import { colors, fontSize, spacing } from '@/lib/theme';
@@ -17,7 +17,7 @@ export function StaySummaryCard({ unit, quote }: StaySummaryCardProps) {
   return (
     <Card>
       <View style={styles.unitRow}>
-        <MockImage image={unit.images[0]} height={64} style={styles.thumb} />
+        <CatalogImage image={unit.images[0] ?? null} height={64} style={styles.thumb} />
         <View style={styles.unitText}>
           <Text style={styles.unitName}>{unit.name}</Text>
           <DateRange checkIn={quote.checkIn} checkOut={quote.checkOut} />

@@ -7,9 +7,16 @@ export interface AvailabilityQuery {
   guests: number;
 }
 
-/** A unit returned by an availability search, with the server-provided price snapshot. */
+/**
+ * A unit returned by the availability RPC, with the property context and the
+ * server-provided price snapshot. The client never recomputes the payable amount.
+ */
 export interface AvailableUnit {
   unit: Unit;
+  propertyId: string;
+  propertyName: string;
+  propertySlug: string;
+  propertyTimezone: string;
   nights: number;
   totalAmountMinor: number;
   currency: string;

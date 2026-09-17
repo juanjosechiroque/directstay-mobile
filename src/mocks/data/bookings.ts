@@ -1,7 +1,7 @@
 import type { Booking, BookingStatus, CancellationReason } from '@/features/booking/types';
 import { addDays, diffInNights, todayIso, type IsoDate } from '@/lib/dates';
 
-import { DEMO_PROFILE_ID, OTHER_GUEST_PROFILE_ID } from './property';
+import { DEMO_PROFILE_ID, MOCK_PROPERTY_BASE, OTHER_GUEST_PROFILE_ID } from './property';
 import {
   INTI_UNIT_ID,
   KILLA_UNIT_ID,
@@ -60,6 +60,13 @@ function seedBooking(input: SeedBookingInput): Booking {
     guestProfileId: input.profileId,
     unitId: unit.id,
     unitName: unit.name,
+    propertyId: unit.propertyId,
+    propertyName: MOCK_PROPERTY_BASE.name,
+    propertyTimezone: MOCK_PROPERTY_BASE.timezone,
+    propertyCheckInTime: MOCK_PROPERTY_BASE.checkInTime,
+    propertyCheckOutTime: MOCK_PROPERTY_BASE.checkOutTime,
+    propertyWhatsapp: MOCK_PROPERTY_BASE.contact.whatsapp,
+    propertyPhone: MOCK_PROPERTY_BASE.contact.phone,
     status: input.status,
     checkIn: input.checkIn,
     checkOut,

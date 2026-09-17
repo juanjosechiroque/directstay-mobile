@@ -8,8 +8,17 @@ that changes these rules must update this document first.
 ```text
 organizations
 properties
+property_translations
+property_images
+property_image_translations
+property_highlights
+property_stay_information
 units
+unit_translations
 unit_images
+unit_image_translations
+unit_amenities
+amenities
 availability_blocks
 profiles
 bookings
@@ -20,11 +29,61 @@ Relationships:
 
 ```text
 auth.users → profiles → bookings → payments
-organizations → properties → units → {unit_images, availability_blocks, bookings}
+organizations → properties → units → {unit_images, unit_amenities, availability_blocks, bookings}
+properties → property_translations / property_images / property_highlights / property_stay_information
+unit_images → unit_image_translations
+property_images → property_image_translations
 ```
 
 No `stays`, `extras`, `booking_extras`, `service_requests`, `reviews`, `host_chat`,
 `housekeeping` tables.
+
+## Organization, property and unit
+
+- One organization (brand) per deployment, with one or more properties. The client selects
+  it with `EXPO_PUBLIC_ORGANIZATION_SLUG`; the server scopes every public read to that
+  organization's active slug. The slug is stable and unique.
+- `organizations.is_active` and `properties.is_active` / `units.is_active` are part of the
+  availability and catalog rules, not cosmetic flags.
+- `Property`/`Unit` are generic; the demo business (Ayni) is data only.
+
+## Localized content (decision)
+
+Public catalog copy is stored in **translation tables** keyed by `(entity_id, locale)`:
+`property_translations` (`name`, `location_label`, `short_description`, `description`) and
+`unit_translations` (`summary`, `description`). Base tables keep a default-language column
+as a fallback. The public read model resolves the requested locale; screens never localize
+data by hand. Proper nouns (unit names) are not translated. Spanish is the default; the
+schema already supports English.
+
+## Public catalog vs private stay information
+
+- **Public** (anon + authenticated): the active organization, its active properties and
+  units, localized content, public amenities, property highlights and catalog media. This
+  is served only through the `get_catalog` / `get_unit` / `search_available_units` RPCs,
+  always scoped to the active organization.
+- **Private**: `property_stay_information` (Wi-Fi network/password, breakfast, arrival
+  instructions, directions) has no public read path. RLS denies direct access to every
+  client role; the only read is `get_stay_information(booking_id)`.
+- **Access rule (frozen for this MVP):** private stay information is readable **only by
+  the authenticated owner of a booking whose status is `CONFIRMED`**. `PENDING_PAYMENT`,
+  `CANCELED` and `REFUNDED` never enable access, and no other user ever can.
+
+## Images and licensing
+
+- Catalog media lives in the public-read storage bucket `catalog-media`. No `anon` or
+  `authenticated` role has insert/update/delete access; uploads happen out of band.
+- Every image carries `source_url`, `author`, `license`, `attribution_text`,
+  `license_verified_at` and `verification_note`, plus localized `alt_text` in its
+  translation table. Allowed licenses: `CC0`, `PUBLIC_DOMAIN`, `CC_BY`, `CC_BY_SA`,
+  `COMMERCIAL`. A placeholder with an unknown/null license is rendered as a local
+  gradient, never presented as a licensed photo.
+
+## Profile creation
+
+- A profile row is created automatically by the `on_auth_user_created` trigger when a new
+  `auth.users` row appears (including the `display_name` from signup metadata). Clients
+  never receive an INSERT policy and can only read/update their own profile.
 
 ## Dates and timezone (frozen)
 
@@ -134,10 +193,24 @@ creation RPC cancels expired pending bookings for the unit before it inserts. To
 these rules physically prevent overlapping claims, rather than merely checking them in
 application code.
 
+## Booking creation availability (this phase)
+
+The transactional `create_booking` function is implemented, documented and covered by
+pgTAP, but it is **revealed to no client role**: `EXECUTE` is granted only to
+`service_role`, and the mobile app never calls it. Reservation creation and payment
+confirmation stay server-side and are enabled only in the payments (Stripe) phase. The
+mobile client must not simulate or fabricate a reservation or a payment.
+
 ## Security posture
 
+- `organizations` / `properties` / `units` / localized content / amenities / highlights /
+  catalog media: public read for `anon` and `authenticated`, restricted to the active,
+  active organization.
 - `profiles`: owner-only read/update.
-- `bookings`: owner-only read; creation through parameterized RPCs under RLS.
+- `bookings`: owner-only read; creation through a parameterized RPC that is not exposed to
+  clients yet.
 - `payments`: not client-readable (server/webhook only).
-- Property/unit catalog: readable by authenticated guests; mutations service-role/RPC only.
+- `property_stay_information`: no direct client read; owner-of-CONFIRMED-only via RPC.
+- Catalog reads never include Wi-Fi, access codes, arrival instructions or PII.
+- Every SECURITY DEFINER function pins `search_path = ''`.
 - Stripe secret keys and Supabase service-role keys never exist in the mobile app.

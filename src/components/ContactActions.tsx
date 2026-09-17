@@ -6,14 +6,18 @@ import { Button } from '@/components';
 import { colors, fontSize, spacing } from '@/lib/theme';
 
 interface ContactActionsProps {
-  whatsapp: string;
-  phone: string;
+  whatsapp: string | null;
+  phone: string | null;
 }
 
+/** Property contact actions. Renders nothing when no contact detail is configured. */
 export function ContactActions({ whatsapp, phone }: ContactActionsProps) {
   const { t } = useTranslation();
   const [failed, setFailed] = useState(false);
-  const digits = whatsapp.replace(/[^0-9]/g, '');
+
+  if (!whatsapp && !phone) {
+    return <Text style={styles.feedback}>{t('common.contactUnavailable')}</Text>;
+  }
 
   const open = async (url: string) => {
     setFailed(false);
@@ -32,18 +36,22 @@ export function ContactActions({ whatsapp, phone }: ContactActionsProps) {
   return (
     <View style={styles.container}>
       <View style={styles.row}>
-        <Button
-          title={t('bookings.whatsappCta')}
-          variant="secondary"
-          onPress={() => void open(`https://wa.me/${digits}`)}
-          style={styles.flex}
-        />
-        <Button
-          title={t('bookings.callCta')}
-          variant="ghost"
-          onPress={() => void open(`tel:${phone}`)}
-          style={styles.flex}
-        />
+        {whatsapp ? (
+          <Button
+            title={t('bookings.whatsappCta')}
+            variant="secondary"
+            onPress={() => void open(`https://wa.me/${whatsapp.replace(/[^0-9]/g, '')}`)}
+            style={styles.flex}
+          />
+        ) : null}
+        {phone ? (
+          <Button
+            title={t('bookings.callCta')}
+            variant="ghost"
+            onPress={() => void open(`tel:${phone}`)}
+            style={styles.flex}
+          />
+        ) : null}
       </View>
       {failed ? (
         <Text style={styles.feedback} accessibilityLiveRegion="polite">

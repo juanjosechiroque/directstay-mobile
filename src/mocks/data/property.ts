@@ -1,13 +1,13 @@
 import type { Property } from '@/features/property/types';
+import type { StayInformation } from '@/features/stay/types';
 import type { Locale } from '@/lib/locale';
 
 /**
- * DEMO / MOCK DATA ONLY.
+ * DEMO / MOCK FIXTURE DATA (tests only).
  *
- * Ayni Mountain Cabins is fictional reference data for screenshots, demos and tests. It
- * lives here and must never be reused as reusable domain logic. Stable fields mirror
- * `supabase/seed.sql` (timezone America/Lima, check-in 15:00, check-out 12:00, USD); the
- * marketing copy is localized per locale.
+ * Ayni Mountain Cabins is fictional reference data for unit tests. It lives here and must
+ * never be reused as reusable domain logic. This file is not part of the runtime
+ * composition; the app reads the same shape from Supabase.
  */
 
 export const ORGANIZATION_ID = '11111111-1111-1111-1111-111111111111';
@@ -19,8 +19,6 @@ export interface PropertyLocalizedContent {
   locationLabel: string;
   shortDescription: string;
   description: string;
-  breakfast: string;
-  directions: string;
 }
 
 /** Locale-independent property fields (schedule, contact, media, highlights). */
@@ -35,12 +33,8 @@ export const MOCK_PROPERTY_BASE = {
   highlights: ['mountain_view', 'local_hosts', 'breakfast_included', 'direct_booking', 'nature'],
   heroImage: {
     id: 'ayni-hero',
-    from: '#26453C',
-    to: '#7C9A86',
-  },
-  wifi: {
-    network: 'AyniGuest',
-    password: 'valle-sagrado',
+    url: null,
+    altText: null,
   },
   contact: {
     whatsapp: '+51999000111',
@@ -55,23 +49,27 @@ const PROPERTY_CONTENT: Record<Locale, PropertyLocalizedContent> = {
       'Cabañas de montaña de gestión familiar, rodeadas de eucaliptos y frente a los Andes.',
     description:
       'Ayni Mountain Cabins es un pequeño refugio familiar en el Valle Sagrado. Cada cabaña se construyó con madera local y está pensada para descansar: chimenea, vistas a la montaña y silencio. Atendemos directamente a nuestros huéspedes, sin intermediarios.',
-    breakfast:
-      'Desayuno andino con pan de maíz, frutas del valle y café de la selva, servido de 7:00 a 9:30 en el salón principal.',
-    directions:
-      'Estamos a 15 minutos de Urubamba por la carretera a Ollantaytambo, ingreso señalizado en el km 4. Coordinamos traslado privado desde el aeropuerto de Cusco.',
   },
   en: {
     locationLabel: 'Sacred Valley, Cusco, Peru',
     shortDescription: 'Family-run mountain cabins surrounded by eucalyptus and facing the Andes.',
     description:
       'Ayni Mountain Cabins is a small family refuge in the Sacred Valley. Each cabin was built with local timber and designed for rest: fireplace, mountain views and quiet. We host our guests directly, with no intermediaries.',
-    breakfast:
-      'Andean breakfast with corn bread, valley fruit and jungle coffee, served from 7:00 to 9:30 in the main lounge.',
-    directions:
-      'We are 15 minutes from Urubamba on the road to Ollantaytambo, signposted at km 4. We can arrange a private transfer from Cusco airport.',
   },
 };
 
 export function getMockProperty(locale: Locale): Property {
   return { ...MOCK_PROPERTY_BASE, ...PROPERTY_CONTENT[locale] };
 }
+
+/** Private stay fixture (tests only). Never rendered from the public catalog. */
+export const MOCK_STAY_INFORMATION: StayInformation = {
+  wifiNetwork: 'AyniGuest',
+  wifiPassword: 'valle-sagrado',
+  breakfastInfo:
+    'Desayuno andino con pan de maíz, frutas del valle y café de la selva, servido de 7:00 a 9:30 en el salón principal.',
+  checkinInstructions:
+    'Al llegar, preséntate en la recepción del salón principal. Si llegas después de las 20:00, escríbenos por WhatsApp.',
+  directions:
+    'Estamos a 15 minutos de Urubamba por la carretera a Ollantaytambo, ingreso señalizado en el km 4.',
+};

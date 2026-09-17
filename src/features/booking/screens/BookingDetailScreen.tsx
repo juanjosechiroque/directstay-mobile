@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import {
   Button,
@@ -18,10 +18,9 @@ import {
 } from '@/components';
 import { ContactActions } from '@/components/ContactActions';
 import { BookingStatusBadge } from '@/features/booking/components/BookingStatusBadge';
-import { useBooking, useCancelBooking } from '@/features/booking/queries/use-booking';
+import { useBooking } from '@/features/booking/queries/use-booking';
 import type { Booking } from '@/features/booking/types';
-import { useProperty } from '@/features/property/queries/use-property';
-import type { Property } from '@/features/property/types';
+import { useSessionGuard } from '@/features/auth/guards/use-session-guard';
 import { formatInstant } from '@/lib/dates';
 import { formatCancellationDeadline, isCancellationEligible } from '@/lib/dates/cancellation';
 import { getErrorCode } from '@/lib/errors';
@@ -44,14 +43,22 @@ function StatusMessage({ booking }: { booking: Booking }) {
 export function BookingDetailScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
+  const guard = useSessionGuard('/bookings');
   const params = useLocalSearchParams<{ bookingId?: string }>();
   const bookingId = typeof params.bookingId === 'string' ? params.bookingId : undefined;
 
-  const bookingQuery = useBooking(bookingId);
-  const propertyQuery = useProperty();
-  const cancelBooking = useCancelBooking();
+  const bookingQuery = useBooking(guard === 'signedIn' ? bookingId : undefined);
 
-  if (bookingQuery.isLoading || propertyQuery.isLoading) {
+  if (guard !== 'signedIn') {
+    return (
+      <Screen>
+        <ScreenHeader title={t('bookings.detailTitle')} />
+        <LoadingState message={t('common.loading')} />
+      </Screen>
+    );
+  }
+
+  if (bookingQuery.isLoading) {
     return (
       <Screen>
         <ScreenHeader title={t('bookings.detailTitle')} />
@@ -84,31 +91,13 @@ export function BookingDetailScreen() {
   }
 
   const booking = bookingQuery.data;
-  const property: Property | undefined = propertyQuery.data;
-
   const eligible =
-    booking.status === 'CONFIRMED' && property
-      ? isCancellationEligible({
-          checkIn: booking.checkIn,
-          checkInTime: property.checkInTime,
-          timeZone: property.timezone,
-        })
-      : false;
-
-  const handleCancel = () => {
-    Alert.alert(t('bookings.cancelConfirmTitle'), t('bookings.cancelConfirmMessage'), [
-      { text: t('bookings.cancelConfirmDismiss'), style: 'cancel' },
-      {
-        text: t('bookings.cancelConfirmAction'),
-        style: 'destructive',
-        onPress: () =>
-          cancelBooking.mutate(booking.id, {
-            onSuccess: () =>
-              Alert.alert(t('bookings.detailTitle'), t('bookings.cancelSuccessMessage')),
-          }),
-      },
-    ]);
-  };
+    booking.status === 'CONFIRMED' &&
+    isCancellationEligible({
+      checkIn: booking.checkIn,
+      checkInTime: booking.propertyCheckInTime,
+      timeZone: booking.propertyTimezone,
+    });
 
   return (
     <Screen scroll>
@@ -119,6 +108,7 @@ export function BookingDetailScreen() {
           <Text style={styles.unit}>{booking.unitName}</Text>
           <BookingStatusBadge status={booking.status} />
         </View>
+        {booking.propertyName ? <Text style={styles.property}>{booking.propertyName}</Text> : null}
         <StatusMessage booking={booking} />
         <Divider spaced />
         <InfoRow
@@ -181,49 +171,27 @@ export function BookingDetailScreen() {
 
       {booking.status === 'CONFIRMED' ? (
         <Section title={t('bookings.cancellationTitle')}>
-          {!property ? (
-            <Card>
-              <Text style={styles.statusMessage}>{t('error.title')}</Text>
-              <Button
-                title={t('common.retry')}
-                variant="ghost"
-                onPress={() => void propertyQuery.refetch()}
-                style={styles.sectionAction}
-              />
-            </Card>
-          ) : eligible ? (
-            <Card style={styles.actionsCard}>
+          <Card style={styles.actionsCard}>
+            {eligible ? (
               <Text style={styles.deadline}>
                 {t('bookings.cancelDeadline', {
                   date: formatCancellationDeadline(
                     booking.checkIn,
-                    property.checkInTime,
+                    booking.propertyCheckInTime,
                     i18n.language,
                   ),
                 })}
               </Text>
-              {cancelBooking.isError ? (
-                <Text style={styles.errorText}>{t(getErrorCode(cancelBooking.error))}</Text>
-              ) : null}
-              <Button
-                title={
-                  cancelBooking.isPending ? t('bookings.cancelingCta') : t('bookings.cancelCta')
-                }
-                variant="danger"
-                fullWidth
-                loading={cancelBooking.isPending}
-                disabled={cancelBooking.isPending}
-                onPress={handleCancel}
-              />
-            </Card>
-          ) : (
-            <Card style={styles.actionsCard}>
-              <Text style={styles.notAllowedTitle}>{t('bookings.cancelNotAllowedTitle')}</Text>
-              <Text style={styles.statusMessage}>{t('bookings.cancelNotAllowedMessage')}</Text>
-              <Text style={styles.contactLabel}>{t('bookings.contactProperty')}</Text>
-              <ContactActions whatsapp={property.contact.whatsapp} phone={property.contact.phone} />
-            </Card>
-          )}
+            ) : (
+              <>
+                <Text style={styles.notAllowedTitle}>{t('bookings.cancelNotAllowedTitle')}</Text>
+                <Text style={styles.statusMessage}>{t('bookings.cancelNotAllowedMessage')}</Text>
+              </>
+            )}
+            <Text style={styles.statusMessage}>{t('bookings.cancelNotEnabledMessage')}</Text>
+            <Text style={styles.contactLabel}>{t('bookings.contactProperty')}</Text>
+            <ContactActions whatsapp={booking.propertyWhatsapp} phone={booking.propertyPhone} />
+          </Card>
         </Section>
       ) : null}
 
@@ -257,6 +225,11 @@ const styles = StyleSheet.create({
     color: colors.text,
     flexShrink: 1,
   },
+  property: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    marginBottom: spacing.xs,
+  },
   statusMessage: {
     fontSize: fontSize.sm,
     color: colors.textMuted,
@@ -279,13 +252,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     fontWeight: '600',
     color: colors.text,
-  },
-  sectionAction: {
-    marginTop: spacing.sm,
-  },
-  errorText: {
-    fontSize: fontSize.sm,
-    color: colors.danger,
   },
   footer: {
     marginTop: spacing.xl,

@@ -2,14 +2,22 @@
  * Application-level error with an i18n key as its message.
  *
  * UI code translates `error.code` directly, so repository failures never carry
- * hardcoded copy. Mock repositories throw this today; a Supabase adapter maps Postgres
- * error codes (`23P01`, RLS denials, RPC errors) to the same codes later.
+ * hardcoded copy. Mock repositories and the Supabase adapters map their failures
+ * (Postgres error codes, RLS denials, auth errors) to these codes.
  */
 export type AppErrorCode =
   | 'error.notFound'
   | 'error.unavailable'
   | 'error.cancelNotAllowed'
   | 'error.validation'
+  | 'error.sessionRequired'
+  | 'error.paymentsNotEnabled'
+  | 'error.authInvalidCredentials'
+  | 'error.authEmailInUse'
+  | 'error.authEmailNotConfirmed'
+  | 'error.authWeakPassword'
+  | 'error.authFailed'
+  | 'error.configuration'
   | 'error.generic';
 
 export class AppError extends Error {

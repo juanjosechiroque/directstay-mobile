@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { Card, MockImage, PriceText } from '@/components';
+import { Card, CatalogImage, PriceText } from '@/components';
 import type { Unit } from '@/features/property/types';
 import { colors, fontSize, radius, spacing } from '@/lib/theme';
 
@@ -21,7 +21,7 @@ export function UnitCard({ unit, onPress }: UnitCardProps) {
       style={({ pressed }) => [styles.pressable, pressed && styles.pressed]}
     >
       <Card padded={false} style={styles.card}>
-        <MockImage image={unit.images[0]} height={150} borderRadius={0} />
+        <CatalogImage image={unit.images[0] ?? null} height={150} borderRadius={0} />
         <View style={styles.body}>
           <View style={styles.titleRow}>
             <Text style={styles.name}>{unit.name}</Text>

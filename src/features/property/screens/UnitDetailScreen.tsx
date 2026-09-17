@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
@@ -6,10 +6,10 @@ import {
   Badge,
   Button,
   Card,
+  CatalogImage,
   EmptyState,
   ErrorState,
   LoadingState,
-  MockImage,
   PriceText,
   Screen,
   ScreenHeader,
@@ -17,6 +17,7 @@ import {
 } from '@/components';
 import { useUnit } from '@/features/property/queries/use-property';
 import type { AmenityCode } from '@/features/property/types';
+import { useSession } from '@/features/auth/queries/use-session';
 import { getErrorCode } from '@/lib/errors';
 import { colors, fontSize, radius, shadows, spacing } from '@/lib/theme';
 import { toIsoDateParam, toPositiveIntParam } from '@/lib/validation';
@@ -37,6 +38,7 @@ export function UnitDetailScreen() {
   const checkIn = toIsoDateParam(params.checkIn);
   const checkOut = toIsoDateParam(params.checkOut);
   const guests = toPositiveIntParam(params.guests);
+  const { status: sessionStatus } = useSession();
 
   const galleryWidth = Math.min(width - spacing.lg * 2, 420);
 
@@ -44,14 +46,21 @@ export function UnitDetailScreen() {
     if (!unitId) {
       return;
     }
-    if (checkIn && checkOut && guests) {
-      router.push({
-        pathname: '/booking/review',
-        params: { unitId, checkIn, checkOut, guests: String(guests) },
-      });
+    if (!checkIn || !checkOut || !guests) {
+      router.push('/search');
       return;
     }
-    router.push('/search');
+    // Booking requires an account. The redirect keeps only non-sensitive context
+    // (unit + business dates + guest count); guest PII never enters a URL.
+    if (sessionStatus !== 'signedIn') {
+      const redirect = `/booking/review?unitId=${unitId}&checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}`;
+      router.push({ pathname: '/login', params: { redirect } } as Href);
+      return;
+    }
+    router.push({
+      pathname: '/booking/review',
+      params: { unitId, checkIn, checkOut, guests: String(guests) },
+    });
   };
 
   if (unitQuery.isLoading) {
@@ -102,7 +111,7 @@ export function UnitDetailScreen() {
         contentContainerStyle={styles.gallery}
       >
         {unit.images.map((image, index) => (
-          <MockImage
+          <CatalogImage
             key={image.id}
             image={image}
             height={240}
@@ -112,7 +121,7 @@ export function UnitDetailScreen() {
             <Text style={styles.galleryCaption}>
               {t('unit.imageAlt', { name: unit.name, index: index + 1 })}
             </Text>
-          </MockImage>
+          </CatalogImage>
         ))}
       </ScrollView>
 

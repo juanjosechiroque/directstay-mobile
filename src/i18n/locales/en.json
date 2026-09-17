@@ -12,7 +12,8 @@
     "loading": "Loading…",
     "linkUnavailable": "We couldn't open the link on this device.",
     "seeDetails": "See details",
-    "notAvailable": "Not available"
+    "notAvailable": "Not available",
+    "contactUnavailable": "The property hasn't published contact details yet."
   },
   "tabs": {
     "home": "Home",
@@ -51,7 +52,9 @@
     "searchCta": "Check availability",
     "featuredTitle": "Featured cabins",
     "featuredSubtitle": "Pick the unit that fits your trip best.",
-    "allUnits": "View all cabins"
+    "allUnits": "View all cabins",
+    "emptyTitle": "Catalog unavailable",
+    "emptyMessage": "The configured organization has no active properties right now."
   },
   "search": {
     "title": "Check availability",
@@ -147,7 +150,12 @@
     "pendingMessage": "The booking is not confirmed yet. Check My bookings to complete it.",
     "goToBooking": "View my booking",
     "goToBookings": "Go to My bookings",
-    "demoNote": "Remember: this whole flow is a local simulation, with no real payments."
+    "demoNote": "Remember: this whole flow is a local simulation, with no real payments.",
+    "paymentsUnavailableBadge": "Payments not enabled",
+    "paymentsUnavailableTitle": "Payment isn't available yet",
+    "paymentsUnavailableMessage": "We don't process payments or confirm bookings from the app yet. Once payment is available, you will be able to book this cabin without leaving DirectStay.",
+    "paymentsUnavailableCta": "Payment not available yet",
+    "paymentsUnavailableNote": "No booking was created and no charge was made."
   },
   "bookings": {
     "title": "My bookings",
@@ -173,6 +181,7 @@
     "cancelingCta": "Canceling…",
     "cancelNotAllowedTitle": "Cancellation unavailable",
     "cancelNotAllowedMessage": "Confirmed bookings can be canceled until 24 hours before check-in. For last-minute changes, contact the property directly.",
+    "cancelNotEnabledMessage": "In-app cancellation will be enabled together with payments. For now, message or call the property.",
     "cancelDeadline": "You can cancel until {{date}}.",
     "cancelConfirmTitle": "Cancel booking",
     "cancelConfirmMessage": "A full refund will be requested. This action cannot be undone.",
@@ -206,16 +215,29 @@
     "contactTitle": "Contact",
     "whatsappCta": "WhatsApp",
     "callCta": "Call",
-    "demoNote": "Contact links are for demonstration only."
+    "demoNote": "Contact links are for demonstration only.",
+    "privacyNote": "This information is private and shown only to the confirmed booking."
+  },
+  "auth": {
+    "loginTitle": "Sign in",
+    "loginSubtitle": "Sign in with your email to see your bookings and stay information.",
+    "email": "Email",
+    "password": "Password",
+    "passwordHelper": "At least 6 characters.",
+    "signInCta": "Sign in",
+    "signingInCta": "Signing in…",
+    "signOutCta": "Sign out"
   },
   "profile": {
     "title": "Profile",
+    "accountSubtitle": "Your DirectStay account.",
     "demoAccount": "Demo session",
     "nameLabel": "Name",
     "emailLabel": "Email",
     "phoneLabel": "Phone",
     "memberSinceLabel": "Member since",
     "languageTitle": "Language",
+    "sessionTitle": "Session",
     "languageEs": "Español",
     "languageEn": "English",
     "demoStatesTitle": "Demo states",
@@ -240,7 +262,8 @@
     "nameTooShort": "The name is too short.",
     "emailRequired": "Enter your email.",
     "emailInvalid": "That email doesn't look valid.",
-    "phoneInvalid": "That phone number doesn't look valid."
+    "phoneInvalid": "That phone number doesn't look valid.",
+    "authCredentialsRequired": "Enter your email and password."
   },
   "error": {
     "title": "We couldn't load the information",
@@ -248,6 +271,14 @@
     "notFound": "We couldn't find what you were looking for.",
     "unavailable": "The cabin is no longer available for those dates.",
     "cancelNotAllowed": "This booking can no longer be canceled in the app.",
-    "validation": "Please review the information you entered."
+    "validation": "Please review the information you entered.",
+    "sessionRequired": "Sign in to continue.",
+    "paymentsNotEnabled": "Payment isn't available yet.",
+    "configuration": "The application configuration is missing.",
+    "authInvalidCredentials": "The email or password is incorrect.",
+    "authEmailInUse": "An account already exists for that email.",
+    "authEmailNotConfirmed": "Confirm your email before signing in.",
+    "authWeakPassword": "The password is too weak.",
+    "authFailed": "We couldn't complete authentication. Please try again."
   }
 }

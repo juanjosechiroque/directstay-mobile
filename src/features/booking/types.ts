@@ -5,6 +5,9 @@ import type { IsoDate } from '@/lib/dates';
  *
  * Independent from React Native, Supabase and Stripe. Money is always integer minor
  * units plus a currency; booking dates follow `[checkIn, checkOut)`.
+ *
+ * A booking carries the public property context (name, schedule, contact) so the UI can
+ * render a booking without a second catalog read and without mixing in private data.
  */
 
 export const BOOKING_STATUSES = ['PENDING_PAYMENT', 'CONFIRMED', 'CANCELED', 'REFUNDED'] as const;
@@ -20,6 +23,13 @@ export interface Booking {
   guestProfileId: string;
   unitId: string;
   unitName: string;
+  propertyId: string;
+  propertyName: string;
+  propertyTimezone: string;
+  propertyCheckInTime: string;
+  propertyCheckOutTime: string;
+  propertyWhatsapp: string | null;
+  propertyPhone: string | null;
   status: BookingStatus;
   checkIn: IsoDate;
   checkOut: IsoDate;
@@ -65,11 +75,11 @@ export interface CreateBookingInput extends QuoteRequest {
 }
 
 /**
- * Result of the mocked payment step. It is explicitly not a real payment.
+ * Test-only shape used by the in-memory mock repository's hold/overlap tests.
  *
- * `EXPIRED` means the 5-minute hold ended before confirmation, so the booking was
- * auto-canceled with `HOLD_EXPIRED` and never took payment — it must not be shown as
- * confirmed.
+ * There is no runtime payment simulation: the mobile client cannot create bookings or
+ * confirm payments in this phase. The transactional `create_booking` RPC exists in
+ * PostgreSQL for the future payments phase and is revoked from anon/authenticated.
  */
 export type PaymentSimulationOutcome = 'CONFIRMED' | 'EXPIRED';
 

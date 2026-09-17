@@ -4,31 +4,25 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import {
   Button,
+  CatalogImage,
   EmptyState,
   ErrorState,
   LoadingState,
-  MockImage,
   Screen,
   Section,
 } from '@/components';
 import { PropertyHighlights } from '@/features/property/components/PropertyHighlights';
 import { UnitCard } from '@/features/property/components/UnitCard';
-import { useProperty, useUnits } from '@/features/property/queries/use-property';
+import { useCatalog } from '@/features/property/queries/use-property';
 import { getErrorCode } from '@/lib/errors';
 import { colors, fontSize, spacing } from '@/lib/theme';
 
 export function HomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const propertyQuery = useProperty();
-  const unitsQuery = useUnits();
+  const catalogQuery = useCatalog();
 
-  const retry = () => {
-    void propertyQuery.refetch();
-    void unitsQuery.refetch();
-  };
-
-  if (propertyQuery.isLoading) {
+  if (catalogQuery.isLoading) {
     return (
       <Screen scroll>
         <LoadingState message={t('common.loading')} />
@@ -36,32 +30,42 @@ export function HomeScreen() {
     );
   }
 
-  if (propertyQuery.isError || !propertyQuery.data) {
+  if (catalogQuery.isError || !catalogQuery.data) {
     return (
       <Screen scroll>
         <ErrorState
           title={t('error.title')}
-          message={propertyQuery.error ? t(getErrorCode(propertyQuery.error)) : undefined}
+          message={catalogQuery.error ? t(getErrorCode(catalogQuery.error)) : undefined}
           retryLabel={t('common.retry')}
-          onRetry={retry}
+          onRetry={() => void catalogQuery.refetch()}
         />
       </Screen>
     );
   }
 
-  const property = propertyQuery.data;
+  const catalog = catalogQuery.data;
+
+  if (catalog.length === 0) {
+    return (
+      <Screen scroll>
+        <EmptyState title={t('home.emptyTitle')} message={t('home.emptyMessage')} />
+      </Screen>
+    );
+  }
+
+  const primary = catalog[0].property;
 
   return (
     <Screen scroll contentContainerStyle={styles.content}>
-      <MockImage image={property.heroImage} height={280} borderRadius={24}>
+      <CatalogImage image={primary.heroImage} height={280} borderRadius={24}>
         <Text style={styles.heroEyebrow}>{t('home.eyebrow')}</Text>
-        <Text style={styles.heroTitle}>{property.name}</Text>
-        <Text style={styles.heroLocation}>{property.locationLabel}</Text>
-      </MockImage>
+        <Text style={styles.heroTitle}>{primary.name}</Text>
+        <Text style={styles.heroLocation}>{primary.locationLabel}</Text>
+      </CatalogImage>
 
       <View style={styles.intro}>
         <Text style={styles.tagline}>{t('home.title')}</Text>
-        <Text style={styles.description}>{property.shortDescription}</Text>
+        <Text style={styles.description}>{primary.shortDescription}</Text>
       </View>
 
       <Button
@@ -72,35 +76,27 @@ export function HomeScreen() {
         style={styles.cta}
       />
 
-      <PropertyHighlights highlights={property.highlights} description={property.description} />
+      <PropertyHighlights highlights={primary.highlights} description={primary.description} />
 
-      <Section title={t('home.featuredTitle')} subtitle={t('home.featuredSubtitle')}>
-        {unitsQuery.isLoading ? <LoadingState /> : null}
-        {unitsQuery.isError ? (
-          <ErrorState
-            title={t('error.title')}
-            message={unitsQuery.error ? t(getErrorCode(unitsQuery.error)) : undefined}
-            retryLabel={t('common.retry')}
-            onRetry={retry}
-          />
-        ) : null}
-        {unitsQuery.isSuccess && unitsQuery.data.length === 0 ? (
-          <EmptyState title={t('search.noResultsTitle')} message={t('search.noResultsMessage')} />
-        ) : null}
-        {unitsQuery.data?.length ? (
-          <View style={styles.units}>
-            {unitsQuery.data.map((unit) => (
-              <UnitCard
-                key={unit.id}
-                unit={unit}
-                onPress={() =>
-                  router.push({ pathname: '/units/[unitId]', params: { unitId: unit.id } })
-                }
-              />
-            ))}
-          </View>
-        ) : null}
-      </Section>
+      {catalog.map(({ property, units }) => (
+        <Section key={property.id} spaced title={property.name} subtitle={property.locationLabel}>
+          {units.length ? (
+            <View style={styles.units}>
+              {units.map((unit) => (
+                <UnitCard
+                  key={unit.id}
+                  unit={unit}
+                  onPress={() =>
+                    router.push({ pathname: '/units/[unitId]', params: { unitId: unit.id } })
+                  }
+                />
+              ))}
+            </View>
+          ) : (
+            <EmptyState title={t('search.noResultsTitle')} message={t('search.noResultsMessage')} />
+          )}
+        </Section>
+      ))}
     </Screen>
   );
 }

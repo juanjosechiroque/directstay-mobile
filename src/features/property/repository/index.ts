@@ -1,1 +1,1 @@
-export type { PropertyRepository } from './property-repository';
+export type { PropertyRepository, PropertyCatalog } from './property-repository';
