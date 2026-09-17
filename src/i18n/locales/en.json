@@ -47,12 +47,9 @@
     "family_friendly": "Family friendly"
   },
   "home": {
-    "eyebrow": "Direct booking",
-    "title": "Your refuge in the Sacred Valley",
+    "title": "Direct booking, no intermediaries",
     "searchCta": "Check availability",
-    "featuredTitle": "Featured cabins",
-    "featuredSubtitle": "Pick the unit that fits your trip best.",
-    "allUnits": "View all cabins",
+    "unitsTitle": "Available units",
     "emptyTitle": "Catalog unavailable",
     "emptyMessage": "The configured organization has no active properties right now."
   },

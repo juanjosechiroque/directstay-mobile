@@ -53,19 +53,10 @@ export function HomeScreen() {
     );
   }
 
-  const primary = catalog[0].property;
-
   return (
     <Screen scroll contentContainerStyle={styles.content}>
-      <CatalogImage image={primary.heroImage} height={280} borderRadius={24}>
-        <Text style={styles.heroEyebrow}>{t('home.eyebrow')}</Text>
-        <Text style={styles.heroTitle}>{primary.name}</Text>
-        <Text style={styles.heroLocation}>{primary.locationLabel}</Text>
-      </CatalogImage>
-
       <View style={styles.intro}>
         <Text style={styles.tagline}>{t('home.title')}</Text>
-        <Text style={styles.description}>{primary.shortDescription}</Text>
       </View>
 
       <Button
@@ -76,26 +67,38 @@ export function HomeScreen() {
         style={styles.cta}
       />
 
-      <PropertyHighlights highlights={primary.highlights} description={primary.description} />
-
+      {/* Every property gets its own hero image, description and unit list — no single
+          property is treated as "the" featured one. */}
       {catalog.map(({ property, units }) => (
-        <Section key={property.id} spaced title={property.name} subtitle={property.locationLabel}>
-          {units.length ? (
-            <View style={styles.units}>
-              {units.map((unit) => (
-                <UnitCard
-                  key={unit.id}
-                  unit={unit}
-                  onPress={() =>
-                    router.push({ pathname: '/units/[unitId]', params: { unitId: unit.id } })
-                  }
-                />
-              ))}
-            </View>
-          ) : (
-            <EmptyState title={t('search.noResultsTitle')} message={t('search.noResultsMessage')} />
-          )}
-        </Section>
+        <View key={property.id} style={styles.propertyBlock}>
+          <CatalogImage image={property.heroImage} height={220} borderRadius={24}>
+            <Text style={styles.heroTitle}>{property.name}</Text>
+            <Text style={styles.heroLocation}>{property.locationLabel}</Text>
+          </CatalogImage>
+
+          <PropertyHighlights highlights={property.highlights} description={property.description} />
+
+          <Section spaced title={t('home.unitsTitle')}>
+            {units.length ? (
+              <View style={styles.units}>
+                {units.map((unit) => (
+                  <UnitCard
+                    key={unit.id}
+                    unit={unit}
+                    onPress={() =>
+                      router.push({ pathname: '/units/[unitId]', params: { unitId: unit.id } })
+                    }
+                  />
+                ))}
+              </View>
+            ) : (
+              <EmptyState
+                title={t('search.noResultsTitle')}
+                message={t('search.noResultsMessage')}
+              />
+            )}
+          </Section>
+        </View>
       ))}
     </Screen>
   );
@@ -105,16 +108,9 @@ const styles = StyleSheet.create({
   content: {
     paddingBottom: spacing.xxxl,
   },
-  heroEyebrow: {
-    color: '#F2E9D8',
-    fontSize: fontSize.xs,
-    fontWeight: '700',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
   heroTitle: {
     color: colors.white,
-    fontSize: fontSize.xxxl,
+    fontSize: fontSize.xxl,
     fontWeight: '700',
     marginTop: spacing.xs,
   },
@@ -132,13 +128,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.text,
   },
-  description: {
-    fontSize: fontSize.md,
-    color: colors.textMuted,
-    lineHeight: 24,
-  },
   cta: {
     marginTop: spacing.lg,
+  },
+  propertyBlock: {
+    marginTop: spacing.xxl,
+    gap: spacing.md,
   },
   units: {
     gap: spacing.lg,

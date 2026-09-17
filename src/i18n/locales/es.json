@@ -47,12 +47,9 @@
     "family_friendly": "Apto para familias"
   },
   "home": {
-    "eyebrow": "Reserva directa",
-    "title": "Tu refugio en el Valle Sagrado",
+    "title": "Alojamiento directo, sin intermediarios",
     "searchCta": "Buscar disponibilidad",
-    "featuredTitle": "Cabañas destacadas",
-    "featuredSubtitle": "Elige la unidad que mejor se adapte a tu viaje.",
-    "allUnits": "Ver todas las cabañas",
+    "unitsTitle": "Unidades disponibles",
     "emptyTitle": "Catálogo no disponible",
     "emptyMessage": "La organización configurada no tiene propiedades activas por ahora."
   },
