@@ -44,3 +44,7 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# editor/tool-local config (not part of the portfolio project)
+.claude/
+.vscode/
