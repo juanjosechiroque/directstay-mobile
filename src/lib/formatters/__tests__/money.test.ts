@@ -2,16 +2,16 @@ import { formatMinorUnits, formatMinorUnitsCompact, toMajorUnits } from '../mone
 
 describe('money formatters', () => {
   it('formats USD minor units in Spanish', () => {
-    expect(formatMinorUnits(12000, 'USD', 'es')).toBe('$ 120,00');
+    expect(formatMinorUnits(12000, 'USD', 'es')).toBe('$ 120.00');
   });
 
   it('formats USD minor units in English', () => {
     expect(formatMinorUnits(12000, 'USD', 'en')).toBe('$120.00');
   });
 
-  it('groups thousands with the locale separator', () => {
+  it('always uses a period for decimals and a comma for thousands, in any locale', () => {
     expect(formatMinorUnits(123456, 'USD', 'en')).toBe('$1,234.56');
-    expect(formatMinorUnits(123456, 'USD', 'es')).toBe('$ 1.234,56');
+    expect(formatMinorUnits(123456, 'USD', 'es')).toBe('$ 1,234.56');
   });
 
   it('never uses floating point for the integer/fraction split', () => {

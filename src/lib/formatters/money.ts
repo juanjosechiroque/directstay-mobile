@@ -35,8 +35,10 @@ export function formatMinorUnits(
   const [major, cents] = toMajorUnits(amountMinor).split('.');
   const sign = major.startsWith('-') ? '-' : '';
   const unsignedMajor = major.replace('-', '');
-  const groupSeparator = isSpanish(locale) ? '.' : ',';
-  const decimalSeparator = isSpanish(locale) ? ',' : '.';
+  // The decimal separator is always "." regardless of locale; only thousands grouping and
+  // the space after the symbol follow Spanish typographic convention.
+  const groupSeparator = ',';
+  const decimalSeparator = '.';
   const grouped = unsignedMajor.replace(/\B(?=(\d{3})+(?!\d))/g, groupSeparator);
   const spaced = isSpanish(locale) ? ' ' : '';
   return `${sign}${symbol}${spaced}${grouped}${decimalSeparator}${cents}`;
@@ -49,5 +51,5 @@ export function formatMinorUnitsCompact(
   locale: string = 'es',
 ): string {
   const rounded = Math.round(amountMinor / 100) * 100;
-  return formatMinorUnits(rounded, currency, locale).replace(isSpanish(locale) ? ',00' : '.00', '');
+  return formatMinorUnits(rounded, currency, locale).replace('.00', '');
 }
