@@ -144,11 +144,10 @@ Deep-link scheme: `directstay`.
   `license_verified_at` and `verification_note`, plus localized `alt_text`.
 - Accepted licenses: **CC0, public domain, CC BY, CC BY-SA, or a compatible commercial
   license**. Each image requires an origin URL and, when applicable, attribution text.
-- The seed ships one real, CC BY / CC BY-SA licensed photo per property and per unit
-  (sourced from Wikimedia Commons, credited in `attribution_text`); Killa's second image
-  slot has no asset yet, so it stays a `license = NULL` placeholder. The app renders a
-  local gradient instead of presenting an unverified asset whenever a path doesn't
-  resolve.
+- The seed ships real, CC BY / CC BY-SA licensed photos (sourced from Wikimedia Commons,
+  credited in `attribution_text`) for every property and unit, including both of Killa's
+  slots. The app renders a local gradient instead of presenting an unverified asset
+  whenever a path doesn't resolve or a future slot has no licensed asset yet.
 - To add or replace a photo on an existing property/unit row, use
   `scripts/ingest-catalog-photo.sh` (macOS only — needs `sips`). It resizes/compresses the
   image, uploads it to `catalog-media`, and updates that row's license/author/source/

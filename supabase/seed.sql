@@ -199,8 +199,7 @@ on conflict (property_id, highlight_code) do nothing;
 -- Each asset is a real photo from Wikimedia Commons under a license accepted by
 -- property_images_license_known / unit_images_license_known (CC BY or CC BY-SA), with
 -- author/source_url/attribution_text recorded and license_verified_at set. The uploaded
--- files live under storage_path in the catalog-media bucket. Killa's second slot has no
--- second asset yet, so it stays an unresolved placeholder (falls back to the gradient).
+-- files live under storage_path in the catalog-media bucket.
 -- ---------------------------------------------------------------------------
 insert into public.property_images (
   id, property_id, storage_path, sort_order, source_url, author, license,
@@ -237,6 +236,11 @@ values
    'https://commons.wikimedia.org/wiki/File:Conner-prairie-log-cabin-interior.jpg',
    'Derek Jensen (Tysto)', 'CC_BY',
    'Photo by Derek Jensen (Tysto), CC BY 2.5, via Wikimedia Commons', now()),
+  ('bbbbbbbb-0000-0000-0000-000000000002', '33333333-3333-3333-3333-333333333301',
+   'ayni-mountain-cabins/killa-2.jpg', 1,
+   'https://commons.wikimedia.org/wiki/File:Log_Furniture_Queen_Bed.jpg',
+   '2987bill', 'CC_BY_SA',
+   'Photo by 2987bill, CC BY-SA 3.0, via Wikimedia Commons', now()),
   ('bbbbbbbb-0000-0000-0000-000000000003', '33333333-3333-3333-3333-333333333302',
    'ayni-mountain-cabins/inti-1.jpg', 0,
    'https://commons.wikimedia.org/wiki/File:Mountain_Cabin.jpg',
@@ -270,15 +274,6 @@ on conflict (id) do update set
   verification_note = null,
   updated_at = now();
 
--- Killa's second slot has no second licensed asset yet; keep it an explicit pending
--- placeholder (falls back to the gradient) rather than dropping the row.
-insert into public.unit_images (id, unit_id, storage_path, sort_order, license, verification_note)
-values
-  ('bbbbbbbb-0000-0000-0000-000000000002', '33333333-3333-3333-3333-333333333301',
-   'placeholders/ayni-mountain-cabins/killa-2', 1, null,
-   'Placeholder pending licensed asset (CC0 / public domain / compatible commercial).')
-on conflict (id) do nothing;
-
 insert into public.property_image_translations (image_id, locale, alt_text)
 values
   ('aaaaaaaa-0000-0000-0000-000000000001', 'es', 'Cabañas de madera en el Valle Sagrado, con vista a la montaña.'),
@@ -291,6 +286,8 @@ insert into public.unit_image_translations (image_id, locale, alt_text)
 values
   ('bbbbbbbb-0000-0000-0000-000000000001', 'es', 'Interior de cabaña de madera con chimenea.'),
   ('bbbbbbbb-0000-0000-0000-000000000001', 'en', 'Wood cabin interior with a fireplace.'),
+  ('bbbbbbbb-0000-0000-0000-000000000002', 'es', 'Cama queen de madera rústica en la cabaña.'),
+  ('bbbbbbbb-0000-0000-0000-000000000002', 'en', 'Rustic wooden queen bed in the cabin.'),
   ('bbbbbbbb-0000-0000-0000-000000000003', 'es', 'Cabaña de montaña vista desde el exterior.'),
   ('bbbbbbbb-0000-0000-0000-000000000003', 'en', 'Mountain cabin seen from outside.'),
   ('bbbbbbbb-0000-0000-0000-000000000004', 'es', 'Interior rústico de cabaña con chimenea de leña.'),
