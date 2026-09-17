@@ -41,7 +41,7 @@ $$, '22023', null, 'a non-positive guest count is rejected');
 select is(
   (select (result ->> 'totalAmountMinor')::bigint
      from public.search_available_units('ayni-hospitality', date '2027-03-01', date '2027-03-04', 2, 'es', '33333333-3333-3333-3333-333333333301') as result),
-  36000,
+  36000::bigint,
   'the price snapshot is nightly rate x nights in minor units (12000 x 3)');
 select is(
   (select (result ->> 'nights')::int

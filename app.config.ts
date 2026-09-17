@@ -60,13 +60,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       },
       predictiveBackGestureEnabled: false,
     },
-    web: {
-      ...config.web,
-      output: 'static',
-      favicon: './assets/images/favicon.png',
-    },
     plugins: [
       'expo-router',
+      'expo-image',
       [
         'expo-splash-screen',
         { backgroundColor: '#208AEF', image: './assets/images/splash-icon.png', imageWidth: 76 },

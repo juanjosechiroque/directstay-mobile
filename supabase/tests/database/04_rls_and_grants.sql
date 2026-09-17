@@ -27,10 +27,11 @@ insert into public.units (id, property_id, name, slug, max_guests, nightly_rate_
 values ('d0000000-0000-0000-0000-000000000002', '22222222-2222-2222-2222-222222222222',
   'Hidden Unit', 'hidden-unit', 2, 10000, 'USD', false);
 
--- one image on an active seed unit (Killa) and one on the inactive unit
-insert into public.unit_images (id, unit_id, storage_path) values
-  ('d0000000-0000-0000-0000-000000000010', '33333333-3333-3333-3333-333333333301', 'ayni/killa/1.jpg'),
-  ('d0000000-0000-0000-0000-000000000011', 'd0000000-0000-0000-0000-000000000002', 'ayni/hidden/1.jpg');
+-- one image on an active seed unit (Killa) and one on the inactive unit. Killa already has
+-- seed images at sort_order 0 and 1, so this one uses 2 to avoid the unique constraint.
+insert into public.unit_images (id, unit_id, storage_path, sort_order) values
+  ('d0000000-0000-0000-0000-000000000010', '33333333-3333-3333-3333-333333333301', 'ayni/killa/1.jpg', 2),
+  ('d0000000-0000-0000-0000-000000000011', 'd0000000-0000-0000-0000-000000000002', 'ayni/hidden/1.jpg', 0);
 
 -- one booking per guest; guest 1 owns a CONFIRMED booking for the private stay test
 insert into public.bookings (

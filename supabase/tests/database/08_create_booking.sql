@@ -67,12 +67,16 @@ select throws_ok($$
 $$, '22023', null, 'a blank guest name is rejected');
 
 -- ---- expired pending holds are released before inserting ----
+-- Captures its own id because create_booking below inserts a second row for the same
+-- unit/check-in once the expired hold is released, so unit_id + check_in no longer
+-- identifies a single row.
 insert into public.bookings (
-  unit_id, guest_profile_id, status, check_in, check_out, guest_count,
+  id, unit_id, guest_profile_id, status, check_in, check_out, guest_count,
   guest_name, guest_email, currency, nightly_rate_minor, total_amount_minor,
   created_at, hold_expires_at
 )
 values (
+  'a3000000-0000-0000-0000-000000000099',
   '33333333-3333-3333-3333-333333333302', 'a3000000-0000-0000-0000-000000000001',
   'PENDING_PAYMENT', date '2027-09-01', date '2027-09-03', 2, 'Guest', 'g@example.test',
   'USD', 18000, 36000, now() - interval '10 minutes', now() - interval '5 minutes');
@@ -83,15 +87,11 @@ select lives_ok($$
     date '2027-09-01', date '2027-09-03', 2, 'Guest', 'g@example.test', null)
 $$, 'create_booking releases an expired hold and admits a valid claim');
 select is(
-  (select status::text from public.bookings
-    where unit_id = '33333333-3333-3333-3333-333333333302'
-      and check_in = date '2027-09-01'),
+  (select status::text from public.bookings where id = 'a3000000-0000-0000-0000-000000000099'),
   'CANCELED',
   'the expired pending booking is canceled');
 select is(
-  (select cancellation_reason::text from public.bookings
-    where unit_id = '33333333-3333-3333-3333-333333333302'
-      and check_in = date '2027-09-01'),
+  (select cancellation_reason::text from public.bookings where id = 'a3000000-0000-0000-0000-000000000099'),
   'HOLD_EXPIRED',
   'the expired hold is canceled with HOLD_EXPIRED');
 
