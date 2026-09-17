@@ -144,9 +144,11 @@ Deep-link scheme: `directstay`.
   `license_verified_at` and `verification_note`, plus localized `alt_text`.
 - Accepted licenses: **CC0, public domain, CC BY, CC BY-SA, or a compatible commercial
   license**. Each image requires an origin URL and, when applicable, attribution text.
-- The current seed ships **placeholders** with `license = NULL` and a verification note;
-  the app renders a local gradient instead of presenting an unverified asset. Loading real,
-  licensed photography is a tracked pending task.
+- The seed ships one real, CC BY / CC BY-SA licensed photo per property and per unit
+  (sourced from Wikimedia Commons, credited in `attribution_text`); Killa's second image
+  slot has no asset yet, so it stays a `license = NULL` placeholder. The app renders a
+  local gradient instead of presenting an unverified asset whenever a path doesn't
+  resolve.
 
 ## Excluded scope
 
