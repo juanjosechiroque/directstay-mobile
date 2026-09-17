@@ -33,3 +33,27 @@ jobs:
 
       - name: Tests
         run: npm run test:ci
+
+      - name: Format check
+        run: npm run format:check
+
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start Supabase (Postgres, Auth, Storage)
+        run: supabase start
+
+      - name: Reset database (migrations + seed)
+        run: supabase db reset
+
+      - name: Database tests (pgTAP)
+        run: supabase test db
