@@ -96,18 +96,26 @@ select is(
     where not exists (select 1 from public.unit_translations t where t.unit_id = u.id and t.locale = 'es')),
   0, 'seed: every unit has a Spanish translation');
 
--- catalog media never claims an unverified license
+-- catalog media never claims a license without full provenance, and every image still
+-- pending a licensed asset documents that explicitly
 select is(
-  (select count(*)::int from public.unit_images where license is not null),
-  0, 'seed: no unit image claims a license yet');
+  (select count(*)::int from public.unit_images
+    where license is not null
+      and (source_url is null or author is null or attribution_text is null
+           or license_verified_at is null)),
+  0, 'seed: every licensed unit image has full provenance');
 select is(
-  (select count(*)::int from public.property_images where license is not null),
-  0, 'seed: no property image claims a license yet');
+  (select count(*)::int from public.property_images
+    where license is not null
+      and (source_url is null or author is null or attribution_text is null
+           or license_verified_at is null)),
+  0, 'seed: every licensed property image has full provenance');
 select is(
   (select count(*)::int
      from public.unit_images
-    where verification_note is null or btrim(verification_note) = ''),
-  0, 'seed: every placeholder image documents the pending license work');
+    where license is null
+      and (verification_note is null or btrim(verification_note) = '')),
+  0, 'seed: every unlicensed placeholder image documents the pending license work');
 
 -- private stay information exists and is not public
 select is(
