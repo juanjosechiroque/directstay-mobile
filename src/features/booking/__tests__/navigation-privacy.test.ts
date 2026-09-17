@@ -10,7 +10,6 @@ const ROUTE_FILES = [
   'src/features/booking/screens/BookingReviewScreen.tsx',
   'src/features/booking/screens/BookingGuestScreen.tsx',
   'src/features/booking/screens/BookingPaymentScreen.tsx',
-  'src/features/booking/screens/BookingResultScreen.tsx',
   'src/features/property/screens/UnitDetailScreen.tsx',
 ];
 
