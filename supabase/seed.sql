@@ -41,14 +41,14 @@ values
   ('22222222-2222-2222-2222-222222222222',
    '11111111-1111-1111-1111-111111111111',
    'Ayni Mountain Cabins', 'ayni-mountain-cabins',
-   'Fictional demo property used for seed data, screenshots and tests only.',
+   'Ayni Mountain Cabins es un pequeño refugio familiar en el Valle Sagrado. Cada cabaña se construyó con madera local y está pensada para descansar: chimenea, vistas a la montaña y silencio. Atendemos directamente a nuestros huéspedes, sin intermediarios.',
    'America/Lima', '15:00', '12:00', 'USD', true, '+51999000111', '+51845550123'),
   ('22222222-2222-2222-2222-222222222223',
    '11111111-1111-1111-1111-111111111111',
    'Ayni Cusco', 'ayni-cusco',
-   'Fictional demo city property used for seed data, screenshots and tests only.',
+   'Ayni Cusco es una casa de huéspedes en el centro histórico. Habitaciones cálidas con paredes de adobe, patio interior y desayuno casero. Ideal para explorar la ciudad a pie.',
    'America/Lima', '14:00', '11:00', 'USD', true, '+51999000222', '+51845550456')
-on conflict (id) do nothing;
+on conflict (id) do update set description = excluded.description;
 
 -- ---------------------------------------------------------------------------
 -- Units
@@ -56,22 +56,34 @@ on conflict (id) do nothing;
 --   Ayni Cusco:      Sisa, Illapa
 -- ---------------------------------------------------------------------------
 insert into public.units (
-  id, property_id, name, slug, max_guests, nightly_rate_minor, currency, is_active
+  id, property_id, name, slug, description, max_guests, nightly_rate_minor, currency, is_active
 )
 values
   ('33333333-3333-3333-3333-333333333301', '22222222-2222-2222-2222-222222222222',
-   'Killa', 'killa', 2, 12000, 'USD', true),
+   'Killa', 'killa',
+   'Killa es la cabaña más pequeña y luminosa. Tiene una cama queen, chimenea de leña y una ventana panorámica hacia el valle. Ideal para parejas que buscan silencio.',
+   2, 12000, 'USD', true),
   ('33333333-3333-3333-3333-333333333302', '22222222-2222-2222-2222-222222222222',
-   'Inti', 'inti', 4, 18000, 'USD', true),
+   'Inti', 'inti',
+   'Inti mira hacia el este y recibe el sol de la mañana. Cuenta con dos habitaciones, cocina equipada y una terraza amplia con mesa de madera para compartir.',
+   4, 18000, 'USD', true),
   ('33333333-3333-3333-3333-333333333303', '22222222-2222-2222-2222-222222222222',
-   'Wayra', 'wayra', 3, 15000, 'USD', true),
+   'Wayra', 'wayra',
+   'Wayra está en el borde del terreno, donde corre el viento. Tiene cama matrimonial, sofá cama, chimenea y una terraza privada para ver el atardecer.',
+   3, 15000, 'USD', true),
   ('33333333-3333-3333-3333-333333333304', '22222222-2222-2222-2222-222222222222',
-   'Sumaq', 'sumaq', 6, 26000, 'USD', true),
+   'Sumaq', 'sumaq',
+   'Sumaq es la cabaña más amplia: tres habitaciones, dos baños, cocina completa y una terraza con vista de 180° al Valle Sagrado. Pensada para familias y grupos.',
+   6, 26000, 'USD', true),
   ('33333333-3333-3333-3333-333333333305', '22222222-2222-2222-2222-222222222223',
-   'Sisa', 'sisa', 3, 11000, 'USD', true),
+   'Sisa', 'sisa',
+   'Sisa es una habitación amplia con paredes de adobe, cama queen y sofá cama. Ventanal al patio interior y baño privado.',
+   3, 11000, 'USD', true),
   ('33333333-3333-3333-3333-333333333306', '22222222-2222-2222-2222-222222222223',
-   'Illapa', 'illapa', 2, 9500, 'USD', true)
-on conflict (id) do nothing;
+   'Illapa', 'illapa',
+   'Illapa tiene cama matrimonial, escritorio y una ventana con vista a los tejados del centro histórico.',
+   2, 9500, 'USD', true)
+on conflict (id) do update set description = excluded.description;
 
 -- ---------------------------------------------------------------------------
 -- Localized public content (es default, en prepared)
