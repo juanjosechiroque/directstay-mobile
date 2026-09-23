@@ -115,9 +115,21 @@ gradient when an image URL is missing or fails to load.
 
 ## Guests and private stay information
 
-Supabase Auth owns identities. An `auth.users` insert triggers creation of the matching
-`profiles` row and copies an optional `display_name`; clients cannot insert profiles and
-may read or update only their own profile row.
+Supabase Auth owns guest identities. Guests use anonymous Supabase users (`is_anonymous =
+true`) without login credentials; these users still receive the `authenticated` Postgres
+role and a stable `auth.uid()` on their device. An `auth.users` insert triggers creation
+of the matching `profiles` row. Clients cannot insert profiles and may read or update only
+their own profile row. Guest name, email, and phone belong to the reservation, not the
+profile.
+
+The anonymous identity is tied to its device. A guest who installs the app elsewhere cannot
+recover those reservations; when booking creation is available, the confirmation email is
+the reservation receipt, not an account recovery mechanism. Anonymous sign-in has an
+The local IP-based limit is configured as 30 anonymous sign-ins per hour in
+`supabase/config.toml`. Configure the remote project's limit in Supabase Dashboard →
+Authentication → Rate Limits. Once the payment flow can create bookings, the product
+should allow at most one pending booking per user; this is an abuse-control measure in
+addition to transactional inventory protection.
 
 Wi-Fi details, breakfast information, arrival instructions, and directions live in
 `property_stay_information`. Direct client reads are denied. The authenticated

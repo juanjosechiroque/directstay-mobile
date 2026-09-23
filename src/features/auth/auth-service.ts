@@ -20,14 +20,17 @@ export async function getSessionUser(client: DatabaseClient): Promise<AuthUser |
   return toAuthUser(data.session?.user ?? null);
 }
 
-export async function signIn(
-  client: DatabaseClient,
-  credentials: { email: string; password: string },
-): Promise<AuthUser> {
-  const { data, error } = await client.auth.signInWithPassword({
-    email: credentials.email.trim(),
-    password: credentials.password,
-  });
+export async function ensureGuestSession(client: DatabaseClient): Promise<AuthUser> {
+  const { data: current, error: sessionError } = await client.auth.getSession();
+  if (sessionError) {
+    throw toAuthError(sessionError);
+  }
+  const existing = toAuthUser(current.session?.user ?? null);
+  if (existing) {
+    return existing;
+  }
+
+  const { data, error } = await client.auth.signInAnonymously();
   if (error) {
     throw toAuthError(error);
   }
@@ -36,11 +39,4 @@ export async function signIn(
     throw new AppError('error.authFailed');
   }
   return user;
-}
-
-export async function signOut(client: DatabaseClient): Promise<void> {
-  const { error } = await client.auth.signOut();
-  if (error) {
-    throw toAuthError(error);
-  }
 }

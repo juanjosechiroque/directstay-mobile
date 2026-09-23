@@ -1,7 +1,6 @@
 import { createContext, useContext, type ReactNode } from 'react';
 
 import type { BookingRepository } from '@/features/booking/repository';
-import type { ProfileRepository } from '@/features/profile/repository';
 import type { PropertyRepository } from '@/features/property/repository';
 import type { AvailabilityRepository } from '@/features/search/repository';
 import type { StayRepository } from '@/features/stay/repository';
@@ -19,7 +18,6 @@ export interface Repositories {
   availability: AvailabilityRepository;
   booking: BookingRepository;
   stay: StayRepository;
-  profile: ProfileRepository;
 }
 
 const RepositoryContext = createContext<Repositories | null>(null);

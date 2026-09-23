@@ -21,11 +21,12 @@ export function useQuote(request: QuoteRequest | null) {
   });
 }
 
-export function useBookings() {
+export function useBookings(enabled = true) {
   const { booking } = useRepositories();
   return useQuery({
     queryKey: bookingKeys.lists(),
     queryFn: () => booking.listBookings(),
+    enabled,
   });
 }
 

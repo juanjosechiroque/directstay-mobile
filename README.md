@@ -3,9 +3,9 @@
 DirectStay is a mobile direct-booking and guest-stay application for independent
 accommodation businesses (cabins, lodges, boutique hotels, and short-stay apartments).
 
-Guests explore a brand's properties, check real availability, sign in to manage bookings,
-and access essential stay information from their phone. The app is a public catalog plus an
-authenticated guest area — not a marketplace, PMS or hotel ERP.
+Guests explore a brand's properties, check availability, and use an anonymous device
+session to access their bookings and stay information. The app is a
+public catalog and guest area — not a marketplace, PMS or hotel ERP.
 
 ## Stack
 
@@ -18,9 +18,9 @@ authenticated guest area — not a marketplace, PMS or hotel ERP.
 - Lint/format: ESLint (`expo lint`) + Prettier
 - CI: GitHub Actions
 
-## Demo business
+## Reference business
 
-The reference/demo brand is the **fictional** **Ayni Hospitality**, with two properties:
+The reference brand is the **fictional** **Ayni Hospitality**, with two properties:
 **Ayni Mountain Cabins** (Sacred Valley, Urubamba; units Killa, Inti, Wayra, Sumaq) and
 **Ayni Cusco** (historic centre; units Sisa, Illapa). All demo information is fictional;
 it exists as seed data only and must never be reused as domain logic.
@@ -76,8 +76,12 @@ supabase db push                      # apply pending migrations
 supabase db push --include-seed       # also (re)apply supabase/seed.sql
 ```
 
-The mobile app allows sign-in only: create test users through Supabase Studio (dashboard)
-or another administrative process.
+For the hosted Supabase project, enable **Anonymous Sign-Ins** in **Supabase Dashboard →
+Authentication → Sign In / Providers**. Also allow new users at the Auth level: Supabase's
+anonymous signup endpoint requires the global signup gate. Keep the email provider's
+**Enable Email Signup** off. The local
+equivalent is `auth.enable_signup = true`, `auth.enable_anonymous_sign_ins = true`, and
+`auth.email.enable_signup = false` in `supabase/config.toml`.
 
 ## Optional: local Supabase stack
 
@@ -109,8 +113,8 @@ supabase test db                # database tests (pgTAP)
 ```
 
 The database suites cover schema shape, domain invariants, concurrency, profiles, RLS and
-grants, the public catalog and availability RPC, private stay information, and the
-prepared-but-not-exposed `create_booking` function.
+grants, anonymous guest ownership, the public catalog and availability RPC, private stay
+information, and the prepared-but-not-exposed `create_booking` function.
 
 ## Environments
 
@@ -122,9 +126,8 @@ prepared-but-not-exposed `create_booking` function.
 | Production  | Production project                        | Real guests                    |
 
 Each environment has its own project and its own `EXPO_PUBLIC_*` values (kept in the
-deployment/EAS environment, never in git). Accounts are provisioned outside the app in
-each environment; self-service sign-up and password recovery are disabled in both the
-mobile UI and Supabase configuration.
+deployment/EAS environment, never in git). Guest identities are created anonymously by
+the app and persist on the current device. Cross-device recovery is not supported.
 
 `app.config.ts` resolves the visible app name and bundle id from `EAS_BUILD_PROFILE`:
 
@@ -158,12 +161,12 @@ Deep-link scheme: `directstay`.
 
 ## Excluded scope
 
-Not in this phase (and intentionally absent from the client):
+Not yet implemented (and intentionally absent from the client):
 
 - Stripe, real payments, PaymentIntent creation or secret keys
 - Booking creation, payment confirmation and any fake/simulated success
 - In-app cancellation and refunds
-- Self-service account registration and password recovery
+- Cross-device account recovery and identity linking
 - Marketplace, PMS, hotel ERP, extras, chat, CRM or housekeeping features
 
 `create_booking` is implemented and tested in PostgreSQL but `EXECUTE` is granted only to
@@ -194,4 +197,4 @@ docs/                # engineering/product docs
 
 ## License
 
-None yet — private portfolio project. The template MIT license was removed.
+MIT. See [LICENSE](LICENSE).

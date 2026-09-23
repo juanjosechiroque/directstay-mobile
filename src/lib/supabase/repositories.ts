@@ -1,5 +1,4 @@
 import { SupabaseBookingRepository } from '@/features/booking/repository/supabase-booking-repository';
-import { SupabaseProfileRepository } from '@/features/profile/repository/supabase-profile-repository';
 import { SupabasePropertyRepository } from '@/features/property/repository/supabase-property-repository';
 import { SupabaseAvailabilityRepository } from '@/features/search/repository/supabase-availability-repository';
 import { SupabaseStayRepository } from '@/features/stay/repository/supabase-stay-repository';
@@ -23,6 +22,5 @@ export function createSupabaseRepositories(
     availability: new SupabaseAvailabilityRepository(client, organizationSlug),
     booking,
     stay: new SupabaseStayRepository(client, booking),
-    profile: new SupabaseProfileRepository(client),
   };
 }

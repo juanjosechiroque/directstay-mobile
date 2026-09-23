@@ -5,21 +5,37 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Button, EmptyState, ErrorState, LoadingState, Screen } from '@/components';
 import { BookingCard } from '@/features/booking/components/BookingCard';
 import { useBookings } from '@/features/booking/queries/use-booking';
-import { useSessionGuard } from '@/features/auth/guards/use-session-guard';
+import { useSession } from '@/features/auth/queries/use-session';
 import { getErrorCode } from '@/lib/errors';
 import { colors, fontSize, spacing } from '@/lib/theme';
 
 export function MyBookingsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const guard = useSessionGuard('/bookings');
-  const bookingsQuery = useBookings();
+  const { status } = useSession();
+  const bookingsQuery = useBookings(status === 'signedIn');
 
-  if (guard !== 'signedIn') {
+  if (status === 'loading') {
     return (
       <Screen scroll>
         <Text style={styles.title}>{t('bookings.title')}</Text>
         <LoadingState message={t('common.loading')} />
+      </Screen>
+    );
+  }
+
+  if (status === 'signedOut') {
+    return (
+      <Screen scroll>
+        <Text style={styles.title}>{t('bookings.title')}</Text>
+        <View style={styles.empty}>
+          <EmptyState title={t('bookings.emptyTitle')} message={t('bookings.emptyMessage')} />
+          <Button
+            title={t('home.searchCta')}
+            variant="secondary"
+            onPress={() => router.push('/search')}
+          />
+        </View>
       </Screen>
     );
   }

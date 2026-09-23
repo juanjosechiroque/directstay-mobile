@@ -4,12 +4,12 @@
 flowchart LR
     App["Expo mobile app<br/>Expo Router + React Native"]
     subgraph Supabase
-        Auth["Auth<br/>email + password sessions"]
+        Auth["Auth<br/>anonymous guest sessions"]
         DB["PostgreSQL<br/>RPCs + RLS + constraints"]
         Storage["Storage<br/>public-read catalog-media"]
     end
 
-    App <-->|sign in, session, sign out| Auth
+    App <-->|create or restore guest session| Auth
     App <-->|public RPCs and owner-scoped reads| DB
     App -->|read catalog images| Storage
 ```
@@ -53,7 +53,7 @@ Expo Router route
 
 - `src/app` contains thin route files for the tab shell and stack routes.
 - `src/features` groups screens, queries, types, and repository contracts by capability:
-  auth, property, search, booking, stay, and profile.
+  auth, property, search, booking, stay, and settings.
 - `src/lib` holds cross-cutting configuration, dates, formatting, errors, the query
   client, repository composition, and Supabase mapping.
 - `src/components` contains shared presentation components.
@@ -72,15 +72,13 @@ TanStack Query owns asynchronous server state, retries, cache keys, and invalida
 Keys include the inputs that change a result, such as locale, unit, dates, and guest count.
 Loading, error, empty, and retry states are rendered by the feature screens.
 
-`SessionProvider` restores the Supabase session and subscribes to auth changes. Public
-catalog, unit, and availability routes work without a session. Profile, booking, and stay
-routes use a navigation guard, but the actual boundary remains RLS and RPC authorization.
-Protected deep links redirect through `/login`; redirect values are limited to internal
-paths and reject sensitive-looking data. Sign-in and sign-out clear identity-scoped query
-caches so one user's data cannot flash for another.
-
-Authentication uses email and password. The app provides sign-in and sign-out, but no
-self-service sign-up or password recovery.
+`SessionProvider` restores the persisted Supabase session and subscribes to auth changes.
+Catalog, unit, availability, booking review, and guest details work without a session.
+Submitting valid guest details creates an anonymous session only when no session exists;
+Supabase persists it in AsyncStorage on that device. Booking and stay routes never redirect
+to login. Without a session, reservation and stay screens return empty/not-found states;
+the actual privacy boundary remains RLS and RPC authorization. Creating a session clears
+identity-scoped query caches.
 
 ## Data access
 
@@ -89,7 +87,8 @@ self-service sign-up or password recovery.
 - `search_available_units` is the only availability and quote calculation used by the
   app. It applies capacity, active-state, booking, hold-expiry, and availability-block
   rules in PostgreSQL.
-- Authenticated users read their own bookings and profile through RLS-protected tables.
+- Anonymous authenticated users read their own bookings and profile through RLS-protected
+  tables; the contact details used for a reservation live on the booking row.
 - `get_stay_information` returns private property information only to the owner of a
   confirmed booking.
 - Storage exposes catalog images for public reads and has no client write policy.
@@ -143,5 +142,5 @@ This split verifies both client contracts and database security/concurrency beha
 
 - Mobile booking creation, payment, confirmation, refunds, and in-app cancellation.
 - Stripe client/server integration, Supabase Edge Functions, and payment webhooks.
-- Self-service registration and password recovery.
+- Cross-device account recovery and identity linking.
 - An administrative interface or transactional RPC for creating availability blocks.

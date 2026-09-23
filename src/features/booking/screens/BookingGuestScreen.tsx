@@ -3,10 +3,20 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { Button, Card, EmptyState, Screen, ScreenHeader, TextField } from '@/components';
+import {
+  Button,
+  Card,
+  EmptyState,
+  ErrorState,
+  Screen,
+  ScreenHeader,
+  TextField,
+} from '@/components';
 import { QuoteSummary } from '@/features/booking/components/QuoteSummary';
 import { useBookingDraft } from '@/features/booking/draft/booking-draft-context';
 import { useBookingQuote } from '@/features/booking/queries/use-booking-quote';
+import { useAuthActions } from '@/features/auth/queries/use-session';
+import { getErrorCode } from '@/lib/errors';
 import { colors, fontSize, spacing } from '@/lib/theme';
 import { hasErrors, validateGuestForm, type GuestFormErrors } from '@/lib/validation';
 
@@ -14,12 +24,15 @@ export function BookingGuestScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { stay, guest, setGuest } = useBookingDraft();
+  const { ensureGuestSession } = useAuthActions();
 
   // Reuse any previously entered guest data (e.g. coming back from payment).
   const [fullName, setFullName] = useState(guest?.fullName ?? '');
   const [email, setEmail] = useState(guest?.email ?? '');
   const [phone, setPhone] = useState(guest?.phone ?? '');
   const [errors, setErrors] = useState<GuestFormErrors>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<unknown>(null);
 
   const quoteState = useBookingQuote(
     stay
@@ -45,14 +58,23 @@ export function BookingGuestScreen() {
     );
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const nextErrors = validateGuestForm({ fullName, email, phone });
     setErrors(nextErrors);
     if (hasErrors(nextErrors) || !quoteState.isReady) {
       return;
     }
+    setSubmitting(true);
+    setSubmitError(null);
     setGuest({ fullName: fullName.trim(), email: email.trim(), phone: phone.trim() });
-    router.push('/booking/payment');
+    try {
+      await ensureGuestSession();
+      router.push('/booking/payment');
+    } catch (error) {
+      setSubmitError(error);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -106,6 +128,17 @@ export function BookingGuestScreen() {
         />
       </Card>
 
+      <Text style={styles.privacyNote}>{t('booking.guestPrivacyNote')}</Text>
+
+      {submitError ? (
+        <ErrorState
+          title={t('booking.guestSessionErrorTitle')}
+          message={t(getErrorCode(submitError))}
+          retryLabel={t('common.retry')}
+          onRetry={() => void handleSubmit()}
+        />
+      ) : null}
+
       <View style={styles.quote}>
         <QuoteSummary state={quoteState} />
       </View>
@@ -115,8 +148,9 @@ export function BookingGuestScreen() {
           title={t('booking.guestContinueCta')}
           size="lg"
           fullWidth
-          disabled={!quoteState.isReady}
-          onPress={handleSubmit}
+          disabled={!quoteState.isReady || submitting}
+          loading={submitting}
+          onPress={() => void handleSubmit()}
         />
       </View>
     </Screen>
@@ -131,6 +165,12 @@ const styles = StyleSheet.create({
   },
   form: {
     gap: spacing.lg,
+  },
+  privacyNote: {
+    marginTop: spacing.md,
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    lineHeight: 20,
   },
   quote: {
     marginTop: spacing.xl,

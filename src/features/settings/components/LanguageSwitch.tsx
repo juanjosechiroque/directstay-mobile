@@ -4,10 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SUPPORTED_LOCALES } from '@/i18n';
 import { colors, fontSize, radius, spacing } from '@/lib/theme';
 
-const LABELS: Record<string, string> = {
-  es: 'profile.languageEs',
-  en: 'profile.languageEn',
-};
+const LABELS: Record<string, string> = { es: 'settings.languageEs', en: 'settings.languageEn' };
 
 export function LanguageSwitch() {
   const { t, i18n } = useTranslation();
@@ -33,25 +30,14 @@ export function LanguageSwitch() {
 }
 
 const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
+  row: { flexDirection: 'row', gap: spacing.sm },
   option: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
     borderRadius: radius.pill,
     backgroundColor: colors.surfaceMuted,
   },
-  optionActive: {
-    backgroundColor: colors.primary,
-  },
-  label: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  labelActive: {
-    color: colors.white,
-  },
+  optionActive: { backgroundColor: colors.primary },
+  label: { fontSize: fontSize.sm, fontWeight: '600', color: colors.text },
+  labelActive: { color: colors.white },
 });

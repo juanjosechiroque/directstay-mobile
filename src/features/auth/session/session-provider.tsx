@@ -9,10 +9,9 @@ import type { DatabaseClient } from '@/lib/supabase/client';
 /**
  * Session context.
  *
- * Owns the single source of truth for "who is signed in" by subscribing to Supabase Auth.
+ * Owns the single source of truth for the current guest session by subscribing to Supabase Auth.
  * The `client` is injected (same instance as the repositories), which keeps the provider
- * testable with a fake client. Anon visitors are a valid state: `signedOut` does not mean
- * "not allowed" — only the guarded routes care.
+ * testable with a fake client. A visitor remains signed out until booking details are submitted.
  */
 export interface SessionValue {
   client: DatabaseClient;
@@ -27,7 +26,7 @@ export function SessionProvider({
   children,
 }: {
   client: DatabaseClient;
-  children: ReactNode;
+  children?: ReactNode;
 }) {
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<SessionStatus>('loading');

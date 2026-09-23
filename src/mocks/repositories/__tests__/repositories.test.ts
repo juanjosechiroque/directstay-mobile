@@ -4,7 +4,6 @@ import { INTI_UNIT_ID, KILLA_UNIT_ID } from '@/mocks/data/units';
 import { MockAvailabilityRepository } from '../availability-repository';
 import { MockBookingRepository } from '../booking-repository';
 import { resetMockBookingStore } from '../booking-store';
-import { MockProfileRepository } from '../profile-repository';
 import { MockPropertyRepository } from '../property-repository';
 import { MockStayRepository } from '../stay-repository';
 import { setMockLatencyEnabled, setMockScenario } from '../scenario';
@@ -13,7 +12,6 @@ const property = new MockPropertyRepository();
 const availability = new MockAvailabilityRepository();
 const booking = new MockBookingRepository();
 const stay = new MockStayRepository(booking, property);
-const profile = new MockProfileRepository();
 
 const farCheckIn = addDays(todayIso(), 300);
 const farCheckOut = addDays(farCheckIn, 3);
@@ -155,7 +153,7 @@ describe('booking repository', () => {
     expect(stored?.status).toBe('CONFIRMED');
   });
 
-  it('lists only bookings owned by the demo profile', async () => {
+  it('lists only bookings owned by the primary fixture identity', async () => {
     const list = await booking.listBookings();
     expect(list.length).toBeGreaterThanOrEqual(4);
     expect(list.map((item) => item.id)).not.toContain('66666666-6666-6666-6666-666666666601');
@@ -229,13 +227,6 @@ describe('stay repository', () => {
 
     const pendingStay = await stay.getStay('55555555-5555-5555-5555-555555555502', 'es');
     expect(pendingStay).toBeNull();
-  });
-});
-
-describe('profile repository', () => {
-  it('returns the local demo profile', async () => {
-    const data = await profile.getCurrentProfile();
-    expect(data?.email).toBe('valeria.demo@directstay.test');
   });
 });
 

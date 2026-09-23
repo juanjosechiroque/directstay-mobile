@@ -20,7 +20,7 @@ import { ContactActions } from '@/components/ContactActions';
 import { BookingStatusBadge } from '@/features/booking/components/BookingStatusBadge';
 import { useBooking } from '@/features/booking/queries/use-booking';
 import type { Booking } from '@/features/booking/types';
-import { useSessionGuard } from '@/features/auth/guards/use-session-guard';
+import { useSession } from '@/features/auth/queries/use-session';
 import { formatInstant } from '@/lib/dates';
 import { formatCancellationDeadline, isCancellationEligible } from '@/lib/dates/cancellation';
 import { getErrorCode } from '@/lib/errors';
@@ -43,17 +43,26 @@ function StatusMessage({ booking }: { booking: Booking }) {
 export function BookingDetailScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
-  const guard = useSessionGuard('/bookings');
+  const { status } = useSession();
   const params = useLocalSearchParams<{ bookingId?: string }>();
   const bookingId = typeof params.bookingId === 'string' ? params.bookingId : undefined;
 
-  const bookingQuery = useBooking(guard === 'signedIn' ? bookingId : undefined);
+  const bookingQuery = useBooking(status === 'signedIn' ? bookingId : undefined);
 
-  if (guard !== 'signedIn') {
+  if (status === 'loading') {
     return (
       <Screen>
         <ScreenHeader title={t('bookings.detailTitle')} />
         <LoadingState message={t('common.loading')} />
+      </Screen>
+    );
+  }
+
+  if (status === 'signedOut') {
+    return (
+      <Screen>
+        <ScreenHeader title={t('bookings.detailTitle')} />
+        <EmptyState title={t('bookings.notFoundTitle')} message={t('bookings.notFoundMessage')} />
       </Screen>
     );
   }

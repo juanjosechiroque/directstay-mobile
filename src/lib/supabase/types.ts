@@ -66,13 +66,6 @@ export interface StayInformationJson {
   directions: string | null;
 }
 
-export interface ProfileRow {
-  id: string;
-  display_name: string | null;
-  phone: string | null;
-  created_at: string;
-}
-
 interface JoinedPropertyRow {
   name: string;
   timezone: string;

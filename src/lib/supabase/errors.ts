@@ -44,18 +44,8 @@ export function toAuthError(error: unknown): AppError {
   const status = source?.status;
 
   let mapped: AppErrorCode = 'error.authFailed';
-  if (code === 'invalid_credentials' || message.includes('invalid login')) {
-    mapped = 'error.authInvalidCredentials';
-  } else if (code === 'user_already_exists' || message.includes('already registered')) {
-    mapped = 'error.authEmailInUse';
-  } else if (code === 'email_not_confirmed' || message.includes('not confirmed')) {
-    mapped = 'error.authEmailNotConfirmed';
-  } else if (
-    code === 'weak_password' ||
-    message.includes('weak password') ||
-    message.includes('at least 6 characters')
-  ) {
-    mapped = 'error.authWeakPassword';
+  if (status === 429 || code === 'over_request_rate_limit' || code === 'too_many_requests') {
+    mapped = 'error.authRateLimited';
   } else if (status === 0 || message.includes('network')) {
     mapped = 'error.generic';
   }

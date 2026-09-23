@@ -15,7 +15,7 @@ import {
   Section,
 } from '@/components';
 import { ContactActions } from '@/components/ContactActions';
-import { useSessionGuard } from '@/features/auth/guards/use-session-guard';
+import { useSession } from '@/features/auth/queries/use-session';
 import { useStay } from '@/features/stay/queries/use-stay';
 import { getErrorCode } from '@/lib/errors';
 import { colors, fontSize, spacing } from '@/lib/theme';
@@ -29,17 +29,26 @@ import { colors, fontSize, spacing } from '@/lib/theme';
  */
 export function StayScreen() {
   const { t } = useTranslation();
-  const guard = useSessionGuard('/bookings');
+  const { status } = useSession();
   const params = useLocalSearchParams<{ bookingId?: string }>();
   const bookingId = typeof params.bookingId === 'string' ? params.bookingId : undefined;
 
-  const stayQuery = useStay(guard === 'signedIn' ? bookingId : undefined);
+  const stayQuery = useStay(status === 'signedIn' ? bookingId : undefined);
 
-  if (guard !== 'signedIn' || stayQuery.isLoading) {
+  if (status === 'loading' || (status === 'signedIn' && stayQuery.isLoading)) {
     return (
       <Screen>
         <ScreenHeader title={t('stay.title')} />
         <LoadingState message={t('common.loading')} />
+      </Screen>
+    );
+  }
+
+  if (status === 'signedOut') {
+    return (
+      <Screen>
+        <ScreenHeader title={t('stay.title')} />
+        <EmptyState title={t('bookings.notFoundTitle')} message={t('bookings.notFoundMessage')} />
       </Screen>
     );
   }

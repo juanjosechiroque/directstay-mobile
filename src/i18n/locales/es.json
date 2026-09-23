@@ -18,7 +18,7 @@
   "tabs": {
     "home": "Inicio",
     "bookings": "Mis reservas",
-    "profile": "Perfil"
+    "settings": "Ajustes"
   },
   "property": {
     "location": "Ubicación",
@@ -129,6 +129,8 @@
     "phoneOptional": "opcional",
     "phoneHelper": "Nos ayuda a coordinar tu llegada.",
     "guestContinueCta": "Continuar al pago",
+    "guestPrivacyNote": "Tu reserva quedará guardada en este teléfono. Usa un correo al que tengas acceso para recibir la confirmación.",
+    "guestSessionErrorTitle": "No pudimos preparar tu reserva",
     "paymentTitle": "Pago",
     "paymentsUnavailableBadge": "Pagos no habilitados",
     "paymentsUnavailableTitle": "El pago aún no está habilitado",
@@ -172,7 +174,7 @@
     "callCta": "Llamar",
     "stayCta": "Ver Mi estancia",
     "notFoundTitle": "Reserva no encontrada",
-    "notFoundMessage": "No encontramos esta reserva en tu cuenta.",
+    "notFoundMessage": "No encontramos esta reserva.",
     "confirmedMessage": "Tu reserva está confirmada.",
     "pendingMessage": "Completa el pago para confirmar tu reserva.",
     "canceledMessage": "Esta reserva se canceló antes de pagar.",
@@ -197,39 +199,15 @@
     "demoNote": "Los enlaces de contacto son de demostración.",
     "privacyNote": "Esta información es privada y solo se muestra a la reserva confirmada."
   },
-  "auth": {
-    "loginTitle": "Inicia sesión",
-    "loginSubtitle": "Entra con tu correo para ver tus reservas y la información de tu estancia.",
-    "email": "Correo electrónico",
-    "password": "Contraseña",
-    "passwordHelper": "Mínimo 6 caracteres.",
-    "signInCta": "Entrar",
-    "signingInCta": "Entrando…",
-    "signOutCta": "Cerrar sesión"
-  },
-  "profile": {
-    "title": "Perfil",
-    "accountSubtitle": "Tu cuenta de DirectStay.",
-    "demoAccount": "Sesión de demostración",
-    "nameLabel": "Nombre",
-    "emailLabel": "Correo",
-    "phoneLabel": "Teléfono",
-    "memberSinceLabel": "Miembro desde",
+  "settings": {
+    "title": "Ajustes",
     "languageTitle": "Idioma",
-    "sessionTitle": "Sesión",
+    "contactTitle": "Contacto de la marca",
+    "contactError": "No pudimos cargar el contacto de la marca.",
     "languageEs": "Español",
     "languageEn": "English",
-    "demoStatesTitle": "Estados de la demo",
-    "demoStatesMessage": "Controla los repositorios mock para probar carga, vacío y error.",
-    "scenario": {
-      "success": "Éxito",
-      "slow": "Carga lenta",
-      "empty": "Vacío",
-      "error": "Error"
-    },
     "aboutTitle": "Acerca de",
-    "aboutVersion": "Versión {{version}}",
-    "aboutStack": "Datos mock locales · sin pagos reales."
+    "aboutVersion": "Versión {{version}}"
   },
   "validation": {
     "checkInRequired": "Elige una fecha de entrada.",
@@ -241,8 +219,7 @@
     "nameTooShort": "El nombre es muy corto.",
     "emailRequired": "Escribe tu correo.",
     "emailInvalid": "El correo no parece válido.",
-    "phoneInvalid": "El teléfono no parece válido.",
-    "authCredentialsRequired": "Escribe tu correo y contraseña."
+    "phoneInvalid": "El teléfono no parece válido."
   },
   "error": {
     "title": "No pudimos cargar la información",
@@ -251,13 +228,10 @@
     "unavailable": "La unidad ya no está disponible para esas fechas.",
     "cancelNotAllowed": "Esta reserva ya no se puede cancelar en la app.",
     "validation": "Revisa los datos ingresados.",
-    "sessionRequired": "Inicia sesión para continuar.",
+    "sessionRequired": "No pudimos comprobar el acceso desde este dispositivo.",
     "paymentsNotEnabled": "El pago aún no está habilitado.",
     "configuration": "Falta la configuración de la aplicación.",
-    "authInvalidCredentials": "El correo o la contraseña no son correctos.",
-    "authEmailInUse": "Ya existe una cuenta con ese correo.",
-    "authEmailNotConfirmed": "Confirma tu correo antes de entrar.",
-    "authWeakPassword": "La contraseña es demasiado débil.",
-    "authFailed": "No pudimos completar la autenticación. Inténtalo de nuevo."
+    "authRateLimited": "No pudimos preparar tu reserva ahora. Espera un momento e inténtalo de nuevo.",
+    "authFailed": "No pudimos preparar tu reserva en este dispositivo. Inténtalo de nuevo."
   }
 }

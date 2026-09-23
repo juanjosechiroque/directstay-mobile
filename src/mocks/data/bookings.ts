@@ -11,7 +11,7 @@ import {
 } from './units';
 
 /**
- * DEMO / MOCK DATA ONLY — seeded bookings for the local demo profile and for fictional
+ * TEST FIXTURE DATA ONLY — seeded bookings for a local fixture identity and for fictional
  * other guests (the latter exist so availability search has real blocking inventory).
  *
  * Dates are relative to "today" so the demo always shows eligible and non-eligible
@@ -87,7 +87,7 @@ function seedBooking(input: SeedBookingInput): Booking {
   };
 }
 
-/** Bookings owned by the demo profile (shown in "Mis reservas"). */
+/** Bookings owned by the primary fixture identity (shown in repository tests). */
 export const MOCK_OWN_BOOKINGS: Booking[] = [
   seedBooking({
     id: '55555555-5555-5555-5555-555555555501',

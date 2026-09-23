@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
@@ -44,5 +44,9 @@ describe('navigation privacy', () => {
     const guestScreen = readSource('src/features/booking/screens/BookingGuestScreen.tsx');
     expect(guestScreen).toMatch(/useBookingDraft/);
     expect(guestScreen).toMatch(/setGuest/);
+  });
+
+  it('has no login route', () => {
+    expect(readdirSync(join(process.cwd(), 'src/app'))).not.toContain('login.tsx');
   });
 });

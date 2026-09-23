@@ -2,7 +2,6 @@ import type { Repositories } from '@/lib/repositories';
 
 import { MockAvailabilityRepository } from './availability-repository';
 import { MockBookingRepository } from './booking-repository';
-import { MockProfileRepository } from './profile-repository';
 import { MockPropertyRepository } from './property-repository';
 import { MockStayRepository } from './stay-repository';
 
@@ -19,7 +18,6 @@ export const mockRepositories: Repositories = {
   availability: new MockAvailabilityRepository(),
   booking: bookingRepository,
   stay: new MockStayRepository(bookingRepository, propertyRepository),
-  profile: new MockProfileRepository(),
 };
 
 export {

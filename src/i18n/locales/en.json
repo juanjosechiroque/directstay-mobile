@@ -18,7 +18,7 @@
   "tabs": {
     "home": "Home",
     "bookings": "My bookings",
-    "profile": "Profile"
+    "settings": "Settings"
   },
   "property": {
     "location": "Location",
@@ -129,6 +129,8 @@
     "phoneOptional": "optional",
     "phoneHelper": "It helps us coordinate your arrival.",
     "guestContinueCta": "Continue to payment",
+    "guestPrivacyNote": "Your reservation will be saved on this phone. Use an email address you can access to receive the confirmation.",
+    "guestSessionErrorTitle": "We couldn't prepare your reservation",
     "paymentTitle": "Payment",
     "paymentsUnavailableBadge": "Payments not enabled",
     "paymentsUnavailableTitle": "Payment isn't available yet",
@@ -172,7 +174,7 @@
     "callCta": "Call",
     "stayCta": "View My stay",
     "notFoundTitle": "Booking not found",
-    "notFoundMessage": "We couldn't find this booking in your account.",
+    "notFoundMessage": "We couldn't find this booking.",
     "confirmedMessage": "Your booking is confirmed.",
     "pendingMessage": "Complete payment to confirm your booking.",
     "canceledMessage": "This booking was canceled before payment.",
@@ -197,39 +199,15 @@
     "demoNote": "Contact links are for demonstration only.",
     "privacyNote": "This information is private and shown only to the confirmed booking."
   },
-  "auth": {
-    "loginTitle": "Sign in",
-    "loginSubtitle": "Sign in with your email to see your bookings and stay information.",
-    "email": "Email",
-    "password": "Password",
-    "passwordHelper": "At least 6 characters.",
-    "signInCta": "Sign in",
-    "signingInCta": "Signing in…",
-    "signOutCta": "Sign out"
-  },
-  "profile": {
-    "title": "Profile",
-    "accountSubtitle": "Your DirectStay account.",
-    "demoAccount": "Demo session",
-    "nameLabel": "Name",
-    "emailLabel": "Email",
-    "phoneLabel": "Phone",
-    "memberSinceLabel": "Member since",
+  "settings": {
+    "title": "Settings",
     "languageTitle": "Language",
-    "sessionTitle": "Session",
+    "contactTitle": "Brand contact",
+    "contactError": "We couldn't load the brand contact.",
     "languageEs": "Español",
     "languageEn": "English",
-    "demoStatesTitle": "Demo states",
-    "demoStatesMessage": "Control the mock repositories to test loading, empty and error states.",
-    "scenario": {
-      "success": "Success",
-      "slow": "Slow loading",
-      "empty": "Empty",
-      "error": "Error"
-    },
     "aboutTitle": "About",
-    "aboutVersion": "Version {{version}}",
-    "aboutStack": "Local mock data · no real payments."
+    "aboutVersion": "Version {{version}}"
   },
   "validation": {
     "checkInRequired": "Choose a check-in date.",
@@ -241,8 +219,7 @@
     "nameTooShort": "The name is too short.",
     "emailRequired": "Enter your email.",
     "emailInvalid": "That email doesn't look valid.",
-    "phoneInvalid": "That phone number doesn't look valid.",
-    "authCredentialsRequired": "Enter your email and password."
+    "phoneInvalid": "That phone number doesn't look valid."
   },
   "error": {
     "title": "We couldn't load the information",
@@ -251,13 +228,10 @@
     "unavailable": "The unit is no longer available for those dates.",
     "cancelNotAllowed": "This booking can no longer be canceled in the app.",
     "validation": "Please review the information you entered.",
-    "sessionRequired": "Sign in to continue.",
+    "sessionRequired": "We couldn't verify access from this device.",
     "paymentsNotEnabled": "Payment isn't available yet.",
     "configuration": "The application configuration is missing.",
-    "authInvalidCredentials": "The email or password is incorrect.",
-    "authEmailInUse": "An account already exists for that email.",
-    "authEmailNotConfirmed": "Confirm your email before signing in.",
-    "authWeakPassword": "The password is too weak.",
-    "authFailed": "We couldn't complete authentication. Please try again."
+    "authRateLimited": "We couldn't prepare your reservation right now. Wait a moment and try again.",
+    "authFailed": "We couldn't prepare your reservation on this device. Please try again."
   }
 }

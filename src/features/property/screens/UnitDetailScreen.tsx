@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
@@ -17,7 +17,6 @@ import {
 } from '@/components';
 import { useUnit } from '@/features/property/queries/use-property';
 import type { AmenityCode } from '@/features/property/types';
-import { useSession } from '@/features/auth/queries/use-session';
 import { getErrorCode } from '@/lib/errors';
 import { colors, fontSize, radius, shadows, spacing } from '@/lib/theme';
 import { toIsoDateParam, toPositiveIntParam } from '@/lib/validation';
@@ -38,7 +37,6 @@ export function UnitDetailScreen() {
   const checkIn = toIsoDateParam(params.checkIn);
   const checkOut = toIsoDateParam(params.checkOut);
   const guests = toPositiveIntParam(params.guests);
-  const { status: sessionStatus } = useSession();
 
   const galleryWidth = Math.min(width - spacing.lg * 2, 420);
 
@@ -48,13 +46,6 @@ export function UnitDetailScreen() {
     }
     if (!checkIn || !checkOut || !guests) {
       router.push('/search');
-      return;
-    }
-    // Booking requires an account. The redirect keeps only non-sensitive context
-    // (unit + business dates + guest count); guest PII never enters a URL.
-    if (sessionStatus !== 'signedIn') {
-      const redirect = `/booking/review?unitId=${unitId}&checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}`;
-      router.push({ pathname: '/login', params: { redirect } } as Href);
       return;
     }
     router.push({

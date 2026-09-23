@@ -12,10 +12,7 @@ export type AppErrorCode =
   | 'error.validation'
   | 'error.sessionRequired'
   | 'error.paymentsNotEnabled'
-  | 'error.authInvalidCredentials'
-  | 'error.authEmailInUse'
-  | 'error.authEmailNotConfirmed'
-  | 'error.authWeakPassword'
+  | 'error.authRateLimited'
   | 'error.authFailed'
   | 'error.configuration'
   | 'error.generic';

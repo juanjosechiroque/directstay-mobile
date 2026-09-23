@@ -24,8 +24,6 @@ const HIGHLIGHTS = [
   'nature',
 ];
 
-const SCENARIOS = ['success', 'slow', 'empty', 'error'];
-
 function lookup(source: Record<string, unknown>, path: string): unknown {
   return path
     .split('.')
@@ -58,21 +56,18 @@ describe.each<[string, Record<string, unknown>]>([
     }
   });
 
-  it('translates every demo scenario', () => {
-    for (const scenario of SCENARIOS) {
-      expect(typeof lookup(resources, `profile.scenario.${scenario}`)).toBe('string');
-    }
-  });
-
   it('translates the critical booking flow copy', () => {
     for (const key of [
       'booking.reviewTitle',
       'booking.guestTitle',
+      'booking.guestPrivacyNote',
       'booking.paymentTitle',
       'booking.paymentsUnavailableTitle',
       'bookings.cancelNotAllowedMessage',
       'stay.title',
       'stay.wifiTitle',
+      'settings.title',
+      'error.authRateLimited',
     ]) {
       expect(typeof lookup(resources, key)).toBe('string');
     }
