@@ -1,180 +1,147 @@
 # Architecture
 
-## Layers
+```mermaid
+flowchart LR
+    App["Expo mobile app<br/>Expo Router + React Native"]
+    subgraph Supabase
+        Auth["Auth<br/>email + password sessions"]
+        DB["PostgreSQL<br/>RPCs + RLS + constraints"]
+        Storage["Storage<br/>public-read catalog-media"]
+    end
 
-DirectStay is a React Native (Expo) app backed by Supabase and (later) Stripe. Code that
-touches trusted secrets or shared invariants runs server-side.
+    App <-->|sign in, session, sign out| Auth
+    App <-->|public RPCs and owner-scoped reads| DB
+    App -->|read catalog images| Storage
+```
+
+DirectStay is an Expo SDK 57 application backed by Supabase. The mobile bundle is an
+untrusted client: it renders the experience and requests data, while PostgreSQL owns
+shared business truth. The detailed rules are in [DOMAIN.md](DOMAIN.md), and the current
+guest experience is in [PRODUCT.md](PRODUCT.md).
+
+## Trust boundaries
+
+The client may validate input for fast feedback, but only the server decides:
+
+- which active catalog rows an organization-scoped RPC returns;
+- whether a unit is available for dates and guest count;
+- the quote and booking price, sourced from integer minor-unit rates;
+- which booking and profile rows belong to the authenticated user;
+- whether private stay information belongs to a confirmed booking owner; and
+- whether an inventory claim conflicts with another claim.
+
+These decisions are server-owned because every device can be modified, requests can race,
+and authorization must hold even when navigation guards are bypassed. RLS isolates
+owner-scoped rows, SECURITY DEFINER RPCs expose narrow use cases, and database constraints
+protect invariants during concurrent writes. The Supabase anon key is public by design;
+service-role and provider secrets must never enter the app bundle.
+
+`create_booking` is transactional and server-authoritative, but is granted only to
+`service_role`. The app can request quotes but cannot create or confirm a reservation.
+See [Not yet implemented](#not-yet-implemented).
+
+## Application layers
 
 ```text
-Mobile app (React Native / Expo Router)
-   │
-   ├── UI state (React state / forms / booking draft)
-   ├── server state (TanStack Query)
-   ├── repositories (feature contracts, injected at the root)
-   │
-Supabase
-   ├── PostgreSQL (schema, constraints, RLS, RPC)
-   ├── Auth (email + password)
-   ├── Storage (public-read `catalog-media`)
-   └── Edge Functions (Stripe-secret operations — later)
-Stripe
-   ├── PaymentIntent + PaymentSheet (client via publishable key — later)
-   └── Webhooks (validated signature, idempotent — later)
+Expo Router route
+  → feature screen and components
+    → TanStack Query hook
+      → feature repository interface
+        → Supabase repository
+          → RPC or RLS-protected table
 ```
 
-The mobile app is a **client of the public catalog**. It reads a narrow, server-authored
-read model and never holds a secret or a service-role key.
+- `src/app` contains thin route files for the tab shell and stack routes.
+- `src/features` groups screens, queries, types, and repository contracts by capability:
+  auth, property, search, booking, stay, and profile.
+- `src/lib` holds cross-cutting configuration, dates, formatting, errors, the query
+  client, repository composition, and Supabase mapping.
+- `src/components` contains shared presentation components.
+- `src/i18n` owns translated UI resources.
+- `src/mocks` contains test fixtures and in-memory repository implementations; production
+  composition never imports it, and a static test guards that boundary.
 
-## Who does what
+Repository interfaces keep screens independent from Supabase payloads and make data-edge
+tests deterministic. The root composes one Supabase client and the deployment's
+organization slug into concrete repositories. Adapters translate RPC/table responses
+into app models through validating mappers.
 
-| Capability                           | Where                                      | Why                                            |
-| ------------------------------------ | ------------------------------------------ | ---------------------------------------------- |
-| Render screens, forms, navigation    | Mobile                                     | only place with the UI                         |
-| Validate form input locally          | Mobile                                     | instant UX feedback (Zod-free validators)      |
-| Eventual truth for bookings/payments | PostgreSQL                                 | transactional integrity                        |
-| Public catalog + property/unit copy  | PostgreSQL RPC (`get_catalog`, `get_unit`) | server-scoped to the active organization       |
-| Search availability                  | PostgreSQL RPC (`search_available_units`)  | server-authoritative, atomic                   |
-| Private stay information             | PostgreSQL RPC (`get_stay_information`)    | owner + `CONFIRMED` only                       |
-| Create booking                       | PostgreSQL RPC (`create_booking`)          | single transaction; **not exposed to clients** |
-| Create PaymentIntent                 | Edge Function                              | needs Stripe secret key (later)                |
-| Confirm booking from payment         | Stripe webhook → Edge Function/RPC         | authoritative; signature verified; idempotent  |
-| Refund                               | Edge Function (`refund_payment`)           | needs Stripe secret key; idempotent (later)    |
-| Read own bookings                    | PostgreSQL + RLS                           | row-level guest isolation                      |
+## Server state and sessions
 
-## Data layer boundaries
+TanStack Query owns asynchronous server state, retries, cache keys, and invalidation.
+Keys include the inputs that change a result, such as locale, unit, dates, and guest count.
+Loading, error, empty, and retry states are rendered by the feature screens.
 
-```text
-Screen (feature)  →  TanStack Query hook  →  Repository interface  →  Supabase adapter
-```
+`SessionProvider` restores the Supabase session and subscribes to auth changes. Public
+catalog, unit, and availability routes work without a session. Profile, booking, and stay
+routes use a navigation guard, but the actual boundary remains RLS and RPC authorization.
+Protected deep links redirect through `/login`; redirect values are limited to internal
+paths and reject sensitive-looking data. Sign-in and sign-out clear identity-scoped query
+caches so one user's data cannot flash for another.
 
-- **Screens** render state and call hooks. They never import `@supabase/supabase-js`.
-- **Query hooks** own cache keys and invalidation. Keys include locale, unit, date range,
-  guests and (when relevant) the user, so results never mix contexts.
-- **Repository interfaces** live in each feature (`features/*/repository`). They express
-  use-cases, not raw rows, and are the only thing screens depend on.
-- **Supabase adapters** call RPCs and owner-scoped tables, then map payloads to domain
-  models through validating mappers (`src/lib/supabase/mappers.ts`).
-- The **composition root** (`src/lib/supabase/repositories.ts`) builds every adapter from
-  one client and one organization slug. Swapping implementations is a single change.
-- Mocks exist **only** for unit tests of repositories/adapters. The runtime composition
-  never imports `src/mocks`; a static test enforces this.
+Authentication uses email and password. The app provides sign-in and sign-out, but no
+self-service sign-up or password recovery.
 
-## Session flow
+## Data access
 
-1. `SessionProvider` subscribes to `supabase.auth.onAuthStateChange` and exposes
-   `loading | signedIn | signedOut` plus the current user.
-2. The catalog and availability are public: they load with or without a session.
-3. Profile, bookings and stay are guarded by navigation (`useSessionGuard`), not by hidden
-   buttons. A deep link to a protected route redirects to `/login?redirect=…`.
-4. The redirect target is sanitized: internal paths only, and never PII or tokens.
-5. On `SIGNED_IN` / `SIGNED_OUT`, identity-scoped caches (profile, bookings, stay) are
-   cleared so one account's data can never flash for another. Public caches stay.
+- `get_catalog` and `get_unit` return localized, active catalog data for the configured
+  organization.
+- `search_available_units` is the only availability and quote calculation used by the
+  app. It applies capacity, active-state, booking, hold-expiry, and availability-block
+  rules in PostgreSQL.
+- Authenticated users read their own bookings and profile through RLS-protected tables.
+- `get_stay_information` returns private property information only to the owner of a
+  confirmed booking.
+- Storage exposes catalog images for public reads and has no client write policy.
 
-## anon vs authenticated
+The app always uses organization-scoped RPCs for catalog reads. RLS also grants direct
+read access to active catalog tables for `anon` and `authenticated`, so the configured
+slug selects the brand experience but is not a confidentiality boundary.
 
-- **anon** (a visitor, no `auth.users` row): public catalog, unit detail, availability
-  search and sign-in. No Anonymous Auth or self-service registration is used.
-- **authenticated**: everything anon can do, plus owner-only profile, bookings and private
-  stay information for a `CONFIRMED` booking.
-- RLS and the RPCs enforce this on the server. The client guard is UX, not the boundary.
+The unique-unit overlap guarantee and status constraints are documented once in
+[DOMAIN.md](DOMAIN.md#why-overlapping-reservations-cannot-be-inserted).
 
-## Single organization, multiple properties
+## Internationalization
 
-One deployment serves one brand (`EXPO_PUBLIC_ORGANIZATION_SLUG`). That brand can have many
-properties, each with many units. Every public RPC takes the organization slug and filters
-`organizations.is_active`, `properties.is_active` and `units.is_active` server-side; the
-client cannot widen the scope. The home screen lists all active properties and their units.
+All user-facing copy goes through i18next. Spanish (`es`) is the default, English (`en`)
+is available, and CI tests locale-key parity. Server error codes are mapped to safe app
+error codes before translation. Catalog translations are resolved by database read models
+rather than assembled in screens.
 
-## Catalog vs private information
+## Environments and builds
 
-- The public read model (catalog, unit, availability) is assembled by SECURITY DEFINER RPCs
-  pinned to the active organization. It contains no Wi-Fi, access codes, arrival
-  instructions or PII.
-- `property_stay_information` has RLS enabled with no client policy and no grants. The only
-  read is `get_stay_information(booking_id)`, which checks `auth.uid()` owns a `CONFIRMED`
-  booking. The public `search_available_units` RPC is the single source of availability and
-  pricing, so there is no divergent client-side availability algorithm.
+`app.config.ts` selects the application name and iOS/Android identifier from
+`EAS_BUILD_PROFILE`; `eas.json` defines the corresponding delivery behavior.
 
-## Server authority and RPC
+| EAS profile   | App identifier                            | Delivery                                            |
+| ------------- | ----------------------------------------- | --------------------------------------------------- |
+| `development` | `com.juanjosechiroque.directstay.dev`     | Internal development-client APK on Android          |
+| `preview`     | `com.juanjosechiroque.directstay.preview` | Internal distribution                               |
+| `production`  | `com.juanjosechiroque.directstay`         | Production channel with build-number auto-increment |
 
-- Pricing and the payable amount are computed in SQL from the unit's current rate; the
-  client never supplies a trusted price.
-- Availability considers unit/capacity/active state, `CONFIRMED` bookings, non-expired
-  `PENDING_PAYMENT` holds and `availability_blocks`.
-- Booking creation and payment confirmation are **not exposed to the mobile client** in
-  this phase. `create_booking` exists, is transactional, and is covered by pgTAP, but
-  `EXECUTE` is granted only to `service_role`. The payment screen clearly states that
-  payment is not enabled instead of showing a fake success.
+At startup, `src/lib/supabase/config.ts` validates
+`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, and
+`EXPO_PUBLIC_ORGANIZATION_SLUG`; `EXPO_PUBLIC_APP_ENV` accepts `local`, `development`,
+`preview`, or `production` and defaults to `local`. Invalid configuration produces an
+explicit app screen. Only public variables belong in the client bundle.
 
-## App structure
+The project requires Node.js 24 and uses the [versioned Expo SDK 57
+documentation](https://docs.expo.dev/versions/v57.0.0/).
 
-```
-src/
-  app/          # Expo Router routes (thin: they render feature screens)
-  features/     # feature modules: screens, components, queries, repository, types
-  lib/          # query client, errors, dates, formatting, i18n-agnostic primitives
-  lib/supabase/ # client, config, mappers, error mapping, repository factory
-  i18n/         # i18next init + locale files
-  mocks/        # test-only fixtures and mock repository adapters
-```
+## Continuous integration
 
-## i18n
+GitHub Actions runs two independent jobs:
 
-- All user-facing strings go through i18next. Spanish (`es`) is the default locale.
-- `src/i18n/locales/{es,en}.json`; screens never hardcode copy.
-- A locale-parity test fails CI if `es` and `en` drift apart.
-- Error codes (`AppErrorCode`) are translated in the same layer, so failures are safe and
-  localized.
+- Application validation installs with Node 24, runs Expo Doctor, TypeScript, ESLint,
+  Jest in CI mode, and Prettier's format check.
+- Database validation installs Supabase CLI 2.116.0, starts local Postgres/Auth/Storage,
+  reapplies migrations and seed data, and runs the pgTAP suite.
 
-## Environments and configuration
+This split verifies both client contracts and database security/concurrency behavior.
 
-`app.config.ts` resolves name + bundle identifier from `EAS_BUILD_PROFILE`:
+## Not yet implemented
 
-| Profile     | Bundle id                                 |
-| ----------- | ----------------------------------------- |
-| development | `com.juanjosechiroque.directstay.dev`     |
-| preview     | `com.juanjosechiroque.directstay.preview` |
-| production  | `com.juanjosechiroque.directstay`         |
-
-Public configuration is validated at startup (`src/lib/supabase/config.ts`):
-
-```
-EXPO_PUBLIC_APP_ENV=local|development|preview|production
-EXPO_PUBLIC_SUPABASE_URL=
-EXPO_PUBLIC_SUPABASE_ANON_KEY=
-EXPO_PUBLIC_ORGANIZATION_SLUG=ayni-hospitality
-```
-
-Only `EXPO_PUBLIC_*` vars reach the bundle. A missing value fails immediately with a clear
-screen. Each environment points at its own Supabase project; everyday development targets
-the hosted `directstay` development project directly (see README). The local stack from
-`supabase start`/`supabase status` is optional tooling for authoring migrations/RLS and
-running the pgTAP suite against a disposable database — it is not required to run the app.
-Accounts are provisioned outside the mobile app; the app exposes neither sign-up nor
-password-recovery flows.
-
-## Backend concurrency (bookings)
-
-The hard invariant — no two guests ever hold a valid overlapping claim on the same
-unit/date range — is enforced by the database and transactional RPCs:
-
-1. `btree_gist` extension enables equality on `unit_id` inside GiST indexes.
-2. The only GiST exclusion constraint for booking overlaps is on `bookings`:
-   `EXCLUDE USING gist (unit_id WITH =, date_range WITH &&)
-WHERE (status IN ('PENDING_PAYMENT','CONFIRMED'))`
-   where `date_range` is a generated `daterange(check_in, check_out, '[)')`.
-3. `create_booking` first cancels expired `PENDING_PAYMENT` bookings for the requested
-   unit, then inserts the new `PENDING_PAYMENT` booking with `hold_expires_at` set to
-   exactly five minutes after creation. Therefore, only a non-expired pending booking
-   or a confirmed booking retains inventory. A second overlapping insert raises
-   constraint error `23P01`, which the API maps to "unavailable".
-4. A scheduled job may cancel expired pending bookings as cleanup, but it is not the
-   primary protection against overlaps.
-5. Creation of an `availability_blocks` row runs transactionally and validates its
-   date range against inventory-blocking bookings for the same unit. Blocks remain a
-   separate model; they do not share the booking exclusion constraint.
-6. The payment webhook re-validates, in its transaction, that the booking is still
-   `PENDING_PAYMENT` and its `hold_expires_at` has not passed before changing it to
-   `CONFIRMED`. If the retention expired, it cancels the booking and requests a refund.
-
-This behavior is demoed with two devices / concurrent requests.
+- Mobile booking creation, payment, confirmation, refunds, and in-app cancellation.
+- Stripe client/server integration, Supabase Edge Functions, and payment webhooks.
+- Self-service registration and password recovery.
+- An administrative interface or transactional RPC for creating availability blocks.
