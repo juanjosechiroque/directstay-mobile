@@ -18,6 +18,7 @@ describe('toAppError', () => {
   it('maps known message markers', () => {
     expect(toAppError({ message: 'unit_unavailable' }).code).toBe('error.unavailable');
     expect(toAppError({ message: 'not_authenticated' }).code).toBe('error.sessionRequired');
+    expect(toAppError({ message: 'hold_expired' }).code).toBe('error.holdExpired');
   });
 
   it('uses the generic code for an unknown failure and preserves AppError instances', () => {

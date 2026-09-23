@@ -3,8 +3,9 @@
 DirectStay is a mobile direct-booking and guest-stay application for independent
 accommodation businesses (cabins, lodges, boutique hotels, and short-stay apartments).
 
-Guests explore a brand's properties, check availability, and use an anonymous device
-session to access their bookings and stay information. The app is a
+Guests explore a brand's properties, check availability, make a demonstration booking,
+and use an anonymous device session to access their bookings and stay information. No
+charge is made by the demonstration payment button. The app is a
 public catalog and guest area — not a marketplace, PMS or hotel ERP.
 
 ## Stack
@@ -29,9 +30,9 @@ it exists as seed data only and must never be reused as domain logic.
 
 - **Node.js 24** (required; pinned by `.nvmrc`).
 - **A Supabase project to point at** — everyday development targets the hosted
-  `directstay` development project directly; no local install is required to run the app.
-- **Docker + Supabase CLI** (`brew install supabase/tap/supabase`) — only needed if you're
-  authoring migrations or running the pgTAP suite against a disposable local database.
+  `directstay` development project after the migration is applied.
+- **Supabase CLI** (`brew install supabase/tap/supabase`) — for applying migrations to
+  the hosted development project.
 
 ```bash
 nvm use            # Node 24
@@ -77,25 +78,9 @@ supabase db push --include-seed       # also (re)apply supabase/seed.sql
 For the hosted Supabase project, enable **Anonymous Sign-Ins** in **Supabase Dashboard →
 Authentication → Sign In / Providers**. Also allow new users at the Auth level: Supabase's
 anonymous signup endpoint requires the global signup gate. Keep the email provider's
-**Enable Email Signup** off. The local
-equivalent is `auth.enable_signup = true`, `auth.enable_anonymous_sign_ins = true`, and
-`auth.email.enable_signup = false` in `supabase/config.toml`.
-
-## Optional: local Supabase stack
-
-Running Supabase locally is only needed to author/verify migrations and RLS with a
-disposable database, or to run the pgTAP suite. It is not required to run the app day to
-day.
-
-```bash
-supabase start                 # starts Postgres, Auth, Storage, Studio
-supabase status                # or: supabase status -o env
-supabase db reset              # applies all migrations, then supabase/seed.sql
-```
-
-Copy the printed `API URL` and `anon key` into `.env` (`EXPO_PUBLIC_SUPABASE_URL`,
-`EXPO_PUBLIC_SUPABASE_ANON_KEY`) only if you want the app
-itself to run against this disposable instance instead of the remote one.
+**Enable Email Signup** off. After applying the migration, run `npm run ios`, search
+future dates, open a unit, review, enter guest details, press “Pagar (demostración)”,
+then open the booking detail and My Stay. The confirmation button makes no charge.
 
 ## Testing
 
@@ -104,22 +89,17 @@ npm run typecheck
 npm run lint
 npm run test:ci                # app/unit tests (Jest)
 npm run format:check
-
-# Requires Docker + the local Supabase stack (see above) — not required for app dev.
-supabase db reset               # fresh schema + seed for a disposable local database
-supabase test db                # database tests (pgTAP)
 ```
 
-The database suites cover schema shape, domain invariants, concurrency, profiles, RLS and
+CI database suites cover schema shape, domain invariants, concurrency, profiles, RLS and
 grants, anonymous guest ownership, the public catalog and availability RPC, private stay
-information, and the prepared-but-not-exposed `create_booking` function.
+information, authenticated booking creation and demonstration confirmation.
 
 ## Environments
 
 | Environment | Supabase project                          | Use                            |
 | ----------- | ----------------------------------------- | ------------------------------ |
 | Development | Remote development project (`directstay`) | Everyday development (default) |
-| Local       | Local stack (`supabase start`, optional)  | Schema/RLS authoring, pgTAP    |
 | Preview     | Isolated preview project                  | Pre-release review             |
 | Production  | Production project                        | Real guests                    |
 
@@ -162,13 +142,13 @@ Deep-link scheme: `directstay`.
 Not yet implemented (and intentionally absent from the client):
 
 - Stripe, real payments, PaymentIntent creation or secret keys
-- Booking creation, payment confirmation and any fake/simulated success
 - In-app cancellation and refunds
 - Cross-device account recovery and identity linking
 - Marketplace, PMS, hotel ERP, extras, chat, CRM or housekeeping features
 
-`create_booking` is implemented and tested in PostgreSQL but `EXECUTE` is granted only to
-`service_role`; the mobile app cannot create or confirm a booking.
+`create_booking` and `confirm_demo_payment` run on PostgreSQL for authenticated anonymous
+guests. The server confirms demonstration bookings; Stripe integration will replace that
+confirmation path for real payments.
 
 ## Documentation
 

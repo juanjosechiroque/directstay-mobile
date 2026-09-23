@@ -3,6 +3,7 @@ import { QueryClient } from '@tanstack/react-query';
 import type { BookingRepository } from '@/features/booking/repository/booking-repository';
 import { bookingKeys } from '@/features/booking/queries/keys';
 import { invalidateAfterBookingCreated } from '@/features/booking/queries/invalidation';
+import { confirmDemoPaymentAndInvalidate } from '@/features/booking/queries/use-booking-mutations';
 import { availabilityKeys } from '@/features/search/queries/use-availability-search';
 import { stayKeys } from '@/features/stay/queries/use-stay';
 
@@ -20,6 +21,8 @@ describe('booking cache invalidation', () => {
       getQuote: jest.fn(),
       listBookings: jest.fn().mockResolvedValue([]),
       getBooking: jest.fn(),
+      createBooking: jest.fn(),
+      confirmDemoPayment: jest.fn(),
     };
     await queryClient.fetchQuery({
       queryKey: bookingKeys.lists(),
@@ -32,6 +35,27 @@ describe('booking cache invalidation', () => {
 
     expect(bookingRepository.listBookings).toHaveBeenCalledTimes(1);
     expect(queryClient.getQueryState(bookingKeys.lists())?.isInvalidated).toBe(true);
+    expect(queryClient.getQueryState(availabilityKeys.all)?.isInvalidated).toBe(true);
+    expect(queryClient.getQueryState(stayKeys.detail('booking-1', 'es'))?.isInvalidated).toBe(true);
+  });
+
+  it('invalidates booking, availability and stay after confirmation', async () => {
+    const queryClient = createClient();
+    queryClient.setQueryData(bookingKeys.detail('booking-1'), { status: 'PENDING_PAYMENT' });
+    queryClient.setQueryData(availabilityKeys.all, []);
+    queryClient.setQueryData(stayKeys.detail('booking-1', 'es'), {});
+    const bookingRepository = {
+      getQuote: jest.fn(),
+      listBookings: jest.fn(),
+      getBooking: jest.fn(),
+      createBooking: jest.fn(),
+      confirmDemoPayment: jest.fn().mockResolvedValue({ id: 'booking-1', status: 'CONFIRMED' }),
+    } as BookingRepository;
+
+    await confirmDemoPaymentAndInvalidate(bookingRepository, queryClient, 'booking-1');
+
+    expect(bookingRepository.confirmDemoPayment).toHaveBeenCalledWith('booking-1');
+    expect(queryClient.getQueryState(bookingKeys.detail('booking-1'))?.isInvalidated).toBe(true);
     expect(queryClient.getQueryState(availabilityKeys.all)?.isInvalidated).toBe(true);
     expect(queryClient.getQueryState(stayKeys.detail('booking-1', 'es'))?.isInvalidated).toBe(true);
   });

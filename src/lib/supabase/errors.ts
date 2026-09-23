@@ -29,6 +29,9 @@ export function toAppError(error: unknown): AppError {
   if (message.includes('unit_unavailable')) {
     return new AppError('error.unavailable', { cause: error });
   }
+  if (message.includes('hold_expired')) {
+    return new AppError('error.holdExpired', { cause: error });
+  }
 
   const mapped = APP_ERROR_CODE_BY_SUPABASE_CODE[code];
   if (mapped) {

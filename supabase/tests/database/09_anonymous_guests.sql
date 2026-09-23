@@ -2,7 +2,7 @@
 --   * Auth inserts create a profile automatically
 --   * an anonymous guest reads only its profile and reservations
 --   * private stay data is limited to its own CONFIRMED booking
---   * mobile roles still cannot create bookings or write bookings/payments
+--   * anonymous authenticated users can create via RPC but cannot write tables
 -- Runs inside a transaction and ends with rollback.
 
 begin;
@@ -104,10 +104,10 @@ $$, '42501', null, 'an anonymous user cannot delete payments');
 select throws_ok($$
   delete from public.bookings where id = 'f2000000-0000-0000-0000-000000000002'
 $$, '42501', null, 'an anonymous user cannot delete its own booking');
-select throws_ok($$
+select lives_ok($$
   select public.create_booking('33333333-3333-3333-3333-333333333305', date '2030-01-10',
     date '2030-01-12', 2, 'Guest', 'guest@example.test', null)
-$$, '42501', null, 'an anonymous user cannot execute create_booking');
+$$, 'an anonymous authenticated user can execute create_booking');
 
 reset role;
 select * from finish();

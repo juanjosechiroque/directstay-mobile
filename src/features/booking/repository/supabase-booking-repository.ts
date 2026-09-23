@@ -1,17 +1,16 @@
 import type { BookingRepository } from '@/features/booking/repository/booking-repository';
-import type { Booking, Quote, QuoteRequest } from '@/features/booking/types';
+import type { Booking, CreateBookingInput, Quote, QuoteRequest } from '@/features/booking/types';
 import { AppError } from '@/lib/errors';
 import type { DatabaseClient } from '@/lib/supabase/client';
 import { toAppError } from '@/lib/supabase/errors';
-import { mapBooking } from '@/lib/supabase/mappers';
+import { mapBooking, mapBookingRpcResponse } from '@/lib/supabase/mappers';
 import type { BookingRow, SearchUnitJson } from '@/lib/supabase/types';
 
 /**
- * Supabase-backed booking reads.
+ * Supabase-backed booking reads and narrow server-authoritative mutations.
  *
  * RLS restricts every row to its owner (`guest_profile_id = auth.uid()`), so the queries
- * do not need a client-supplied user filter. Booking creation, confirmation and refunds
- * are server-side operations because they change shared reservation and payment state.
+ * do not need a client-supplied user filter. RPCs enforce creation and confirmation.
  */
 const BOOKING_SELECT = `
   id, guest_profile_id, unit_id, status, check_in, check_out, guest_count,
@@ -79,5 +78,40 @@ export class SupabaseBookingRepository implements BookingRepository {
       throw toAppError(error);
     }
     return data ? mapBooking(data as unknown as BookingRow) : null;
+  }
+
+  async createBooking(input: CreateBookingInput): Promise<Booking> {
+    const { data, error } = await this.client.rpc('create_booking', {
+      p_unit_id: input.unitId,
+      p_check_in: input.checkIn,
+      p_check_out: input.checkOut,
+      p_guest_count: input.guestCount,
+      p_guest_name: input.guestName,
+      p_guest_email: input.guestEmail,
+      p_guest_phone: input.guestPhone,
+    });
+    if (error) throw toAppError(error);
+    const created = mapBookingRpcResponse(data);
+    if (created.status !== 'PENDING_PAYMENT') throw new AppError('error.generic');
+    const booking = await this.getBooking(created.id);
+    if (!booking) throw new AppError('error.generic');
+    return booking;
+  }
+
+  async confirmDemoPayment(bookingId: string): Promise<Booking> {
+    const { data, error } = await this.client.rpc('confirm_demo_payment', {
+      p_booking_id: bookingId,
+    });
+    if (error) throw toAppError(error);
+    const confirmed = mapBookingRpcResponse(data);
+    if (confirmed.status === 'CANCELED' && confirmed.cancellationReason === 'HOLD_EXPIRED') {
+      throw new AppError('error.holdExpired');
+    }
+    if (confirmed.status !== 'CONFIRMED' || confirmed.id !== bookingId) {
+      throw new AppError('error.generic');
+    }
+    const booking = await this.getBooking(confirmed.id);
+    if (!booking) throw new AppError('error.generic');
+    return booking;
   }
 }

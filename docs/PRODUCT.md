@@ -18,31 +18,32 @@ recurrence and “My Stay.”
 3. Review the refreshed quote (`/booking/review`) and enter guest details
    (`/booking/guest`); the details remain in memory.
 4. When the guest continues, the app creates or reuses an anonymous Supabase session on
-   this device, then opens Payment (`/booking/payment`), where the flow stops because
-   checkout is unavailable.
-5. Guests can read reservations (`/bookings`, `/bookings/[bookingId]`) and open My Stay for
-   a confirmed booking (`/stay/[bookingId]`). Settings (`/settings`) contains the
-   language selector and brand contact.
+   this device and requests a pending booking. Payment (`/booking/payment`) shows the
+   server-held price and five-minute countdown. “Pagar (demostración)” asks the server to
+   confirm the reservation; it makes no charge.
+5. Confirmation (`/booking/confirmed`) shows the reservation summary and links to My
+   bookings (`/bookings`), booking detail (`/bookings/[bookingId]`) and My Stay
+   (`/stay/[bookingId]`). Settings (`/settings`) contains language and brand contact.
 
 ## Available today
 
 - Public localized catalog, licensed media, availability, and quotes.
 - Spanish-default and English UI; anonymous guest sessions persist on the device.
-- Owner-only booking history and confirmed-booking stay and contact information.
+- Booking creation, demonstration confirmation, owner-only booking history, and
+  confirmed-booking stay and contact information.
 
 Ayni Hospitality is reference data only.
 
 ## Guest identity decision
 
 Each device keeps its own anonymous Supabase identity, which owns that device's bookings.
-There is no login or account recovery on another device. When booking creation and payment
-are implemented, an email confirmation will serve as the guest's receipt and proof of the
-reservation; it will not recover the anonymous account.
+There is no login or account recovery on another device. The demonstration checkout sends no email. A future real-payment receipt will prove the
+reservation but will not recover the anonymous account.
 
 ## Not yet implemented
 
-Mobile reservation creation, Stripe and payments, refunds, in-app cancellation,
-cross-device account recovery, and host/admin operations.
+Stripe and real payments, refunds, in-app cancellation, cross-device account recovery,
+and host/admin operations.
 
 DirectStay is not a marketplace, PMS, hotel ERP, channel manager, CRM, housekeeping,
 loyalty, smart-lock, ordering, or chat product. It has no purchasable extras or persisted

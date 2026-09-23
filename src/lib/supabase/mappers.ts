@@ -12,6 +12,7 @@ import {
 import type { AvailableUnit } from '@/features/search/types';
 import type { StayInformation } from '@/features/stay/types';
 import { diffInNights } from '@/lib/dates';
+import { AppError } from '@/lib/errors';
 
 import type {
   BookingRow,
@@ -202,6 +203,24 @@ export function mapBooking(row: BookingRow): Booking {
     cancellationReason: toCancellationReason(row.cancellation_reason),
     refundedAt: row.refunded_at,
   };
+}
+
+/** Check the RPC payload before using its id or status for navigation. */
+export function mapBookingRpcResponse(value: unknown): Booking {
+  const row = value as BookingRow | null;
+  if (
+    !row ||
+    typeof row.id !== 'string' ||
+    !BOOKING_STATUSES.includes(row.status as BookingStatus) ||
+    typeof row.check_in !== 'string' ||
+    typeof row.check_out !== 'string' ||
+    !Number.isSafeInteger(row.total_amount_minor) ||
+    !Number.isSafeInteger(row.nightly_rate_minor) ||
+    typeof row.hold_expires_at !== 'string'
+  ) {
+    throw new AppError('error.generic');
+  }
+  return mapBooking(row);
 }
 
 export function mapStayInformation(json: StayInformationJson): StayInformation {

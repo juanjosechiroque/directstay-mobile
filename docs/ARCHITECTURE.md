@@ -36,9 +36,10 @@ owner-scoped rows, SECURITY DEFINER RPCs expose narrow use cases, and database c
 protect invariants during concurrent writes. The Supabase anon key is public by design;
 service-role and provider secrets must never enter the app bundle.
 
-`create_booking` is transactional and server-authoritative, but is granted only to
-`service_role`. The app can request quotes but cannot create or confirm a reservation.
-See [Not yet implemented](#not-yet-implemented).
+`create_booking` and `confirm_demo_payment` are transactional SECURITY DEFINER RPCs
+granted to `authenticated` guests. The app submits guest details and then a booking id;
+PostgreSQL alone sets the price, hold and confirmed status. Demo confirmation does not
+create a Stripe payment record.
 
 ## Application layers
 
@@ -77,7 +78,10 @@ Submitting valid guest details creates an anonymous session only when no session
 Supabase persists it in AsyncStorage on that device. Booking and stay routes never redirect
 to login. Without a session, reservation and stay screens return empty/not-found states;
 the actual privacy boundary remains RLS and RPC authorization. Creating a session clears
-identity-scoped query caches.
+identity-scoped query caches. The guest screen then creates a pending booking by RPC and
+passes only its id to Payment. Payment reads the persisted booking price and deadline,
+asks the confirmation RPC to change state, and invalidates booking, availability and stay
+queries. The confirmation route replaces Payment in navigation history.
 
 ## Data access
 
@@ -138,7 +142,5 @@ This split verifies both client contracts and database security/concurrency beha
 
 ## Not yet implemented
 
-- Mobile booking creation, payment, confirmation, refunds, and in-app cancellation.
-- Stripe client/server integration, Supabase Edge Functions, and payment webhooks.
-- Cross-device account recovery and identity linking.
-- An administrative interface or transactional RPC for creating availability blocks.
+- Stripe client/server integration, real payments and payment webhooks.
+- Refunds and in-app cancellation.

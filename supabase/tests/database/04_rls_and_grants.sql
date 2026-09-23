@@ -5,7 +5,7 @@
 --     information, and cannot write anything
 --   * authenticated is the same for the catalog, plus owner-only profile/bookings
 --   * the public RPCs work for anon; the private stay RPC needs an owner + CONFIRMED
---   * create_booking is not callable by anon or authenticated
+--   * booking creation and demo confirmation require authenticated; anon has neither
 -- Runs inside a transaction and ends with rollback.
 
 begin;
@@ -99,6 +99,9 @@ $$, '42501', null, 'anon cannot execute the private stay RPC');
 select throws_ok($$
   select public.create_booking('33333333-3333-3333-3333-333333333301', date '2028-02-01', date '2028-02-04', 2, 'Guest', 'g@example.test', null)
 $$, '42501', null, 'anon cannot execute create_booking');
+select throws_ok($$
+  select public.confirm_demo_payment('e0000000-0000-0000-0000-000000000001')
+$$, '42501', null, 'anon cannot execute confirm_demo_payment');
 
 reset role;
 
@@ -146,7 +149,7 @@ select throws_ok($$ select count(*) from public.payments $$, '42501', null, 'aut
 select throws_ok($$ select count(*) from public.availability_blocks $$, '42501', null, 'authenticated cannot read availability_blocks');
 select throws_ok($$ select count(*) from public.property_stay_information $$, '42501', null, 'authenticated cannot read stay information directly');
 
--- bookings are RPC-only for the client: no direct INSERT / UPDATE, no create_booking
+-- bookings are RPC-only for the client: no direct INSERT / UPDATE
 select throws_ok($$
   insert into public.bookings (unit_id, guest_profile_id, check_in, check_out, guest_count,
     guest_name, guest_email, currency, nightly_rate_minor, total_amount_minor)
@@ -156,9 +159,9 @@ $$, '42501', null, 'authenticated cannot INSERT bookings directly');
 select throws_ok($$
   update public.bookings set guest_count = 9 where guest_profile_id = 'c0000000-0000-0000-0000-000000000001'
 $$, '42501', null, 'authenticated cannot UPDATE bookings directly');
-select throws_ok($$
+select lives_ok($$
   select public.create_booking('33333333-3333-3333-3333-333333333301', date '2028-02-01', date '2028-02-04', 2, 'Guest', 'g@example.test', null)
-$$, '42501', null, 'authenticated cannot execute create_booking');
+$$, 'authenticated can execute create_booking');
 
 reset role;
 

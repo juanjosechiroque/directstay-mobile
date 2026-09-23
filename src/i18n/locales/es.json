@@ -114,13 +114,15 @@
     "phoneHelper": "Nos ayuda a coordinar tu llegada.",
     "guestContinueCta": "Continuar al pago",
     "guestPrivacyNote": "Tu reserva quedará guardada en este teléfono. Usa un correo al que tengas acceso para recibir la confirmación.",
-    "guestSessionErrorTitle": "No pudimos preparar tu reserva",
     "paymentTitle": "Pago",
-    "paymentsUnavailableBadge": "Pagos no habilitados",
-    "paymentsUnavailableTitle": "El pago aún no está habilitado",
-    "paymentsUnavailableMessage": "Todavía no procesamos pagos ni confirmamos reservas desde la app. Cuando el pago esté disponible, podrás reservar esta unidad sin salir de DirectStay.",
-    "paymentsUnavailableCta": "Pago no disponible todavía",
-    "paymentsUnavailableNote": "No se creó ninguna reserva y no se realizó ningún cargo."
+    "creationErrorTitle": "No pudimos crear tu reserva",
+    "holdExpiredTitle": "La reserva venció",
+    "holdCountdown": "Tiempo para pagar: {{time}}",
+    "demoPayCta": "Pagar (demostración)",
+    "noChargeNote": "No se realiza ningún cargo",
+    "paymentErrorTitle": "No pudimos confirmar tu reserva",
+    "confirmedTitle": "Reserva confirmada",
+    "viewBookingCta": "Ver mi reserva"
   },
   "bookings": {
     "title": "Mis reservas",
@@ -202,6 +204,7 @@
     "sessionRequired": "No pudimos comprobar el acceso desde este dispositivo.",
     "configuration": "Falta la configuración de la aplicación.",
     "authRateLimited": "No pudimos preparar tu reserva ahora. Espera un momento e inténtalo de nuevo.",
-    "authFailed": "No pudimos preparar tu reserva en este dispositivo. Inténtalo de nuevo."
+    "authFailed": "No pudimos preparar tu reserva en este dispositivo. Inténtalo de nuevo.",
+    "holdExpired": "El tiempo para pagar terminó. Busca otra vez para reservar."
   }
 }

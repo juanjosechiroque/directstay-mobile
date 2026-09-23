@@ -123,13 +123,10 @@ their own profile row. Guest name, email, and phone belong to the reservation, n
 profile.
 
 The anonymous identity is tied to its device. A guest who installs the app elsewhere cannot
-recover those reservations; when booking creation is available, the confirmation email is
-the reservation receipt, not an account recovery mechanism. Anonymous sign-in has an
-The local IP-based limit is configured as 30 anonymous sign-ins per hour in
-`supabase/config.toml`. Configure the remote project's limit in Supabase Dashboard →
-Authentication → Rate Limits. Once the payment flow can create bookings, the product
-should allow at most one pending booking per user; this is an abuse-control measure in
-addition to transactional inventory protection.
+recover those reservations. Anonymous sign-in has a local IP-based limit of 30 per hour
+in `supabase/config.toml`; configure the remote limit in Supabase Dashboard →
+Authentication → Rate Limits. The database allows one pending booking per guest to limit
+abandoned holds in addition to protecting inventory transactionally.
 
 Wi-Fi details, breakfast information, arrival instructions, and directions live in
 `property_stay_information`. Direct client reads are denied. The authenticated
@@ -150,6 +147,9 @@ pricing, and occupancy pricing are not modeled. `create_booking` copies the serv
 rate and total into the booking, preserving a historical pricing snapshot. The client
 does not submit an authoritative price.
 
+The booking RPC rejects check-in before today in the property timezone with
+`invalid_date_range`.
+
 `search_available_units` checks the active brand/property/unit, guest capacity,
 availability blocks, confirmed bookings, and pending bookings whose hold has not expired.
 Canceled, refunded, and expired pending bookings do not appear as inventory claims in
@@ -165,16 +165,19 @@ Every booking starts as `PENDING_PAYMENT`; there is no separate hold table. Post
 requires `hold_expires_at = created_at + interval '5 minutes'`, so the hold is exactly
 five minutes.
 
-The service-role-only `create_booking` RPC validates the guest count and dates, obtains
-price and currency from the unit, cancels expired pending bookings for that unit, and then
-inserts a new pending booking in the same transaction. Time passing alone does not change
+The authenticated `create_booking` RPC validates the guest count and dates, obtains
+price and currency from the unit, cancels any previous pending booking for the same guest
+with `SYSTEM`, cancels expired pending bookings for the requested unit, and inserts a new
+pending booking in the same transaction. A transaction-level advisory lock serializes
+concurrent booking creation by the same guest. Time passing alone does not change
 a row to `CANCELED`: there is no scheduled expiry job. Search ignores an expired hold,
 and the next `create_booking` call for that unit records `HOLD_EXPIRED` before inserting.
+The confirmation RPC also cancels an expired pending booking.
 
 ```mermaid
 stateDiagram-v2
     [*] --> PENDING_PAYMENT
-    PENDING_PAYMENT --> CONFIRMED: payment accepted
+    PENDING_PAYMENT --> CONFIRMED: demo confirmation or Stripe webhook
     PENDING_PAYMENT --> CANCELED: HOLD_EXPIRED
     PENDING_PAYMENT --> CANCELED: USER_CANCELLED
     PENDING_PAYMENT --> CANCELED: SYSTEM
@@ -193,6 +196,14 @@ checks require fields consistent with each state:
 The diagram records the supported domain lifecycle. The migrations validate each row's
 state and companion fields, but no database trigger currently compares the old and new
 status to enforce transition history.
+
+For now, only the booking owner can call `confirm_demo_payment`. It locks the booking row,
+returns an already confirmed booking unchanged, and confirms a pending booking only while
+its five-minute hold is valid. If the hold expired, it returns the newly canceled row with
+`HOLD_EXPIRED`; returning commits that cancellation, whereas raising an exception would
+roll it back. The app treats that response as an expired hold. Other states and unknown
+or foreign bookings return `not_found`. Demo confirmation creates no `payments` row. A
+Stripe webhook will replace this confirmation provider without changing the guest screens.
 
 The booking detail UI calculates a cancellation deadline 24 hours before the property's
 local check-in time. It offers property contact and does not submit a cancellation. This
@@ -244,9 +255,8 @@ check.
 
 ## Not yet implemented
 
-- The mobile roles cannot execute `create_booking`; only `service_role` can call it.
-- Stripe SDKs, PaymentSheet, Edge Functions, webhooks, payment confirmation, refunds, and
-  in-app cancellation do not exist.
+- Stripe SDKs, PaymentSheet, Edge Functions, webhooks, real payment processing, refunds,
+  and in-app cancellation do not exist.
 - When payment processing is implemented, a payment arriving after its booking hold has
   expired must not confirm that booking; the late payment is automatically refunded.
 - A paid booking must never become `CANCELED`; a paid booking that is refunded moves to

@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -15,6 +15,7 @@ import {
 import { QuoteSummary } from '@/features/booking/components/QuoteSummary';
 import { useBookingDraft } from '@/features/booking/draft/booking-draft-context';
 import { useBookingQuote } from '@/features/booking/queries/use-booking';
+import { useCreateBooking } from '@/features/booking/queries/use-booking-mutations';
 import { useAuthActions } from '@/features/auth/queries/use-session';
 import { getErrorCode } from '@/lib/errors';
 import { colors, fontSize, spacing } from '@/lib/theme';
@@ -25,6 +26,8 @@ export function BookingGuestScreen() {
   const router = useRouter();
   const { stay, guest, setGuest } = useBookingDraft();
   const { ensureGuestSession } = useAuthActions();
+  const createBooking = useCreateBooking();
+  const submitLock = useRef(false);
 
   // Reuse any previously entered guest data (e.g. coming back from payment).
   const [fullName, setFullName] = useState(guest?.fullName ?? '');
@@ -59,21 +62,33 @@ export function BookingGuestScreen() {
   }
 
   const handleSubmit = async () => {
+    if (submitLock.current) return;
     const nextErrors = validateGuestForm({ fullName, email, phone });
     setErrors(nextErrors);
     if (hasErrors(nextErrors) || !quoteState.isReady) {
       return;
     }
+    submitLock.current = true;
     setSubmitting(true);
     setSubmitError(null);
     setGuest({ fullName: fullName.trim(), email: email.trim(), phone: phone.trim() });
     try {
       await ensureGuestSession();
-      router.push('/booking/payment');
+      const created = await createBooking.mutateAsync({
+        unitId: stay.unitId,
+        checkIn: stay.checkIn,
+        checkOut: stay.checkOut,
+        guestCount: stay.guestCount,
+        guestName: fullName.trim(),
+        guestEmail: email.trim(),
+        guestPhone: phone.trim() || null,
+      });
+      router.push({ pathname: '/booking/payment', params: { bookingId: created.id } });
     } catch (error) {
       setSubmitError(error);
     } finally {
       setSubmitting(false);
+      submitLock.current = false;
     }
   };
 
@@ -132,11 +147,15 @@ export function BookingGuestScreen() {
 
       {submitError ? (
         <ErrorState
-          title={t('booking.guestSessionErrorTitle')}
+          title={t('booking.creationErrorTitle')}
           message={t(getErrorCode(submitError))}
           retryLabel={t('common.retry')}
           onRetry={() => void handleSubmit()}
         />
+      ) : null}
+
+      {submitError && getErrorCode(submitError) === 'error.unavailable' ? (
+        <Button title={t('booking.goToSearch')} onPress={() => router.replace('/search')} />
       ) : null}
 
       <View style={styles.quote}>

@@ -8,6 +8,7 @@
 export type AppErrorCode =
   | 'error.notFound'
   | 'error.unavailable'
+  | 'error.holdExpired'
   | 'error.validation'
   | 'error.sessionRequired'
   | 'error.authRateLimited'

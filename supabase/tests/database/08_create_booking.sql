@@ -1,9 +1,9 @@
--- Transactional booking creation (prepared in PostgreSQL, not exposed to the client):
+-- Transactional booking creation available to authenticated guests:
 --   * creates a PENDING_PAYMENT booking with a server-authoritative price and 5-min hold
 --   * validates organization/property/unit state, dates, guests and guest data
 --   * prevents overlapping inventory claims transactionally
 --   * cancels expired pending holds for the unit before inserting
---   * requires authentication; anon/authenticated cannot execute it (see 04)
+--   * requires authentication; anon cannot execute it (see 04)
 -- Runs inside a transaction and ends with rollback.
 
 begin;
@@ -13,8 +13,10 @@ set local search_path = public, extensions;
 select * from no_plan();
 
 insert into auth.users (id, email) values
-  ('a3000000-0000-0000-0000-000000000001', 'creator@example.test');
+  ('a3000000-0000-0000-0000-000000000001', 'creator@example.test'),
+  ('a3000000-0000-0000-0000-000000000002', 'other-creator@example.test');
 
+set local role authenticated;
 set local request.jwt.claims to '{"sub":"a3000000-0000-0000-0000-000000000001","role":"authenticated"}';
 
 -- ---- happy path: server computes the price and the hold ----
@@ -43,11 +45,13 @@ select is((select (booking).confirmed_at from created), null,
   'create_booking never confirms a booking from the client');
 
 -- ---- overlap is rejected transactionally ----
+set local request.jwt.claims to '{"sub":"a3000000-0000-0000-0000-000000000002","role":"authenticated"}';
 select throws_ok($$
   select public.create_booking(
     '33333333-3333-3333-3333-333333333301',
     date '2027-05-02', date '2027-05-05', 2, 'Guest', 'g@example.test', null)
 $$, '23P01', null, 'an overlapping create_booking is rejected by the exclusion constraint');
+set local request.jwt.claims to '{"sub":"a3000000-0000-0000-0000-000000000001","role":"authenticated"}';
 
 -- ---- validation ----
 select throws_ok($$
@@ -70,6 +74,7 @@ $$, '22023', null, 'a blank guest name is rejected');
 -- Captures its own id because create_booking below inserts a second row for the same
 -- unit/check-in once the expired hold is released, so unit_id + check_in no longer
 -- identifies a single row.
+reset role;
 insert into public.bookings (
   id, unit_id, guest_profile_id, status, check_in, check_out, guest_count,
   guest_name, guest_email, currency, nightly_rate_minor, total_amount_minor,
@@ -77,15 +82,17 @@ insert into public.bookings (
 )
 values (
   'a3000000-0000-0000-0000-000000000099',
-  '33333333-3333-3333-3333-333333333302', 'a3000000-0000-0000-0000-000000000001',
+  '33333333-3333-3333-3333-333333333302', 'a3000000-0000-0000-0000-000000000002',
   'PENDING_PAYMENT', date '2027-09-01', date '2027-09-03', 2, 'Guest', 'g@example.test',
   'USD', 18000, 36000, now() - interval '10 minutes', now() - interval '5 minutes');
+set local role authenticated;
 
 select lives_ok($$
   select public.create_booking(
     '33333333-3333-3333-3333-333333333302',
     date '2027-09-01', date '2027-09-03', 2, 'Guest', 'g@example.test', null)
 $$, 'create_booking releases an expired hold and admits a valid claim');
+reset role;
 select is(
   (select status::text from public.bookings where id = 'a3000000-0000-0000-0000-000000000099'),
   'CANCELED',
@@ -96,6 +103,7 @@ select is(
   'the expired hold is canceled with HOLD_EXPIRED');
 
 -- ---- requires authentication ----
+set local role authenticated;
 set local request.jwt.claims to '{"role":"anon"}';
 select throws_ok($$
   select public.create_booking(

@@ -1,3 +1,9 @@
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
+
+import { BOOKING_STATUSES, CANCELLATION_REASONS } from '@/features/booking/types';
+import { AMENITY_CODES, HIGHLIGHT_CODES } from '@/features/property/types';
+
 import en from '../locales/en.json';
 import es from '../locales/es.json';
 
@@ -37,6 +43,30 @@ describe('locale files', () => {
         expect(typeof value).toBe('string');
         expect((value as string).trim().length).toBeGreaterThan(0);
       }
+    }
+  });
+
+  it('has no unused translation keys', () => {
+    function sourceFiles(directory: string): string[] {
+      return readdirSync(directory).flatMap((entry) => {
+        if (entry === '__tests__' || entry === 'locales') return [];
+        const path = join(directory, entry);
+        if (statSync(path).isDirectory()) return sourceFiles(path);
+        return /\.tsx?$/.test(entry) ? [path] : [];
+      });
+    }
+    const source = sourceFiles(join(process.cwd(), 'src'))
+      .map((path) => readFileSync(path, 'utf8'))
+      .join('\n');
+    const dynamicKeys = [
+      ...AMENITY_CODES.map((code) => `amenities.${code}`),
+      ...HIGHLIGHT_CODES.map((code) => `highlights.${code}`),
+      ...BOOKING_STATUSES.map((status) => `booking.status.${status}`),
+      ...CANCELLATION_REASONS.map((reason) => `booking.cancellationReason.${reason}`),
+    ];
+    for (const key of collectKeys(es)) {
+      const base = key.replace(/_(one|other)$/, '');
+      expect(source.includes(base) || dynamicKeys.includes(key)).toBe(true);
     }
   });
 });

@@ -114,13 +114,15 @@
     "phoneHelper": "It helps us coordinate your arrival.",
     "guestContinueCta": "Continue to payment",
     "guestPrivacyNote": "Your reservation will be saved on this phone. Use an email address you can access to receive the confirmation.",
-    "guestSessionErrorTitle": "We couldn't prepare your reservation",
     "paymentTitle": "Payment",
-    "paymentsUnavailableBadge": "Payments not enabled",
-    "paymentsUnavailableTitle": "Payment isn't available yet",
-    "paymentsUnavailableMessage": "We don't process payments or confirm bookings from the app yet. Once payment is available, you will be able to book this unit without leaving DirectStay.",
-    "paymentsUnavailableCta": "Payment not available yet",
-    "paymentsUnavailableNote": "No booking was created and no charge was made."
+    "creationErrorTitle": "We couldn't create your booking",
+    "holdExpiredTitle": "The booking expired",
+    "holdCountdown": "Time left to pay: {{time}}",
+    "demoPayCta": "Pay (demo)",
+    "noChargeNote": "No charge will be made",
+    "paymentErrorTitle": "We couldn't confirm your booking",
+    "confirmedTitle": "Booking confirmed",
+    "viewBookingCta": "View my booking"
   },
   "bookings": {
     "title": "My bookings",
@@ -202,6 +204,7 @@
     "sessionRequired": "We couldn't verify access from this device.",
     "configuration": "The application configuration is missing.",
     "authRateLimited": "We couldn't prepare your reservation right now. Wait a moment and try again.",
-    "authFailed": "We couldn't prepare your reservation on this device. Please try again."
+    "authFailed": "We couldn't prepare your reservation on this device. Please try again.",
+    "holdExpired": "The payment window ended. Search again to book."
   }
 }
