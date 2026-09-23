@@ -8,10 +8,8 @@
 export type AppErrorCode =
   | 'error.notFound'
   | 'error.unavailable'
-  | 'error.cancelNotAllowed'
   | 'error.validation'
   | 'error.sessionRequired'
-  | 'error.paymentsNotEnabled'
   | 'error.authRateLimited'
   | 'error.authFailed'
   | 'error.configuration'

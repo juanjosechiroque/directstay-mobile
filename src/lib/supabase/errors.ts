@@ -1,5 +1,15 @@
 import { AppError, type AppErrorCode } from '@/lib/errors';
 
+const APP_ERROR_CODE_BY_SUPABASE_CODE: Readonly<Record<string, AppErrorCode>> = {
+  '23P01': 'error.unavailable',
+  '22007': 'error.validation',
+  '22023': 'error.validation',
+  '28000': 'error.sessionRequired',
+  P0002: 'error.notFound',
+  PGRST116: 'error.notFound',
+  '42501': 'error.sessionRequired',
+};
+
 /**
  * Maps Supabase/PostgREST failures to application error codes.
  *
@@ -16,20 +26,20 @@ export function toAppError(error: unknown): AppError {
   const code = source?.code ?? '';
   const message = source?.message ?? '';
 
-  const mapped: AppErrorCode | null =
-    code === '23P01' || message.includes('unit_unavailable')
-      ? 'error.unavailable'
-      : code === '22007' || code === '22023'
-        ? 'error.validation'
-        : code === '28000' || message.includes('not_authenticated')
-          ? 'error.sessionRequired'
-          : code === 'P0002' || code === 'PGRST116'
-            ? 'error.notFound'
-            : code === '42501'
-              ? 'error.sessionRequired'
-              : null;
+  if (message.includes('unit_unavailable')) {
+    return new AppError('error.unavailable', { cause: error });
+  }
 
-  return new AppError(mapped ?? 'error.generic', { cause: error });
+  const mapped = APP_ERROR_CODE_BY_SUPABASE_CODE[code];
+  if (mapped) {
+    return new AppError(mapped, { cause: error });
+  }
+
+  if (message.includes('not_authenticated')) {
+    return new AppError('error.sessionRequired', { cause: error });
+  }
+
+  return new AppError('error.generic', { cause: error });
 }
 
 /** Maps Supabase Auth failures to distinct, translated codes. */

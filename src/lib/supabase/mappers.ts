@@ -5,10 +5,10 @@ import {
   type AmenityCode,
   type CatalogImage,
   type HighlightCode,
+  type PropertyCatalog,
   type Property,
   type Unit,
 } from '@/features/property/types';
-import type { PropertyCatalog } from '@/features/property/repository';
 import type { AvailableUnit } from '@/features/search/types';
 import type { StayInformation } from '@/features/stay/types';
 import { diffInNights } from '@/lib/dates';

@@ -6,7 +6,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Button, EmptyState, ErrorState, LoadingState, Screen, ScreenHeader } from '@/components';
 import { StaySummaryCard } from '@/features/booking/components/StaySummaryCard';
 import { useBookingDraft } from '@/features/booking/draft/booking-draft-context';
-import { useQuote } from '@/features/booking/queries/use-booking';
+import { useBookingQuote } from '@/features/booking/queries/use-booking';
 import { useUnit } from '@/features/property/queries/use-property';
 import { getErrorCode } from '@/lib/errors';
 import { colors, fontSize, spacing } from '@/lib/theme';
@@ -33,11 +33,11 @@ export function BookingReviewScreen() {
     unitId && checkIn && checkOut && guests
       ? { unitId, checkIn, checkOut, guestCount: guests }
       : null;
-  const quoteQuery = useQuote(quoteRequest);
-  const quote = quoteQuery.data;
+  const quoteState = useBookingQuote(quoteRequest);
+  const quote = quoteState.data;
 
   // Route params here carry only identifiers/business dates (no PII). Capture them in the
-  // in-memory draft so later steps no longer need navigation params.
+  // in-memory draft so later steps can use a single source for the stay details.
   useEffect(() => {
     if (unitId && checkIn && checkOut && guests) {
       setStay({ unitId, checkIn, checkOut, guestCount: guests });
@@ -60,7 +60,7 @@ export function BookingReviewScreen() {
     );
   }
 
-  if (unitQuery.isLoading || quoteQuery.isLoading) {
+  if (unitQuery.isLoading || quoteState.isLoading) {
     return (
       <Screen>
         <ScreenHeader title={t('booking.reviewTitle')} />
@@ -69,8 +69,8 @@ export function BookingReviewScreen() {
     );
   }
 
-  if (unitQuery.isError || quoteQuery.isError) {
-    const error = unitQuery.error ?? quoteQuery.error;
+  if (unitQuery.isError || quoteState.isError) {
+    const error = unitQuery.error ?? quoteState.error;
     return (
       <Screen>
         <ScreenHeader title={t('booking.reviewTitle')} />
@@ -80,14 +80,14 @@ export function BookingReviewScreen() {
           retryLabel={t('common.retry')}
           onRetry={() => {
             void unitQuery.refetch();
-            void quoteQuery.refetch();
+            quoteState.retry();
           }}
         />
       </Screen>
     );
   }
 
-  if (!unitQuery.data || !quoteQuery.data) {
+  if (!unitQuery.data || !quoteState.data) {
     return (
       <Screen>
         <ScreenHeader title={t('booking.reviewTitle')} />
@@ -101,7 +101,7 @@ export function BookingReviewScreen() {
       <ScreenHeader title={t('booking.reviewTitle')} />
       <Text style={styles.subtitle}>{t('booking.staySummary')}</Text>
 
-      <StaySummaryCard unit={unitQuery.data} quote={quoteQuery.data} />
+      <StaySummaryCard unit={unitQuery.data} quote={quoteState.data} />
 
       <View style={styles.footer}>
         <Button

@@ -1,4 +1,4 @@
-import { formatMinorUnits, formatMinorUnitsCompact, toMajorUnits } from '../money';
+import { formatMinorUnits, toMajorUnits } from '../money';
 
 describe('money formatters', () => {
   it('formats USD minor units in Spanish', () => {
@@ -26,10 +26,5 @@ describe('money formatters', () => {
 
   it('falls back to the currency code when the symbol is unknown', () => {
     expect(formatMinorUnits(5000, 'CAD', 'en')).toBe('CAD 50.00');
-  });
-
-  it('drops decimals in the compact form', () => {
-    expect(formatMinorUnitsCompact(12000, 'USD', 'es')).toBe('$ 120');
-    expect(formatMinorUnitsCompact(12000, 'USD', 'en')).toBe('$120');
   });
 });

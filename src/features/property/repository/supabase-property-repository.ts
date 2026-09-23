@@ -1,5 +1,5 @@
-import type { PropertyRepository, PropertyCatalog } from '@/features/property/repository';
-import type { Unit } from '@/features/property/types';
+import type { PropertyRepository } from '@/features/property/repository/property-repository';
+import type { PropertyCatalog, Unit } from '@/features/property/types';
 import { toAppError } from '@/lib/supabase/errors';
 import type { DatabaseClient } from '@/lib/supabase/client';
 import { createMediaUrlResolver } from '@/lib/supabase/media';

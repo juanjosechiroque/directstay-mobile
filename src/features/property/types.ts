@@ -1,9 +1,8 @@
 /**
  * Property & unit domain types.
  *
- * These types are intentionally independent from React Native, Supabase and Stripe so
- * they can travel between a mock repository (tests) and the Supabase adapter without
- * changes. Demo content (names, descriptions) is data, not translation copy.
+ * These types are intentionally independent from React Native, Supabase and Stripe.
+ * Demo content (names, descriptions) is data, not translation copy.
  *
  * Private stay data (Wi-Fi, arrival instructions) is deliberately NOT part of `Property`:
  * the public catalog read model must never carry it. It lives in the stay feature and is
@@ -80,4 +79,10 @@ export interface Property {
   highlights: HighlightCode[];
   heroImage: CatalogImage | null;
   contact: PropertyContact;
+}
+
+/** A property together with its public, active units, as returned by the catalog RPC. */
+export interface PropertyCatalog {
+  property: Property;
+  units: Unit[];
 }

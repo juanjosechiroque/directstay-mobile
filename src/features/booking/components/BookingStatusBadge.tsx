@@ -10,10 +10,6 @@ const STATUS_TONES: Record<BookingStatus, BadgeTone> = {
   REFUNDED: 'info',
 };
 
-export function bookingStatusTone(status: BookingStatus): BadgeTone {
-  return STATUS_TONES[status];
-}
-
 export function BookingStatusBadge({ status }: { status: BookingStatus }) {
   const { t } = useTranslation();
   return <Badge label={t(`booking.status.${status}`)} tone={STATUS_TONES[status]} />;

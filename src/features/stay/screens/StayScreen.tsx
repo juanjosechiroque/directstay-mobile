@@ -35,20 +35,11 @@ export function StayScreen() {
 
   const stayQuery = useStay(status === 'signedIn' ? bookingId : undefined);
 
-  if (status === 'loading' || (status === 'signedIn' && stayQuery.isLoading)) {
+  if (status === 'loading' || stayQuery.isLoading) {
     return (
       <Screen>
         <ScreenHeader title={t('stay.title')} />
         <LoadingState message={t('common.loading')} />
-      </Screen>
-    );
-  }
-
-  if (status === 'signedOut') {
-    return (
-      <Screen>
-        <ScreenHeader title={t('stay.title')} />
-        <EmptyState title={t('bookings.notFoundTitle')} message={t('bookings.notFoundMessage')} />
       </Screen>
     );
   }
@@ -67,7 +58,7 @@ export function StayScreen() {
     );
   }
 
-  if (!stayQuery.data) {
+  if (status === 'signedOut' || !stayQuery.data) {
     return (
       <Screen>
         <ScreenHeader title={t('stay.title')} />

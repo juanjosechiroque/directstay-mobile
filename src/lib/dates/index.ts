@@ -120,19 +120,6 @@ export function diffInNights(checkIn: IsoDate, checkOut: IsoDate): number {
   );
 }
 
-/**
- * Half-open overlap: true when `[aStart, aEnd)` intersects `[bStart, bEnd)`.
- * Same-day turnover (`aEnd === bStart`) is explicitly allowed and returns false.
- */
-export function rangesOverlap(
-  aStart: IsoDate,
-  aEnd: IsoDate,
-  bStart: IsoDate,
-  bEnd: IsoDate,
-): boolean {
-  return aStart < bEnd && bStart < aEnd;
-}
-
 function localeTag(locale: string): string {
   return locale.startsWith('en') ? 'en-US' : 'es-PE';
 }
@@ -155,12 +142,4 @@ export function formatInstant(value: string, locale: string): string {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(value));
-}
-
-export function formatDateWithWeekday(value: IsoDate, locale: string): string {
-  return formatIsoDate(value, locale, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'long',
-  });
 }

@@ -1,4 +1,4 @@
-import type { BookingRepository } from '@/features/booking/repository';
+import type { BookingRepository } from '@/features/booking/repository/booking-repository';
 import type { Booking } from '@/features/booking/types';
 import { SupabaseStayRepository } from '@/features/stay/repository/supabase-stay-repository';
 import type { DatabaseClient } from '@/lib/supabase/client';
@@ -39,7 +39,6 @@ function bookingRepositoryReturning(booking: Booking | null): BookingRepository 
     getQuote: jest.fn(),
     listBookings: jest.fn(),
     getBooking: jest.fn().mockResolvedValue(booking),
-    cancelBooking: jest.fn(),
   } as unknown as BookingRepository;
 }
 

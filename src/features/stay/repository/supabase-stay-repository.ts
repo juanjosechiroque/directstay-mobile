@@ -1,5 +1,5 @@
-import type { BookingRepository } from '@/features/booking/repository';
-import type { StayRepository } from '@/features/stay/repository';
+import type { BookingRepository } from '@/features/booking/repository/booking-repository';
+import type { StayRepository } from '@/features/stay/repository/stay-repository';
 import type { StayInfo } from '@/features/stay/types';
 import type { Locale } from '@/lib/locale';
 import type { DatabaseClient } from '@/lib/supabase/client';

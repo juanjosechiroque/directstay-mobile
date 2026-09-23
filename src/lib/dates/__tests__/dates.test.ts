@@ -1,25 +1,10 @@
-import {
-  addDays,
-  diffInNights,
-  isIsoDate,
-  rangesOverlap,
-  todayIso,
-  todayIsoInTimeZone,
-} from '../index';
+import { addDays, diffInNights, isIsoDate, todayIso, todayIsoInTimeZone } from '../index';
 
 describe('business date helpers', () => {
   it('counts nights over the [checkIn, checkOut) interval', () => {
     expect(diffInNights('2026-09-10', '2026-09-12')).toBe(2);
     expect(diffInNights('2026-09-10', '2026-09-11')).toBe(1);
     expect(diffInNights('2026-09-10', '2026-09-10')).toBe(0);
-  });
-
-  it('allows same-day turnover between consecutive bookings', () => {
-    expect(rangesOverlap('2026-09-10', '2026-09-12', '2026-09-12', '2026-09-14')).toBe(false);
-  });
-
-  it('detects an overlap in the half-open interval', () => {
-    expect(rangesOverlap('2026-09-10', '2026-09-12', '2026-09-11', '2026-09-13')).toBe(true);
   });
 
   it('adds days without timezone drift', () => {

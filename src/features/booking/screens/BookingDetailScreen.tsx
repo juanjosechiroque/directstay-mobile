@@ -49,25 +49,7 @@ export function BookingDetailScreen() {
 
   const bookingQuery = useBooking(status === 'signedIn' ? bookingId : undefined);
 
-  if (status === 'loading') {
-    return (
-      <Screen>
-        <ScreenHeader title={t('bookings.detailTitle')} />
-        <LoadingState message={t('common.loading')} />
-      </Screen>
-    );
-  }
-
-  if (status === 'signedOut') {
-    return (
-      <Screen>
-        <ScreenHeader title={t('bookings.detailTitle')} />
-        <EmptyState title={t('bookings.notFoundTitle')} message={t('bookings.notFoundMessage')} />
-      </Screen>
-    );
-  }
-
-  if (bookingQuery.isLoading) {
+  if (status === 'loading' || bookingQuery.isLoading) {
     return (
       <Screen>
         <ScreenHeader title={t('bookings.detailTitle')} />
@@ -90,7 +72,7 @@ export function BookingDetailScreen() {
     );
   }
 
-  if (!bookingQuery.data) {
+  if (status === 'signedOut' || !bookingQuery.data) {
     return (
       <Screen>
         <ScreenHeader title={t('bookings.detailTitle')} />

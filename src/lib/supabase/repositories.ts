@@ -8,9 +8,8 @@ import type { DatabaseClient } from '@/lib/supabase/client';
 /**
  * Composition root for the Supabase-backed data layer.
  *
- * One client and one organization slug are injected into every adapter. Screens, hooks and
- * components see only the repository interfaces, so this is the single place that knows the
- * concrete implementation. Mocks are no longer part of runtime composition.
+ * A shared client and organization slug keep every adapter scoped consistently. Features
+ * depend on repository interfaces, while this module selects the Supabase implementations.
  */
 export function createSupabaseRepositories(
   client: DatabaseClient,

@@ -20,11 +20,3 @@ export function invalidateAfterBookingCreated(queryClient: QueryClient, bookingI
   // A confirmed booking now has stay information.
   void queryClient.invalidateQueries({ queryKey: stayKeys.byBooking(bookingId) });
 }
-
-export function invalidateAfterBookingCanceled(queryClient: QueryClient, bookingId: string): void {
-  void queryClient.invalidateQueries({ queryKey: bookingKeys.all });
-  // Refunding frees the unit again.
-  void queryClient.invalidateQueries({ queryKey: availabilityKeys.all });
-  // A REFUNDED booking has no stay: drop any cached stay entry instead of just staling it.
-  queryClient.removeQueries({ queryKey: stayKeys.byBooking(bookingId) });
-}

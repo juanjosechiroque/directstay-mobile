@@ -29,7 +29,7 @@ on conflict (id) do nothing;
 -- Properties
 --   * Ayni Mountain Cabins, Urubamba (Sacred Valley)
 --   * Ayni Cusco (city)
--- Frozen demo config for Mountain Cabins: America/Lima, check-in 15:00, check-out 12:00.
+-- Seed values for Mountain Cabins: America/Lima, check-in 15:00, check-out 12:00.
 -- Cusco city uses the same timezone and currency.
 -- ---------------------------------------------------------------------------
 insert into public.properties (

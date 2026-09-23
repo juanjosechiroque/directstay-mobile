@@ -48,7 +48,6 @@ cp .env.example .env
 
 | Variable                        | Purpose                                                 |
 | ------------------------------- | ------------------------------------------------------- |
-| `EXPO_PUBLIC_APP_ENV`           | `local` \| `development` \| `preview` \| `production`   |
 | `EXPO_PUBLIC_SUPABASE_URL`      | Supabase project URL                                    |
 | `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key (public by design; RLS protects)      |
 | `EXPO_PUBLIC_ORGANIZATION_SLUG` | Which brand this deployment serves (`ayni-hospitality`) |
@@ -60,8 +59,7 @@ startup with a clear message (`src/lib/supabase/config.ts`).
 ## Run the app (remote Supabase)
 
 Everyday development points `.env` at the hosted development project — get the URL and
-anon key from the Supabase dashboard (Project Settings > API) and set
-`EXPO_PUBLIC_APP_ENV=development`. Then:
+anon key from the Supabase dashboard (Project Settings > API). Then:
 
 ```bash
 npm start                      # Expo dev server
@@ -96,7 +94,7 @@ supabase db reset              # applies all migrations, then supabase/seed.sql
 ```
 
 Copy the printed `API URL` and `anon key` into `.env` (`EXPO_PUBLIC_SUPABASE_URL`,
-`EXPO_PUBLIC_SUPABASE_ANON_KEY`, `EXPO_PUBLIC_APP_ENV=local`) only if you want the app
+`EXPO_PUBLIC_SUPABASE_ANON_KEY`) only if you want the app
 itself to run against this disposable instance instead of the remote one.
 
 ## Testing
@@ -187,7 +185,7 @@ src/
   features/          # screens, components, queries, repositories, types
   lib/               # query client, errors, dates, formatting, supabase layer
   i18n/              # i18next setup + locale files
-  mocks/             # test-only fixtures and mock adapters (never runtime)
+  **/__tests__/      # Jest tests with fake repositories local to each test
 supabase/
   migrations/        # incremental SQL migrations
   seed.sql           # fictional demo data

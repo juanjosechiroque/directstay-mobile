@@ -27,8 +27,10 @@ describe('search criteria validation', () => {
     expect(validateSearchCriteria({ ...base, guests: 5 }).guests).toBe('validation.guestsTooMany');
   });
 
-  it('skips the capacity check when maxGuests is unknown', () => {
-    expect(validateSearchCriteria({ ...base, guests: 9, maxGuests: 0 })).toEqual({});
+  it('skips the capacity check when maxGuests is omitted', () => {
+    expect(
+      validateSearchCriteria({ checkIn: base.checkIn, checkOut: base.checkOut, guests: 9 }),
+    ).toEqual({});
   });
 });
 

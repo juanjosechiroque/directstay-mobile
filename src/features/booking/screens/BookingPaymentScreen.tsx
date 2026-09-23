@@ -5,16 +5,14 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Badge, Button, Card, EmptyState, Screen, ScreenHeader } from '@/components';
 import { QuoteSummary } from '@/features/booking/components/QuoteSummary';
 import { useBookingDraft } from '@/features/booking/draft/booking-draft-context';
-import { useBookingQuote } from '@/features/booking/queries/use-booking-quote';
+import { useBookingQuote } from '@/features/booking/queries/use-booking';
 import { colors, fontSize, spacing } from '@/lib/theme';
 
 /**
  * Payment step placeholder.
  *
- * Payments, booking creation and confirmation are NOT enabled in this phase. The client
- * deliberately has no way to create a booking or simulate a payment, so this screen states
- * that clearly instead of showing a fake success. The server-side `create_booking` RPC is
- * prepared and tested but revoked from the mobile roles until Stripe is integrated.
+ * The app cannot create or confirm bookings. This screen explains checkout availability
+ * without simulating success; `create_booking` is restricted to server-side callers.
  */
 export function BookingPaymentScreen() {
   const { t } = useTranslation();

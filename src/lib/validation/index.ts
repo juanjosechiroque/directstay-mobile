@@ -12,7 +12,7 @@ export interface SearchCriteriaInput {
   checkIn: string | null;
   checkOut: string | null;
   guests: number;
-  maxGuests: number;
+  maxGuests?: number;
 }
 
 export type SearchCriteriaErrors = Partial<Record<'checkIn' | 'checkOut' | 'guests', string>>;
@@ -33,7 +33,7 @@ export function validateSearchCriteria(input: SearchCriteriaInput): SearchCriter
   }
   if (!Number.isInteger(input.guests) || input.guests < 1) {
     errors.guests = 'validation.guestsRequired';
-  } else if (input.maxGuests > 0 && input.guests > input.maxGuests) {
+  } else if (input.maxGuests && input.guests > input.maxGuests) {
     errors.guests = 'validation.guestsTooMany';
   }
 

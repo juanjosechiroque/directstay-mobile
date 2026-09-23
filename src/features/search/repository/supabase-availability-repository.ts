@@ -1,4 +1,4 @@
-import type { AvailabilityRepository } from '@/features/search/repository';
+import type { AvailabilityRepository } from '@/features/search/repository/availability-repository';
 import type { AvailabilityQuery, AvailableUnit } from '@/features/search/types';
 import type { DatabaseClient } from '@/lib/supabase/client';
 import { toAppError } from '@/lib/supabase/errors';

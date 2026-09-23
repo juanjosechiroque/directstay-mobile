@@ -14,12 +14,11 @@ import {
   Section,
 } from '@/components';
 import { UnitCard } from '@/features/property/components/UnitCard';
-import { usePrimaryProperty } from '@/features/property/queries/use-property';
 import { DateField } from '@/features/search/components/DateField';
 import { GuestCounter } from '@/features/search/components/GuestCounter';
 import { useAvailabilitySearch } from '@/features/search/queries/use-availability-search';
 import type { AvailabilityQuery } from '@/features/search/types';
-import { addDays, todayIso, todayIsoInTimeZone, type IsoDate } from '@/lib/dates';
+import { addDays, todayIso, type IsoDate } from '@/lib/dates';
 import { getErrorCode } from '@/lib/errors';
 import { colors, fontSize, spacing } from '@/lib/theme';
 import { hasErrors, validateSearchCriteria, type SearchCriteriaErrors } from '@/lib/validation';
@@ -27,9 +26,7 @@ import { hasErrors, validateSearchCriteria, type SearchCriteriaErrors } from '@/
 export function SearchScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  // Search defaults follow the property's calendar, not the traveller's device timezone.
-  const propertyQuery = usePrimaryProperty();
-  const today = propertyQuery.data ? todayIsoInTimeZone(propertyQuery.data.timezone) : todayIso();
+  const today = todayIso();
 
   const [checkIn, setCheckIn] = useState<IsoDate | null>(null);
   const [checkOut, setCheckOut] = useState<IsoDate | null>(null);
@@ -53,7 +50,7 @@ export function SearchScreen() {
   };
 
   const handleSearch = () => {
-    const nextErrors = validateSearchCriteria({ checkIn, checkOut, guests, maxGuests: 0 });
+    const nextErrors = validateSearchCriteria({ checkIn, checkOut, guests });
     setErrors(nextErrors);
     if (hasErrors(nextErrors) || !checkIn || !checkOut) {
       return;

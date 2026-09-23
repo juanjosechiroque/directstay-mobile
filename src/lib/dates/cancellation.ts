@@ -1,7 +1,7 @@
 import { addDays, getZonedParts, parseIsoDate, type IsoDate } from '@/lib/dates';
 
 /**
- * Cancellation eligibility (frozen domain rule).
+ * Cancellation eligibility is based on the property's local check-in time.
  *
  * A `CONFIRMED` booking can be canceled in-app until exactly 24 hours before the
  * property-local check-in time (property check-in 15:00 America/Lima ⇒ deadline for a

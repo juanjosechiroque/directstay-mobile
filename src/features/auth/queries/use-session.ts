@@ -11,8 +11,8 @@ export interface AuthActions {
 }
 
 /**
- * Binds the auth use-cases to the session's client and clears user-scoped caches on any
- * identity change. Components depend on this hook, not on `supabase-js` directly.
+ * Binds the auth use-cases to the session's client. Components depend on this hook, not
+ * on `supabase-js` directly.
  */
 export function useAuthActions(): AuthActions {
   const { client } = useSession();

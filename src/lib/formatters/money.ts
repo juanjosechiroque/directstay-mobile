@@ -43,13 +43,3 @@ export function formatMinorUnits(
   const spaced = isSpanish(locale) ? ' ' : '';
   return `${sign}${symbol}${spaced}${grouped}${decimalSeparator}${cents}`;
 }
-
-/** "$ 120" style compact amount for cards (no decimals). */
-export function formatMinorUnitsCompact(
-  amountMinor: number,
-  currency: string,
-  locale: string = 'es',
-): string {
-  const rounded = Math.round(amountMinor / 100) * 100;
-  return formatMinorUnits(rounded, currency, locale).replace('.00', '');
-}

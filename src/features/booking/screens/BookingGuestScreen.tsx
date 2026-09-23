@@ -14,7 +14,7 @@ import {
 } from '@/components';
 import { QuoteSummary } from '@/features/booking/components/QuoteSummary';
 import { useBookingDraft } from '@/features/booking/draft/booking-draft-context';
-import { useBookingQuote } from '@/features/booking/queries/use-booking-quote';
+import { useBookingQuote } from '@/features/booking/queries/use-booking';
 import { useAuthActions } from '@/features/auth/queries/use-session';
 import { getErrorCode } from '@/lib/errors';
 import { colors, fontSize, spacing } from '@/lib/theme';

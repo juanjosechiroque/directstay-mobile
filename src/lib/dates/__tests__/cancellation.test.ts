@@ -1,8 +1,8 @@
 import { formatCancellationDeadline, isCancellationEligible } from '../cancellation';
 
 /**
- * Frozen rule: a confirmed booking can be canceled until exactly 24 hours before the
- * property-local check-in time. Demo property: America/Lima (UTC-5), check-in 15:00.
+ * A confirmed booking can be canceled until exactly 24 hours before local check-in.
+ * Example: America/Lima (UTC-5), check-in 15:00.
  * Check-in 2026-09-14 15:00 Lima ⇒ deadline 2026-09-13 15:00 Lima = 2026-09-13T20:00Z.
  */
 const base = {
@@ -24,7 +24,7 @@ describe('cancellation eligibility', () => {
     expect(isCancellationEligible({ ...base, now: new Date('2026-09-13T20:00:00Z') })).toBe(true);
   });
 
-  it('is no longer eligible inside the final 24 hours', () => {
+  it('is ineligible inside the final 24 hours', () => {
     expect(isCancellationEligible({ ...base, now: new Date('2026-09-13T20:00:01Z') })).toBe(false);
   });
 

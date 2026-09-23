@@ -73,18 +73,3 @@ export interface CreateBookingInput extends QuoteRequest {
   guestEmail: string;
   guestPhone: string | null;
 }
-
-/**
- * Test-only shape used by the in-memory mock repository's hold/overlap tests.
- *
- * There is no runtime payment simulation: the mobile client cannot create bookings or
- * confirm payments in this phase. The transactional `create_booking` RPC exists in
- * PostgreSQL for the future payments phase and is revoked from anon/authenticated.
- */
-export type PaymentSimulationOutcome = 'CONFIRMED' | 'EXPIRED';
-
-export interface PaymentSimulationResult {
-  booking: Booking;
-  demo: true;
-  outcome: PaymentSimulationOutcome;
-}

@@ -6,25 +6,13 @@ describe('supabase config', () => {
       EXPO_PUBLIC_SUPABASE_URL: 'http://127.0.0.1:55321',
       EXPO_PUBLIC_SUPABASE_ANON_KEY: 'anon-key',
       EXPO_PUBLIC_ORGANIZATION_SLUG: 'ayni-hospitality',
-      EXPO_PUBLIC_APP_ENV: 'local',
     } as unknown as NodeJS.ProcessEnv);
 
     expect(config).toEqual({
-      appEnv: 'local',
       url: 'http://127.0.0.1:55321',
       anonKey: 'anon-key',
       organizationSlug: 'ayni-hospitality',
     });
-  });
-
-  it('defaults an unknown app env to local', () => {
-    const config = resolveSupabaseConfig({
-      EXPO_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
-      EXPO_PUBLIC_SUPABASE_ANON_KEY: 'key',
-      EXPO_PUBLIC_ORGANIZATION_SLUG: 'slug',
-      EXPO_PUBLIC_APP_ENV: 'staging',
-    } as unknown as NodeJS.ProcessEnv);
-    expect(config.appEnv).toBe('local');
   });
 
   it('reports every missing variable with a clear error', () => {

@@ -1,17 +1,10 @@
 {
-  "app": {
-    "name": "DirectStay"
-  },
   "common": {
     "back": "Atrás",
     "retry": "Reintentar",
     "close": "Cerrar",
-    "continue": "Continuar",
-    "cancel": "Cancelar",
-    "dismiss": "Entendido",
     "loading": "Cargando…",
     "linkUnavailable": "No pudimos abrir el enlace en este dispositivo.",
-    "seeDetails": "Ver detalle",
     "notAvailable": "No disponible",
     "contactUnavailable": "El alojamiento aún no publicó datos de contacto."
   },
@@ -21,11 +14,7 @@
     "settings": "Ajustes"
   },
   "property": {
-    "location": "Ubicación",
-    "aboutTitle": "Sobre la propiedad",
-    "checkInLabel": "Entrada",
-    "checkOutLabel": "Salida",
-    "viewUnits": "Ver unidades"
+    "aboutTitle": "Sobre la propiedad"
   },
   "highlights": {
     "mountain_view": "Vista a la montaña",
@@ -75,18 +64,15 @@
     "noResultsMessage": "No encontramos unidades para esas fechas y huéspedes. Prueba con otras fechas.",
     "loadingMessage": "Buscando disponibilidad…",
     "errorTitle": "No pudimos buscar disponibilidad",
-    "errorMessage": "Revisa tu conexión e inténtalo de nuevo.",
     "changeSearch": "Cambiar búsqueda",
     "hint": "La disponibilidad y el precio los calcula el alojamiento."
   },
   "unit": {
-    "capacity": "Capacidad",
     "maxGuests_one": "Hasta {{count}} huésped",
     "maxGuests_other": "Hasta {{count}} huéspedes",
     "perNight": "por noche",
     "amenitiesTitle": "Amenidades",
     "descriptionTitle": "La unidad",
-    "galleryTitle": "Galería",
     "imageAlt": "{{name}} — imagen {{index}}",
     "continueCta": "Reservar esta unidad",
     "notFoundTitle": "Unidad no encontrada",
@@ -106,8 +92,6 @@
     },
     "reviewTitle": "Revisa tu reserva",
     "staySummary": "Resumen de estancia",
-    "unitLabel": "Unidad",
-    "datesLabel": "Fechas",
     "nightsLabel_one": "{{count}} noche",
     "nightsLabel_other": "{{count}} noches",
     "guestsLabel_one": "{{count}} huésped",
@@ -144,9 +128,7 @@
     "emptyTitle": "Aún no tienes reservas",
     "emptyMessage": "Cuando reserves una unidad, aparecerá aquí.",
     "errorTitle": "No pudimos cargar tus reservas",
-    "errorMessage": "Revisa tu conexión e inténtalo de nuevo.",
     "detailTitle": "Detalle de la reserva",
-    "unitLabel": "Unidad",
     "datesLabel": "Fechas",
     "guestsLabel": "Huéspedes",
     "nightsLabel": "Noches",
@@ -158,17 +140,10 @@
     "emailLabel": "Correo",
     "phoneLabel": "Teléfono",
     "cancellationTitle": "Cancelación",
-    "cancelCta": "Cancelar y solicitar reembolso",
-    "cancelingCta": "Cancelando…",
     "cancelNotAllowedTitle": "Cancelación no disponible",
     "cancelNotAllowedMessage": "Las reservas confirmadas se cancelan hasta 24 horas antes del check-in. Para cambios de último momento, contacta directamente al alojamiento.",
     "cancelNotEnabledMessage": "La cancelación dentro de la app se habilitará junto con los pagos. Por ahora, escribe o llama al alojamiento.",
     "cancelDeadline": "Puedes cancelar hasta el {{date}}.",
-    "cancelConfirmTitle": "Cancelar reserva",
-    "cancelConfirmMessage": "Se solicitará el reembolso total. Esta acción no se puede deshacer.",
-    "cancelConfirmAction": "Sí, cancelar",
-    "cancelConfirmDismiss": "Mantener reserva",
-    "cancelSuccessMessage": "Solicitud enviada. La reserva quedó reembolsada.",
     "contactProperty": "Contactar al alojamiento",
     "whatsappCta": "Escribir por WhatsApp",
     "callCta": "Llamar",
@@ -194,9 +169,6 @@
     "checkOutLabel": "Salida",
     "directionsTitle": "Cómo llegar",
     "contactTitle": "Contacto",
-    "whatsappCta": "WhatsApp",
-    "callCta": "Llamar",
-    "demoNote": "Los enlaces de contacto son de demostración.",
     "privacyNote": "Esta información es privada y solo se muestra a la reserva confirmada."
   },
   "settings": {
@@ -226,10 +198,8 @@
     "generic": "Ocurrió un error inesperado.",
     "notFound": "No encontramos lo que buscabas.",
     "unavailable": "La unidad ya no está disponible para esas fechas.",
-    "cancelNotAllowed": "Esta reserva ya no se puede cancelar en la app.",
     "validation": "Revisa los datos ingresados.",
     "sessionRequired": "No pudimos comprobar el acceso desde este dispositivo.",
-    "paymentsNotEnabled": "El pago aún no está habilitado.",
     "configuration": "Falta la configuración de la aplicación.",
     "authRateLimited": "No pudimos preparar tu reserva ahora. Espera un momento e inténtalo de nuevo.",
     "authFailed": "No pudimos preparar tu reserva en este dispositivo. Inténtalo de nuevo."

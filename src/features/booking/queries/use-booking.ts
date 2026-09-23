@@ -1,15 +1,35 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
+import { useCallback } from 'react';
 
-import { invalidateAfterBookingCanceled } from '@/features/booking/queries/invalidation';
 import { bookingKeys } from '@/features/booking/queries/keys';
-import type { Booking, QuoteRequest } from '@/features/booking/types';
+import type { Quote, QuoteRequest } from '@/features/booking/types';
+import { getErrorCode, type AppErrorCode } from '@/lib/errors';
 import { useRepositories } from '@/lib/repositories';
 
-export { bookingKeys } from '@/features/booking/queries/keys';
+export interface UseBookingQuoteResult {
+  data: Quote | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  error: unknown;
+  errorCode: AppErrorCode;
+  isReady: boolean;
+  retry: () => void;
+}
 
-export function useQuote(request: QuoteRequest | null) {
+interface QuoteReadinessInput {
+  data: Quote | undefined;
+  isLoading: boolean;
+  isError: boolean;
+}
+
+export function isBookingQuoteReady({ data, isLoading, isError }: QuoteReadinessInput): boolean {
+  return !isLoading && !isError && Boolean(data);
+}
+
+/** Fetches the server quote and exposes the states used throughout the booking flow. */
+export function useBookingQuote(request: QuoteRequest | null): UseBookingQuoteResult {
   const { booking } = useRepositories();
-  return useQuery({
+  const query = useQuery({
     queryKey: bookingKeys.quote(
       request ?? { unitId: '', checkIn: '', checkOut: '', guestCount: 0 },
     ),
@@ -19,6 +39,19 @@ export function useQuote(request: QuoteRequest | null) {
     // starts from a stale amount after the unit rate or availability changed.
     staleTime: 0,
   });
+  const retry = useCallback(() => {
+    void query.refetch();
+  }, [query]);
+
+  return {
+    data: query.data,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    errorCode: getErrorCode(query.error),
+    isReady: isBookingQuoteReady(query),
+    retry,
+  };
 }
 
 export function useBookings(enabled = true) {
@@ -36,22 +69,5 @@ export function useBooking(bookingId: string | undefined) {
     queryKey: bookingKeys.detail(bookingId ?? 'missing'),
     queryFn: () => booking.getBooking(bookingId as string),
     enabled: Boolean(bookingId),
-  });
-}
-
-/**
- * Cancellation is a server-authoritative, refund-triggering operation that is not enabled
- * until the payments phase. This hook exists so the intent is represented in the data
- * layer, but the server rejects it and the UI must direct the guest to contact the
- * property instead of implying an in-app cancellation.
- */
-export function useCancelBooking() {
-  const { booking } = useRepositories();
-  const queryClient = useQueryClient();
-  return useMutation<Booking, unknown, string>({
-    mutationFn: (bookingId) => booking.cancelBooking(bookingId),
-    onSuccess: (updated) => {
-      invalidateAfterBookingCanceled(queryClient, updated.id);
-    },
   });
 }

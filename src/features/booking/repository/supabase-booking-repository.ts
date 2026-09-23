@@ -1,4 +1,4 @@
-import type { BookingRepository } from '@/features/booking/repository';
+import type { BookingRepository } from '@/features/booking/repository/booking-repository';
 import type { Booking, Quote, QuoteRequest } from '@/features/booking/types';
 import { AppError } from '@/lib/errors';
 import type { DatabaseClient } from '@/lib/supabase/client';
@@ -10,9 +10,8 @@ import type { BookingRow, SearchUnitJson } from '@/lib/supabase/types';
  * Supabase-backed booking reads.
  *
  * RLS restricts every row to its owner (`guest_profile_id = auth.uid()`), so the queries
- * do not need a client-supplied user filter. Creation, confirmation and refund are
- * intentionally not implemented here: they belong to the payments phase and are exposed
- * only through server operations the mobile client cannot call yet.
+ * do not need a client-supplied user filter. Booking creation, confirmation and refunds
+ * are server-side operations because they change shared reservation and payment state.
  */
 const BOOKING_SELECT = `
   id, guest_profile_id, unit_id, status, check_in, check_out, guest_count,
@@ -80,13 +79,5 @@ export class SupabaseBookingRepository implements BookingRepository {
       throw toAppError(error);
     }
     return data ? mapBooking(data as unknown as BookingRow) : null;
-  }
-
-  /**
-   * Cancellation triggers a Stripe refund, so it must be an idempotent server operation.
-   * It is not enabled in this phase; the UI offers contacting the property instead.
-   */
-  async cancelBooking(_bookingId: string): Promise<Booking> {
-    throw new AppError('error.cancelNotAllowed');
   }
 }

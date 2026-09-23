@@ -3,10 +3,8 @@ import { QueryClient } from '@tanstack/react-query';
 /**
  * Central TanStack Query client.
  *
- * The app uses TanStack Query for *all* asynchronous/server state from the start, even
- * while the current source is local mock data. That keeps screens and hooks written
- * against the server-state pattern, so replacing mock repositories with Supabase later
- * does not require rewriting the UI layer.
+ * The app uses TanStack Query for asynchronous server state. This keeps screens and
+ * hooks independent from the data source and centralizes caching and retries.
  */
 export function createQueryClient(): QueryClient {
   return new QueryClient({

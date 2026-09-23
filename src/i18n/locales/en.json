@@ -1,17 +1,10 @@
 {
-  "app": {
-    "name": "DirectStay"
-  },
   "common": {
     "back": "Back",
     "retry": "Try again",
     "close": "Close",
-    "continue": "Continue",
-    "cancel": "Cancel",
-    "dismiss": "Got it",
     "loading": "Loading…",
     "linkUnavailable": "We couldn't open the link on this device.",
-    "seeDetails": "See details",
     "notAvailable": "Not available",
     "contactUnavailable": "The property hasn't published contact details yet."
   },
@@ -21,11 +14,7 @@
     "settings": "Settings"
   },
   "property": {
-    "location": "Location",
-    "aboutTitle": "About the property",
-    "checkInLabel": "Check-in",
-    "checkOutLabel": "Check-out",
-    "viewUnits": "View units"
+    "aboutTitle": "About the property"
   },
   "highlights": {
     "mountain_view": "Mountain view",
@@ -75,18 +64,15 @@
     "noResultsMessage": "We couldn't find units for those dates and guests. Try different dates.",
     "loadingMessage": "Searching availability…",
     "errorTitle": "We couldn't search availability",
-    "errorMessage": "Check your connection and try again.",
     "changeSearch": "Change search",
     "hint": "Availability and price are calculated by the property."
   },
   "unit": {
-    "capacity": "Capacity",
     "maxGuests_one": "Up to {{count}} guest",
     "maxGuests_other": "Up to {{count}} guests",
     "perNight": "per night",
     "amenitiesTitle": "Amenities",
     "descriptionTitle": "The unit",
-    "galleryTitle": "Gallery",
     "imageAlt": "{{name}} — image {{index}}",
     "continueCta": "Book this unit",
     "notFoundTitle": "Unit not found",
@@ -106,8 +92,6 @@
     },
     "reviewTitle": "Review your booking",
     "staySummary": "Stay summary",
-    "unitLabel": "Unit",
-    "datesLabel": "Dates",
     "nightsLabel_one": "{{count}} night",
     "nightsLabel_other": "{{count}} nights",
     "guestsLabel_one": "{{count}} guest",
@@ -144,9 +128,7 @@
     "emptyTitle": "You have no bookings yet",
     "emptyMessage": "When you book a unit, it will show up here.",
     "errorTitle": "We couldn't load your bookings",
-    "errorMessage": "Check your connection and try again.",
     "detailTitle": "Booking detail",
-    "unitLabel": "Unit",
     "datesLabel": "Dates",
     "guestsLabel": "Guests",
     "nightsLabel": "Nights",
@@ -158,17 +140,10 @@
     "emailLabel": "Email",
     "phoneLabel": "Phone",
     "cancellationTitle": "Cancellation",
-    "cancelCta": "Cancel and request refund",
-    "cancelingCta": "Canceling…",
     "cancelNotAllowedTitle": "Cancellation unavailable",
     "cancelNotAllowedMessage": "Confirmed bookings can be canceled until 24 hours before check-in. For last-minute changes, contact the property directly.",
     "cancelNotEnabledMessage": "In-app cancellation will be enabled together with payments. For now, message or call the property.",
     "cancelDeadline": "You can cancel until {{date}}.",
-    "cancelConfirmTitle": "Cancel booking",
-    "cancelConfirmMessage": "A full refund will be requested. This action cannot be undone.",
-    "cancelConfirmAction": "Yes, cancel",
-    "cancelConfirmDismiss": "Keep booking",
-    "cancelSuccessMessage": "Request sent. The booking has been refunded.",
     "contactProperty": "Contact the property",
     "whatsappCta": "Message on WhatsApp",
     "callCta": "Call",
@@ -194,9 +169,6 @@
     "checkOutLabel": "Check-out",
     "directionsTitle": "Getting there",
     "contactTitle": "Contact",
-    "whatsappCta": "WhatsApp",
-    "callCta": "Call",
-    "demoNote": "Contact links are for demonstration only.",
     "privacyNote": "This information is private and shown only to the confirmed booking."
   },
   "settings": {
@@ -226,10 +198,8 @@
     "generic": "Something unexpected happened.",
     "notFound": "We couldn't find what you were looking for.",
     "unavailable": "The unit is no longer available for those dates.",
-    "cancelNotAllowed": "This booking can no longer be canceled in the app.",
     "validation": "Please review the information you entered.",
     "sessionRequired": "We couldn't verify access from this device.",
-    "paymentsNotEnabled": "Payment isn't available yet.",
     "configuration": "The application configuration is missing.",
     "authRateLimited": "We couldn't prepare your reservation right now. Wait a moment and try again.",
     "authFailed": "We couldn't prepare your reservation on this device. Please try again."

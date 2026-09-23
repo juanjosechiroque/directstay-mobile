@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text } from 'react-native';
 
 import { Card, ErrorState, LoadingState, PriceText } from '@/components';
-import type { UseBookingQuoteResult } from '@/features/booking/queries/use-booking-quote';
+import type { UseBookingQuoteResult } from '@/features/booking/queries/use-booking';
 import { colors, fontSize, spacing } from '@/lib/theme';
 
 interface QuoteSummaryProps {
@@ -29,7 +29,7 @@ export function QuoteSummary({ state, size = 'md' }: QuoteSummaryProps) {
     );
   }
 
-  if (!state.quote) {
+  if (!state.data) {
     return <LoadingState message={t('booking.quoteLoading')} />;
   }
 
@@ -37,8 +37,8 @@ export function QuoteSummary({ state, size = 'md' }: QuoteSummaryProps) {
     <Card style={styles.card}>
       <Text style={styles.label}>{t('booking.totalLabel')}</Text>
       <PriceText
-        amountMinor={state.quote.totalAmountMinor}
-        currency={state.quote.currency}
+        amountMinor={state.data.totalAmountMinor}
+        currency={state.data.currency}
         size={size}
       />
     </Card>

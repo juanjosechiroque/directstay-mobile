@@ -9,9 +9,8 @@ import type { StayRepository } from '@/features/stay/repository';
  * Composition root for data access.
  *
  * Screens and query hooks resolve repositories from this context, so the concrete
- * implementation is injected once at the root layout. Swapping the mock bundle for
- * Supabase-backed repositories is a single change here — no screen, hook or component
- * needs to change.
+ * implementation is injected once at the root layout. Screens and query hooks do not
+ * depend directly on Supabase payloads or clients.
  */
 export interface Repositories {
   property: PropertyRepository;

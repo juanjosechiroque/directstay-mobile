@@ -58,13 +58,12 @@ Expo Router route
   client, repository composition, and Supabase mapping.
 - `src/components` contains shared presentation components.
 - `src/i18n` owns translated UI resources.
-- `src/mocks` contains test fixtures and in-memory repository implementations; production
-  composition never imports it, and a static test guards that boundary.
 
 Repository interfaces keep screens independent from Supabase payloads and make data-edge
-tests deterministic. The root composes one Supabase client and the deployment's
-organization slug into concrete repositories. Adapters translate RPC/table responses
-into app models through validating mappers.
+tests deterministic; data tests use small fake repositories local to each test. The root
+composes one Supabase client and the deployment's organization slug into concrete
+repositories. Adapters translate RPC/table responses into app models through validating
+mappers.
 
 ## Server state and sessions
 
@@ -120,9 +119,8 @@ rather than assembled in screens.
 
 At startup, `src/lib/supabase/config.ts` validates
 `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, and
-`EXPO_PUBLIC_ORGANIZATION_SLUG`; `EXPO_PUBLIC_APP_ENV` accepts `local`, `development`,
-`preview`, or `production` and defaults to `local`. Invalid configuration produces an
-explicit app screen. Only public variables belong in the client bundle.
+`EXPO_PUBLIC_ORGANIZATION_SLUG`. Invalid configuration produces an explicit app screen.
+Only public variables belong in the client bundle.
 
 The project requires Node.js 24 and uses the [versioned Expo SDK 57
 documentation](https://docs.expo.dev/versions/v57.0.0/).

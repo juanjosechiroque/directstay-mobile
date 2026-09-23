@@ -9,12 +9,7 @@
  * app never hardcodes the demo business into domain logic.
  */
 
-export type AppEnv = 'local' | 'development' | 'preview' | 'production';
-
-export const APP_ENVS: readonly AppEnv[] = ['local', 'development', 'preview', 'production'];
-
 export interface SupabaseConfig {
-  appEnv: AppEnv;
   url: string;
   anonKey: string;
   organizationSlug: string;
@@ -36,13 +31,6 @@ export class AppConfigError extends Error {
 function readEnv(value: string | undefined): string | undefined {
   const trimmed = value?.trim();
   return trimmed ? trimmed : undefined;
-}
-
-function normalizeAppEnv(value: string | undefined): AppEnv {
-  const candidate = readEnv(value);
-  return (APP_ENVS as readonly string[]).includes(candidate ?? '')
-    ? (candidate as AppEnv)
-    : 'local';
 }
 
 /**
@@ -72,7 +60,6 @@ export function resolveSupabaseConfig(env: NodeJS.ProcessEnv = process.env): Sup
   }
 
   return {
-    appEnv: normalizeAppEnv(env.EXPO_PUBLIC_APP_ENV),
     url: url as string,
     anonKey: anonKey as string,
     organizationSlug: organizationSlug as string,
