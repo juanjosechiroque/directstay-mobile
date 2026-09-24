@@ -50,6 +50,8 @@ values
    'Calle Plateros 365, Cusco, Perú', null, null)
 on conflict (id) do update set
   description = excluded.description,
+  contact_whatsapp = excluded.contact_whatsapp,
+  contact_phone = excluded.contact_phone,
   map_reference = excluded.map_reference,
   map_latitude = excluded.map_latitude,
   map_longitude = excluded.map_longitude;

@@ -114,6 +114,16 @@ slug selects the brand experience but is not a confidentiality boundary.
 The unique-unit overlap guarantee and status constraints are documented once in
 [DOMAIN.md](DOMAIN.md#why-overlapping-reservations-cannot-be-inserted).
 
+## Database migrations and seed data
+
+Migrations (`supabase/migrations`) hold schema, constraints, RLS, grants and RPCs, and are
+never edited once applied to the remote project. Demo data (the Ayni Hospitality
+organization, properties, units, rates, contacts and addresses) lives in `supabase/seed.sql`,
+which `supabase db reset` applies after the migrations. Two early migrations
+(`property_demo_addresses`, `property_demo_mobile_contacts`) only patched demo rows on the
+already-deployed database; on a fresh reset they update zero rows and `seed.sql` supplies the
+same values. New demo data goes in the seed, not in a migration.
+
 ## Internationalization
 
 All user-facing copy goes through i18next. Spanish (`es`) is the default, English (`en`)
@@ -150,6 +160,13 @@ GitHub Actions runs two independent jobs:
   reapplies migrations and seed data, and runs the pgTAP suite.
 
 This split verifies both client contracts and database security/concurrency behavior.
+
+## Testing
+
+- **Unit:** pure logic (dates, money, validation, mappers, i18n catalog parity).
+- **Data edge:** repositories and query invalidation against fakes or a stubbed client.
+- **pgTAP:** schema, RLS/grants, overlap constraints and RPC behavior (`supabase/tests/database`).
+- **E2E (Maestro):** not implemented yet.
 
 ## Not yet implemented
 

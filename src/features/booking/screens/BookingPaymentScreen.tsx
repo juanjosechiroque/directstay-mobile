@@ -21,6 +21,11 @@ import { useConfirmDemoPayment } from '@/features/booking/queries/use-booking-mu
 import { getErrorCode } from '@/lib/errors';
 import { colors, fontSize, spacing } from '@/lib/theme';
 
+/**
+ * DEMO checkout: no real payment provider is involved and nothing is charged. The button asks
+ * the `confirm_demo_payment` RPC to confirm the booking; the client only reflects the result.
+ * Replaced when Stripe is integrated (see docs/ARCHITECTURE.md, "Not yet implemented").
+ */
 export function BookingPaymentScreen() {
   const { t } = useTranslation();
   const router = useRouter();
