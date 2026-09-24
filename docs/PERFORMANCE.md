@@ -55,6 +55,13 @@ Same machine, method and harness as the baseline. Changes: My bookings is now a 
 `ListEmptyComponent`); a shared `Skeleton` replaces the spinner on Home, search results and
 My bookings. Home and search results stay on `.map` (see conclusion).
 
+The My bookings `FlatList` also declares an explicit render window: `initialNumToRender={10}`,
+`maxToRenderPerBatch={10}`, `windowSize={5}` and `removeClippedSubviews` on Android only
+(iOS keeps clipping off to avoid blank cells with variable-height cards). These are not a new
+measurement; they pin the window that the baseline already exercised (10 mounted items) and
+bound memory as the history grows. `renderItem`/`keyExtractor` stay inline because the React
+Compiler memoizes them (verified as noted below); no manual `useCallback` was added.
+
 | Bookings | Mounted items (before → after) | Profiler actualDuration ms (after, 3 runs) |
 | -------- | ------------------------------ | ------------------------------------------ |
 | 10       | 10 → 10                        | 242, 286 (863 on the cold first run)       |

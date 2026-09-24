@@ -179,6 +179,10 @@ New devDependencies: `@testing-library/react-native` (component tests), `test-re
 renderer peer required by RNTL 14) and `@types/node` (Node 24 typings for `process.env` and
 `NodeJS.ProcessEnv` in config).
 
+The runtime dependency `expo-clipboard` backs the "Copy password" action on My Stay: the Wi-Fi
+password is the one value a guest needs to move out of the app, and React Native core does not
+expose the system clipboard.
+
 ## Not yet implemented
 
 - Stripe client/server integration, real payments and payment webhooks.

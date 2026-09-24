@@ -1,6 +1,8 @@
+import * as Clipboard from 'expo-clipboard';
 import { useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import {
   Card,
@@ -18,7 +20,8 @@ import { ContactActions } from '@/components/ContactActions';
 import { useSession } from '@/features/auth/queries/use-session';
 import { useStay } from '@/features/stay/queries/use-stay';
 import { getErrorCode } from '@/lib/errors';
-import { colors, fontSize, spacing } from '@/lib/theme';
+import { useAnnounce } from '@/lib/use-announce';
+import { colors, control, fontSize, spacing } from '@/lib/theme';
 
 /**
  * My Stay.
@@ -34,6 +37,14 @@ export function StayScreen() {
   const bookingId = typeof params.bookingId === 'string' ? params.bookingId : undefined;
 
   const stayQuery = useStay(status === 'signedIn' ? bookingId : undefined);
+  const [copied, setCopied] = useState(false);
+  useAnnounce(copied ? t('stay.passwordCopied') : undefined);
+
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(timer);
+  }, [copied]);
 
   if (status === 'loading' || stayQuery.isLoading) {
     return (
@@ -70,6 +81,12 @@ export function StayScreen() {
   const { booking, propertyName, checkInTime, checkOutTime, information } = stayQuery.data;
   const notSet = t('common.notAvailable');
 
+  const copyPassword = async () => {
+    if (!information.wifiPassword) return;
+    await Clipboard.setStringAsync(information.wifiPassword);
+    setCopied(true);
+  };
+
   return (
     <Screen scroll>
       <ScreenHeader title={t('stay.title')} />
@@ -84,7 +101,26 @@ export function StayScreen() {
         <Card>
           <InfoRow label={t('stay.wifiNetwork')} value={information.wifiNetwork ?? notSet} />
           <Divider />
-          <InfoRow label={t('stay.wifiPassword')} value={information.wifiPassword ?? notSet} />
+          <View style={styles.passwordBlock}>
+            <View style={styles.passwordHeader}>
+              <Text style={styles.passwordLabel}>{t('stay.wifiPassword')}</Text>
+              {information.wifiPassword ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t('stay.copyPassword')}
+                  onPress={() => void copyPassword()}
+                  style={({ pressed }) => [styles.copyButton, pressed && styles.pressed]}
+                >
+                  <Text style={styles.copyLabel}>
+                    {copied ? t('stay.passwordCopied') : t('stay.copyPassword')}
+                  </Text>
+                </Pressable>
+              ) : null}
+            </View>
+            <Text selectable style={styles.passwordValue}>
+              {information.wifiPassword ?? notSet}
+            </Text>
+          </View>
         </Card>
       </Section>
 
@@ -142,6 +178,37 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     color: colors.text,
     lineHeight: 21,
+  },
+  passwordBlock: {
+    paddingVertical: spacing.sm,
+    gap: spacing.xs,
+  },
+  passwordHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  passwordLabel: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+  },
+  passwordValue: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  copyButton: {
+    minHeight: control.minTouchSize,
+    justifyContent: 'center',
+  },
+  copyLabel: {
+    fontSize: fontSize.sm,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  pressed: {
+    opacity: 0.7,
   },
   contactCard: {
     gap: spacing.md,

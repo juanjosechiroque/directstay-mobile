@@ -1,4 +1,5 @@
-import { screen, userEvent, waitFor } from '@testing-library/react-native';
+import { act, screen, userEvent, waitFor } from '@testing-library/react-native';
+import { AppState } from 'react-native';
 
 import { SearchScreen } from '@/features/search/screens/SearchScreen';
 import type { AvailabilityQuery } from '@/features/search/types';
@@ -134,6 +135,29 @@ describe('SearchScreen', () => {
       pathname: '/units/[unitId]',
       params: { unitId: 'unit-1', checkIn: '2026-10-20', checkOut: '2026-10-22', guests: '2' },
     });
+  });
+
+  it('explains that the chosen dates passed instead of silently dropping results', async () => {
+    const appState = jest.spyOn(AppState, 'addEventListener');
+    appState.mockClear();
+    const { repositories } = setup();
+    await renderWithProviders(<SearchScreen />, { repositories });
+
+    await user.press(await screen.findByRole('radio', { name: MOUNTAIN }));
+    await pickDates(user);
+    await user.press(screen.getByRole('button', { name: 'Buscar' }));
+    expect(await screen.findByRole('button', { name: 'Ver detalles de Killa' })).toBeOnTheScreen();
+
+    // The app comes back to the foreground days later: the chosen check-in is now in the past.
+    jest.setSystemTime(new Date('2026-11-01T12:00:00.000Z'));
+    const handler = appState.mock.calls.find(([event]) => event === 'change')?.[1];
+    await act(async () => {
+      handler?.('active');
+      await Promise.resolve();
+    });
+
+    expect(await screen.findByText('Las fechas seleccionadas ya pasaron')).toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: 'Ver detalles de Killa' })).not.toBeOnTheScreen();
   });
 
   it('shows a loading region while the search is pending', async () => {

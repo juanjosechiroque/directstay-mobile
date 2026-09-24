@@ -54,6 +54,9 @@ export function SearchScreen() {
     : todayIso(now);
   const checkInIsPast = Boolean(selectedEntry && checkIn && checkIn < today);
   const activeCriteria = criteria && criteria.checkIn >= today ? criteria : null;
+  // The app can sit in the background past midnight; the chosen dates then become invalid.
+  // Surface that explicitly instead of silently dropping the results section.
+  const criteriaExpired = criteria !== null && activeCriteria === null;
   const resultsQuery = useAvailabilitySearch(activeCriteria);
 
   useFocusEffect(
@@ -231,6 +234,12 @@ export function SearchScreen() {
           onPress={handleSearch}
         />
       </Card>
+
+      {criteriaExpired ? (
+        <Section title={t('search.resultsTitle')}>
+          <EmptyState title={t('search.expiredTitle')} message={t('search.expiredMessage')} />
+        </Section>
+      ) : null}
 
       {activeCriteria ? (
         <Section

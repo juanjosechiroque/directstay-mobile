@@ -101,6 +101,8 @@ missed:
   at most once (`useRef(new Set())`), instead of reading the per-second countdown. The visible
   countdown is marked `accessibilityRole="timer"`.
 - The guest counter value text is a polite live region.
+- My Stay's Wi-Fi password is `selectable` and has a "Copy password" button that copies via
+  `expo-clipboard` and announces "Password copied" (localized) through the same hook.
 
 Other semantics added or cleaned up:
 

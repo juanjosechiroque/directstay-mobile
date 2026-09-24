@@ -56,18 +56,25 @@ export function BookingDetailScreen() {
   const bookingQuery = useBooking(status === 'signedIn' ? bookingId : undefined);
   const [nowMs, setNowMs] = useState(() => Date.now());
 
+  // Only tick while a live hold countdown is on screen. Confirmed, canceled and refunded
+  // bookings show no countdown, so a per-second re-render would be wasted work.
+  const bookingData = bookingQuery.data;
+  const isHoldTicking =
+    bookingData?.status === 'PENDING_PAYMENT' &&
+    remainingHoldSeconds(bookingData.holdExpiresAt, nowMs) > 0;
+
   useFocusEffect(
     useCallback(() => {
       setNowMs(Date.now());
-      const timer = setInterval(() => setNowMs(Date.now()), 1000);
       const subscription = AppState.addEventListener('change', (state) => {
         if (state === 'active') setNowMs(Date.now());
       });
+      const timer = isHoldTicking ? setInterval(() => setNowMs(Date.now()), 1000) : null;
       return () => {
-        clearInterval(timer);
+        if (timer) clearInterval(timer);
         subscription.remove();
       };
-    }, []),
+    }, [isHoldTicking]),
   );
 
   if (status === 'loading' || bookingQuery.isLoading) {

@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, type Ref } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View, type TextInput } from 'react-native';
 
 import { Button, TextField } from '@/components';
 import { colors, control, fontSize, radius, spacing } from '@/lib/theme';
@@ -11,6 +11,9 @@ interface PhoneNumberFieldProps {
   onCountryCodeChange: (code: string) => void;
   onLocalNumberChange: (number: string) => void;
   error?: string;
+  /** Ref to the number input, so the caller can move focus here from the previous field. */
+  inputRef?: Ref<TextInput>;
+  onSubmitEditing?: () => void;
 }
 
 export function PhoneNumberField({
@@ -19,6 +22,8 @@ export function PhoneNumberField({
   onCountryCodeChange,
   onLocalNumberChange,
   error,
+  inputRef,
+  onSubmitEditing,
 }: PhoneNumberFieldProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -63,6 +68,7 @@ export function PhoneNumberField({
         </View>
         <View style={styles.numberField}>
           <TextField
+            ref={inputRef}
             label={t('booking.phoneNumber')}
             value={localNumber}
             onChangeText={(value) => onLocalNumberChange(value.replace(/\D/g, ''))}
@@ -72,7 +78,8 @@ export function PhoneNumberField({
             autoComplete="tel-national"
             textContentType="telephoneNumber"
             maxLength={15 - countryCode.length}
-            returnKeyType="done"
+            returnKeyType="next"
+            onSubmitEditing={onSubmitEditing}
           />
         </View>
       </View>

@@ -80,7 +80,9 @@
     "noResultsMessage": "No encontramos alojamientos en esta sede para esas fechas y huéspedes. Prueba con otras fechas.",
     "loadingMessage": "Buscando disponibilidad…",
     "errorTitle": "No pudimos buscar disponibilidad",
-    "changeSearch": "Cambiar búsqueda"
+    "changeSearch": "Cambiar búsqueda",
+    "expiredTitle": "Las fechas seleccionadas ya pasaron",
+    "expiredMessage": "Elige fechas nuevas para volver a ver disponibilidad."
   },
   "unit": {
     "maxGuests_one": "Hasta {{count}} huésped",
@@ -211,7 +213,9 @@
     "checkInLabel": "Entrada",
     "checkOutLabel": "Salida",
     "directionsTitle": "Cómo llegar",
-    "contactTitle": "Contacto"
+    "contactTitle": "Contacto",
+    "copyPassword": "Copiar contraseña",
+    "passwordCopied": "Contraseña copiada"
   },
   "settings": {
     "languageEs": "Español",

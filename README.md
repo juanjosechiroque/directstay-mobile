@@ -185,8 +185,9 @@ docs/                # engineering/product docs
 
 MIT. See [LICENSE](LICENSE).
 
-The local WhatsApp icon in `assets/images/whatsapp-bootstrap.png` comes from
-[Bootstrap Icons](https://icons.getbootstrap.com/icons/whatsapp/) and is licensed under MIT:
+The local WhatsApp icon in `assets/images/whatsapp-bootstrap.png` and the phone icon in
+`assets/images/phone-bootstrap.png` come from
+[Bootstrap Icons](https://icons.getbootstrap.com/) and are licensed under MIT:
 
 > The MIT License (MIT)
 >

@@ -80,7 +80,9 @@
     "noResultsMessage": "We couldn't find places at this location for those dates and guests. Try different dates.",
     "loadingMessage": "Searching availability…",
     "errorTitle": "We couldn't search availability",
-    "changeSearch": "Change search"
+    "changeSearch": "Change search",
+    "expiredTitle": "The selected dates have passed",
+    "expiredMessage": "Choose new dates to see availability again."
   },
   "unit": {
     "maxGuests_one": "Up to {{count}} guest",
@@ -211,7 +213,9 @@
     "checkInLabel": "Check-in",
     "checkOutLabel": "Check-out",
     "directionsTitle": "Getting there",
-    "contactTitle": "Contact"
+    "contactTitle": "Contact",
+    "copyPassword": "Copy password",
+    "passwordCopied": "Password copied"
   },
   "settings": {
     "languageEs": "Español",

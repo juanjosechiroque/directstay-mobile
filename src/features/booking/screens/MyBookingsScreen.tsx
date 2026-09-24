@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Platform, StyleSheet, Text, View } from 'react-native';
 
 import {
   Button,
@@ -92,6 +92,8 @@ export function MyBookingsScreen() {
         testID="my-bookings-list"
         data={bookingsQuery.data ?? []}
         keyExtractor={(booking) => booking.id}
+        // renderItem/keyExtractor stay inline: the React Compiler memoizes them, so a manual
+        // useCallback would add noise without a measured gain (see docs/PERFORMANCE.md).
         renderItem={({ item }) => (
           <BookingCard
             booking={item}
@@ -104,6 +106,12 @@ export function MyBookingsScreen() {
           />
         )}
         ItemSeparatorComponent={ItemSeparator}
+        // The list only grows with the user's own bookings; tune the render window so a large
+        // history does not mount everything at once.
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        removeClippedSubviews={Platform.OS === 'android'}
         refreshing={refreshing}
         onRefresh={() => void onRefresh()}
         showsVerticalScrollIndicator={false}

@@ -69,7 +69,10 @@ export function ContactActions({ whatsapp, phone, propertyName }: ContactActions
             style={({ pressed }) => [styles.action, styles.callAction, pressed && styles.pressed]}
           >
             <View style={[styles.icon, styles.callIcon]}>
-              <Text style={styles.callGlyph}>📞</Text>
+              <Image
+                source={require('../../assets/images/phone-bootstrap.png')}
+                style={styles.callMark}
+              />
             </View>
             <Text style={[styles.label, styles.callLabel]}>{t('bookings.callCta')}</Text>
           </Pressable>
@@ -123,8 +126,10 @@ const styles = StyleSheet.create({
     height: 19,
     tintColor: colors.white,
   },
-  callGlyph: {
-    fontSize: 13,
+  callMark: {
+    width: 16,
+    height: 16,
+    tintColor: colors.text,
   },
   label: {
     fontSize: fontSize.sm,

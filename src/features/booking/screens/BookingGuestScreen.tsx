@@ -1,7 +1,14 @@
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+  type TextInput,
+} from 'react-native';
 
 import {
   Button,
@@ -30,6 +37,10 @@ export function BookingGuestScreen() {
   const { ensureGuestSession } = useAuthActions();
   const createBooking = useCreateBooking();
   const submitLock = useRef(false);
+  const fullNameRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextInput>(null);
+  const phoneRef = useRef<TextInput>(null);
+  const requestsRef = useRef<TextInput>(null);
 
   // Reuse any previously entered guest data (e.g. coming back from payment).
   const [fullName, setFullName] = useState(guest?.fullName ?? '');
@@ -105,99 +116,116 @@ export function BookingGuestScreen() {
   };
 
   return (
-    <Screen scroll>
-      <ScreenHeader title={t('booking.guestTitle')} />
-      <Text style={styles.subtitle}>{t('booking.guestSubtitle')}</Text>
+    <KeyboardAvoidingView
+      style={styles.flex}
+      // iOS needs explicit padding; Android's default `adjustResize` already shrinks the
+      // window, so adding `height` here would double-adjust and can hide the CTA.
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <Screen scroll>
+        <ScreenHeader title={t('booking.guestTitle')} />
+        <Text style={styles.subtitle}>{t('booking.guestSubtitle')}</Text>
 
-      <Card style={styles.form}>
-        <TextField
-          label={t('booking.fullName')}
-          value={fullName}
-          onChangeText={(text) => {
-            setFullName(text);
-            setErrors((current) => ({ ...current, fullName: undefined }));
-          }}
-          error={errors.fullName ? t(errors.fullName) : undefined}
-          required
-          autoCapitalize="words"
-          autoComplete="name"
-          textContentType="name"
-          returnKeyType="next"
-        />
-        <TextField
-          label={t('booking.email')}
-          value={email}
-          onChangeText={(text) => {
-            setEmail(text);
-            setErrors((current) => ({ ...current, email: undefined }));
-          }}
-          error={errors.email ? t(errors.email) : undefined}
-          required
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoComplete="email"
-          textContentType="emailAddress"
-          returnKeyType="next"
-        />
-        <PhoneNumberField
-          countryCode={phoneCountryCode}
-          localNumber={phoneLocalNumber}
-          onCountryCodeChange={(code) => {
-            setPhoneCountryCode(code);
-            setErrors((current) => ({ ...current, phone: undefined }));
-          }}
-          onLocalNumberChange={(number) => {
-            setPhoneLocalNumber(number);
-            setErrors((current) => ({ ...current, phone: undefined }));
-          }}
-          error={errors.phone ? t(errors.phone) : undefined}
-        />
-        <TextField
-          label={t('booking.specialRequests')}
-          value={specialRequests}
-          onChangeText={setSpecialRequests}
-          helper={t('booking.specialRequestsHelper')}
-          multiline
-          maxLength={500}
-          textAlignVertical="top"
-          style={styles.requestsInput}
-        />
-      </Card>
+        <Card style={styles.form}>
+          <TextField
+            ref={fullNameRef}
+            label={t('booking.fullName')}
+            value={fullName}
+            onChangeText={(text) => {
+              setFullName(text);
+              setErrors((current) => ({ ...current, fullName: undefined }));
+            }}
+            error={errors.fullName ? t(errors.fullName) : undefined}
+            required
+            autoCapitalize="words"
+            autoComplete="name"
+            textContentType="name"
+            returnKeyType="next"
+            onSubmitEditing={() => emailRef.current?.focus()}
+          />
+          <TextField
+            ref={emailRef}
+            label={t('booking.email')}
+            value={email}
+            onChangeText={(text) => {
+              setEmail(text);
+              setErrors((current) => ({ ...current, email: undefined }));
+            }}
+            error={errors.email ? t(errors.email) : undefined}
+            required
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoComplete="email"
+            textContentType="emailAddress"
+            returnKeyType="next"
+            onSubmitEditing={() => phoneRef.current?.focus()}
+          />
+          <PhoneNumberField
+            countryCode={phoneCountryCode}
+            localNumber={phoneLocalNumber}
+            inputRef={phoneRef}
+            onSubmitEditing={() => requestsRef.current?.focus()}
+            onCountryCodeChange={(code) => {
+              setPhoneCountryCode(code);
+              setErrors((current) => ({ ...current, phone: undefined }));
+            }}
+            onLocalNumberChange={(number) => {
+              setPhoneLocalNumber(number);
+              setErrors((current) => ({ ...current, phone: undefined }));
+            }}
+            error={errors.phone ? t(errors.phone) : undefined}
+          />
+          <TextField
+            ref={requestsRef}
+            label={t('booking.specialRequests')}
+            value={specialRequests}
+            onChangeText={setSpecialRequests}
+            helper={t('booking.specialRequestsHelper')}
+            multiline
+            maxLength={500}
+            textAlignVertical="top"
+            style={styles.requestsInput}
+          />
+        </Card>
 
-      <Text style={styles.privacyNote}>{t('booking.guestPrivacyNote')}</Text>
+        <Text style={styles.privacyNote}>{t('booking.guestPrivacyNote')}</Text>
 
-      {submitError ? (
-        <ErrorState
-          title={t('booking.creationErrorTitle')}
-          message={t(getErrorCode(submitError))}
-          retryLabel={t('common.retry')}
-          onRetry={() => void handleSubmit()}
-        />
-      ) : null}
+        {submitError ? (
+          <ErrorState
+            title={t('booking.creationErrorTitle')}
+            message={t(getErrorCode(submitError))}
+            retryLabel={t('common.retry')}
+            onRetry={() => void handleSubmit()}
+          />
+        ) : null}
 
-      {submitError && getErrorCode(submitError) === 'error.unavailable' ? (
-        <Button title={t('booking.goToSearch')} onPress={() => router.replace('/search')} />
-      ) : null}
+        {submitError && getErrorCode(submitError) === 'error.unavailable' ? (
+          <Button title={t('booking.goToSearch')} onPress={() => router.replace('/search')} />
+        ) : null}
 
-      <View style={styles.quote}>
-        <QuoteSummary state={quoteState} />
-      </View>
+        <View style={styles.quote}>
+          <QuoteSummary state={quoteState} />
+        </View>
 
-      <View style={styles.footer}>
-        <Button
-          title={t('booking.guestContinueCta')}
-          size="lg"
-          fullWidth
-          disabled={!quoteState.isReady || submitting}
-          loading={submitting}
-          onPress={() => void handleSubmit()}
-        />
-      </View>
-    </Screen>
+        <View style={styles.footer}>
+          <Button
+            title={t('booking.guestContinueCta')}
+            size="lg"
+            fullWidth
+            disabled={!quoteState.isReady || submitting}
+            loading={submitting}
+            onPress={() => void handleSubmit()}
+          />
+        </View>
+      </Screen>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
   subtitle: {
     fontSize: fontSize.md,
     color: colors.textMuted,

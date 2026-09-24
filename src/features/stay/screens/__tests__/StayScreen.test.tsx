@@ -1,4 +1,6 @@
 import { screen, userEvent } from '@testing-library/react-native';
+import * as Clipboard from 'expo-clipboard';
+import { AccessibilityInfo } from 'react-native';
 
 import { StayScreen } from '@/features/stay/screens/StayScreen';
 import type { StayInfo } from '@/features/stay/types';
@@ -7,6 +9,7 @@ import { fakeRepositories, renderWithProviders } from '@/test/render';
 import { resetRouter, setParams } from '@/test/router-mock';
 
 jest.mock('expo-router', () => jest.requireActual('@/test/router-mock'));
+jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn().mockResolvedValue(true) }));
 
 const stay: StayInfo = {
   booking: buildBooking(),
@@ -51,6 +54,21 @@ describe('StayScreen', () => {
     expect(screen.getByText('AyniWifi')).toBeOnTheScreen();
     expect(screen.getByText('La llave está en la caja')).toBeOnTheScreen();
     expect(getStay).toHaveBeenCalledWith('booking-1', 'es');
+  });
+
+  it('copies the Wi-Fi password and announces it', async () => {
+    const announce = jest.spyOn(AccessibilityInfo, 'announceForAccessibility');
+    const getStay = jest.fn().mockResolvedValue(stay);
+    await renderWithProviders(<StayScreen />, {
+      repositories: fakeRepositories({ stay: { getStay } }),
+    });
+    await screen.findByText('secreto-123');
+
+    await user.press(screen.getByRole('button', { name: 'Copiar contraseña' }));
+
+    expect(Clipboard.setStringAsync).toHaveBeenCalledWith('secreto-123');
+    expect(announce).toHaveBeenCalledWith('Contraseña copiada');
+    announce.mockRestore();
   });
 
   it('shows the unavailable state and no private data when the server returns no stay', async () => {
