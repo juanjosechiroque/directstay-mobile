@@ -141,6 +141,9 @@ check (or a stronger scrim) once real images are in place.
 
 ## Pending
 
+- Keyboard behaviour in the guest form: `KeyboardAvoidingView` and the return-key focus order
+  (name → email → phone → requests) cannot be observed in Jest, so they need a device/simulator
+  check on a small screen. The component tests only cover the form's data flow.
 - VoiceOver (iOS) and TalkBack (Android) walkthrough on a device/simulator. Only RNTL tests and
   code review back the current claims.
 - Dynamic Type at the largest sizes; today only the calendar day text caps scaling, and no
