@@ -5,6 +5,7 @@ web-build/
 android/
 ios/
 .project/
+SPEC.md
 supabase/.temp/
 expo-env.d.ts
 package-lock.json
