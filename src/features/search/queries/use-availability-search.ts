@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { skipToken, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
 import type { AvailabilityQuery } from '@/features/search/types';
@@ -7,15 +7,16 @@ import { useRepositories } from '@/lib/repositories';
 
 export const availabilityKeys = {
   all: ['availability'] as const,
-  search: (query: AvailabilityQuery, locale: string) =>
+  /** Accepts `null` so the query hook can key before criteria exist. */
+  search: (query: AvailabilityQuery | null, locale: string) =>
     [
       ...availabilityKeys.all,
       'search',
-      query.propertyId,
-      query.unitId ?? null,
-      query.checkIn,
-      query.checkOut,
-      query.guests,
+      query?.propertyId ?? null,
+      query?.unitId ?? null,
+      query?.checkIn ?? null,
+      query?.checkOut ?? null,
+      query?.guests ?? null,
       locale,
     ] as const,
 };
@@ -25,11 +26,7 @@ export function useAvailabilitySearch(criteria: AvailabilityQuery | null) {
   const { i18n } = useTranslation();
   const locale = normalizeLocale(i18n.language);
   return useQuery({
-    queryKey: availabilityKeys.search(
-      criteria ?? { propertyId: '', checkIn: '', checkOut: '', guests: 0 },
-      locale,
-    ),
-    queryFn: () => availability.searchAvailableUnits(criteria as AvailabilityQuery, locale),
-    enabled: criteria !== null,
+    queryKey: availabilityKeys.search(criteria, locale),
+    queryFn: criteria ? () => availability.searchAvailableUnits(criteria, locale) : skipToken,
   });
 }

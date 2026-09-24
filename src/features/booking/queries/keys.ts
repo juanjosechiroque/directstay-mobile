@@ -9,14 +9,15 @@ import type { QuoteRequest } from '@/features/booking/types';
 export const bookingKeys = {
   all: ['bookings'] as const,
   lists: () => [...bookingKeys.all, 'list'] as const,
-  detail: (bookingId: string) => [...bookingKeys.all, 'detail', bookingId] as const,
-  quote: (request: QuoteRequest) =>
+  /** Accepts `undefined` so the query hook can key before an id exists (query stays skipped). */
+  detail: (bookingId: string | undefined) => [...bookingKeys.all, 'detail', bookingId] as const,
+  quote: (request: QuoteRequest | null) =>
     [
       ...bookingKeys.all,
       'quote',
-      request.unitId,
-      request.checkIn,
-      request.checkOut,
-      request.guestCount,
+      request?.unitId ?? null,
+      request?.checkIn ?? null,
+      request?.checkOut ?? null,
+      request?.guestCount ?? null,
     ] as const,
 };

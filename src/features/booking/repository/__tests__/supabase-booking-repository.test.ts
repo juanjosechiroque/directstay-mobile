@@ -40,13 +40,14 @@ function setup(rpcRow: Record<string, unknown>) {
   const rpc = jest.fn().mockResolvedValue({ data: rpcRow, error: null });
   const maybeSingle = jest.fn().mockResolvedValue({ data: { ...row, ...rpcRow }, error: null });
   const eq = jest.fn().mockReturnValue({ maybeSingle });
-  const select = jest.fn().mockReturnValue({ eq });
+  const order = jest.fn().mockResolvedValue({ data: [row], error: null });
+  const select = jest.fn().mockReturnValue({ eq, order });
   const from = jest.fn().mockReturnValue({ select });
   const repository = new SupabaseBookingRepository(
     { rpc, from } as unknown as DatabaseClient,
     'test-brand',
   );
-  return { repository, rpc, eq };
+  return { repository, rpc, eq, select };
 }
 
 describe('SupabaseBookingRepository mutations', () => {
@@ -96,6 +97,39 @@ describe('SupabaseBookingRepository mutations', () => {
     await expect(repository.confirmDemoPayment(row.id)).rejects.toMatchObject({
       code: 'error.holdExpired',
     });
+  });
+
+  it('keeps special_requests out of the list select and in the detail select', async () => {
+    const { repository, select } = setup(row);
+    await repository.listBookings();
+    expect(select).toHaveBeenLastCalledWith(expect.not.stringContaining('special_requests'));
+
+    await repository.getBooking(row.id);
+    expect(select).toHaveBeenLastCalledWith(expect.stringContaining('special_requests'));
+    expect(select).toHaveBeenLastCalledWith(expect.stringContaining('total_amount_minor'));
+  });
+
+  it('retries the detail read without special_requests when the remote schema lacks it', async () => {
+    const maybeSingle = jest
+      .fn()
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: '42703', message: 'column bookings.special_requests does not exist' },
+      })
+      .mockResolvedValueOnce({ data: row, error: null });
+    const eq = jest.fn().mockReturnValue({ maybeSingle });
+    const select = jest.fn().mockReturnValue({ eq });
+    const from = jest.fn().mockReturnValue({ select });
+    const repository = new SupabaseBookingRepository(
+      { from } as unknown as DatabaseClient,
+      'test-brand',
+    );
+
+    const booking = await repository.getBooking(row.id);
+
+    expect(select).toHaveBeenNthCalledWith(1, expect.stringContaining('special_requests'));
+    expect(select).toHaveBeenNthCalledWith(2, expect.not.stringContaining('special_requests'));
+    expect(booking).toMatchObject({ id: row.id, totalAmountMinor: 24000 });
   });
 
   it('rejects a malformed RPC response before navigating with its id', async () => {

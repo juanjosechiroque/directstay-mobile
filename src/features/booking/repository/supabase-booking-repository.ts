@@ -12,19 +12,44 @@ import type { BookingRow, SearchUnitJson } from '@/lib/supabase/types';
  * RLS restricts every row to its owner (`guest_profile_id = auth.uid()`), so the queries
  * do not need a client-supplied user filter. RPCs enforce creation and confirmation.
  */
-const BOOKING_SELECT = `
-  id, guest_profile_id, unit_id, status, check_in, check_out, guest_count,
-  guest_name, guest_email, guest_phone, currency, nightly_rate_minor, total_amount_minor,
-  hold_expires_at, created_at, confirmed_at, canceled_at, cancellation_reason, refunded_at,
+// Shared column list so the list and detail selects cannot silently drift apart: adding a
+// base column here updates both, and `special_requests` is added explicitly to detail only.
+const BOOKING_COLUMNS = [
+  'id',
+  'guest_profile_id',
+  'unit_id',
+  'status',
+  'check_in',
+  'check_out',
+  'guest_count',
+  'guest_name',
+  'guest_email',
+  'guest_phone',
+  'currency',
+  'nightly_rate_minor',
+  'total_amount_minor',
+  'hold_expires_at',
+  'created_at',
+  'confirmed_at',
+  'canceled_at',
+  'cancellation_reason',
+  'refunded_at',
+] as const;
+
+const BOOKING_RELATIONS = `
   units (
     name,
     property_id,
     properties ( name, timezone, check_in_time, check_out_time, contact_whatsapp, contact_phone )
   )
 `;
-const BOOKING_DETAIL_SELECT = BOOKING_SELECT.replace(
-  'guest_phone, currency',
-  'guest_phone, special_requests, currency',
+
+/** List reads omit `special_requests`, which booking cards never display. */
+const BOOKING_SELECT = [...BOOKING_COLUMNS, BOOKING_RELATIONS].join(', ');
+
+/** Detail reads add `special_requests`, which the detail screen shows. */
+const BOOKING_DETAIL_SELECT = [...BOOKING_COLUMNS, 'special_requests', BOOKING_RELATIONS].join(
+  ', ',
 );
 
 function isMissingSpecialRequestsColumn(error: unknown): boolean {
@@ -83,6 +108,9 @@ export class SupabaseBookingRepository implements BookingRepository {
       .select(BOOKING_DETAIL_SELECT)
       .eq('id', bookingId)
       .maybeSingle();
+    // COMPAT: temporary rollout shim. While a remote deployment still has an older schema
+    // without `special_requests`, PostgreSQL reports 42703 and we re-read without that column
+    // so detail pages keep working. Remove once the column is guaranteed to be deployed.
     if (isMissingSpecialRequestsColumn(error)) {
       const fallback = await this.client
         .from('bookings')

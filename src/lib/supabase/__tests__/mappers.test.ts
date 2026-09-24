@@ -2,9 +2,16 @@ import {
   mapBooking,
   mapCatalog,
   mapCatalogImage,
+  mapSearchResult,
   mapStayInformation,
 } from '@/lib/supabase/mappers';
-import type { BookingRow, CatalogJson, StayInformationJson } from '@/lib/supabase/types';
+import { AppError } from '@/lib/errors';
+import type {
+  BookingRow,
+  CatalogJson,
+  SearchUnitJson,
+  StayInformationJson,
+} from '@/lib/supabase/types';
 
 const resolveMedia = (path: string) => `https://cdn.test/catalog-media/${path}`;
 
@@ -80,6 +87,41 @@ describe('catalog mappers', () => {
   });
 });
 
+describe('search mapper', () => {
+  const base = {
+    unit: {
+      id: 'unit-1',
+      propertyId: 'prop-1',
+      name: 'Killa',
+      slug: 'killa',
+      maxGuests: 2,
+      nightlyRateMinor: 12000,
+      currency: 'USD',
+      summary: null,
+      description: null,
+      amenities: [],
+      images: [],
+    },
+    property: { id: 'prop-1', name: 'Ayni', slug: 'ayni', timezone: 'America/Lima' },
+    nights: 2,
+    totalAmountMinor: 24000,
+    currency: 'USD',
+  };
+
+  it('maps a server-priced search result', () => {
+    const result = mapSearchResult(base as SearchUnitJson, resolveMedia);
+    expect(result.totalAmountMinor).toBe(24000);
+    expect(result.unit.nightlyRateMinor).toBe(12000);
+  });
+
+  it('throws for a malformed total instead of rendering $0.00', () => {
+    const malformed = { ...base, totalAmountMinor: null } as unknown as SearchUnitJson;
+    expect(() => mapSearchResult(malformed, resolveMedia)).toThrow(
+      expect.objectContaining({ code: 'error.generic' }),
+    );
+  });
+});
+
 describe('booking mapper', () => {
   const row: BookingRow = {
     id: 'b-1',
@@ -123,10 +165,21 @@ describe('booking mapper', () => {
     expect(booking.propertyCheckInTime).toBe('15:00');
   });
 
-  it('falls back to a safe status for unknown values', () => {
-    const booking = mapBooking({ ...row, status: 'WEIRD', cancellation_reason: 'NOPE' });
-    expect(booking.status).toBe('PENDING_PAYMENT');
+  it('throws for an unknown booking status instead of inventing one', () => {
+    expect(() => mapBooking({ ...row, status: 'WEIRD' })).toThrow(AppError);
+    expect(() => mapBooking({ ...row, status: 'WEIRD' })).toThrow(
+      expect.objectContaining({ code: 'error.generic' }),
+    );
+  });
+
+  it('keeps an unknown cancellation reason as null', () => {
+    const booking = mapBooking({ ...row, cancellation_reason: 'NOPE' });
     expect(booking.cancellationReason).toBeNull();
+  });
+
+  it('throws for a malformed booking amount instead of rendering $0.00', () => {
+    const malformed = { ...row, total_amount_minor: 'not-a-number' } as unknown as BookingRow;
+    expect(() => mapBooking(malformed)).toThrow(expect.objectContaining({ code: 'error.generic' }));
   });
 
   it('never fabricates private stay data from a booking row', () => {

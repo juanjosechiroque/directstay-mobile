@@ -46,6 +46,9 @@ const CANCELLATION_REASONS: readonly CancellationReason[] = [
   'SYSTEM',
 ];
 
+const BOOKING_STATUS_SET = new Set<string>(BOOKING_STATUSES);
+const CANCELLATION_REASON_SET = new Set<string>(CANCELLATION_REASONS);
+
 function asString(value: unknown): string | null {
   return typeof value === 'string' ? value : null;
 }
@@ -62,16 +65,35 @@ function asArray(value: unknown): unknown[] {
   return Array.isArray(value) ? value : [];
 }
 
+/**
+ * Money must never be invented: an invalid amount is a contract violation, not a zero.
+ * Throws the same typed error as `mapBookingRpcResponse` so callers render an error state.
+ */
+function requireMinorUnits(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value)) {
+    throw new AppError('error.generic');
+  }
+  return value;
+}
+
+function isBookingStatus(value: unknown): value is BookingStatus {
+  return typeof value === 'string' && BOOKING_STATUS_SET.has(value);
+}
+
+/** A booking status is authoritative: an unknown value is an error, never a default. */
 function toBookingStatus(value: unknown): BookingStatus {
-  return BOOKING_STATUSES.includes(value as BookingStatus)
-    ? (value as BookingStatus)
-    : 'PENDING_PAYMENT';
+  if (!isBookingStatus(value)) {
+    throw new AppError('error.generic');
+  }
+  return value;
+}
+
+function isCancellationReason(value: unknown): value is CancellationReason {
+  return typeof value === 'string' && CANCELLATION_REASON_SET.has(value);
 }
 
 function toCancellationReason(value: unknown): CancellationReason | null {
-  return CANCELLATION_REASONS.includes(value as CancellationReason)
-    ? (value as CancellationReason)
-    : null;
+  return isCancellationReason(value) ? value : null;
 }
 
 export function mapCatalogImage(
@@ -98,7 +120,7 @@ export function mapUnit(
     summary: asString(json.summary) ?? '',
     description: asString(json.description) ?? '',
     maxGuests: asNumber(json.maxGuests),
-    nightlyRateMinor: asNumber(json.nightlyRateMinor),
+    nightlyRateMinor: requireMinorUnits(json.nightlyRateMinor),
     currency: asString(json.currency) ?? 'USD',
     amenities: asArray(json.amenities).filter(
       (code): code is AmenityCode => typeof code === 'string' && AMENITY_SET.has(code),
@@ -172,7 +194,7 @@ export function mapSearchResult(
     propertySlug: asString(json.property?.slug) ?? '',
     propertyTimezone: asString(json.property?.timezone) ?? 'UTC',
     nights: asNumber(json.nights),
-    totalAmountMinor: asNumber(json.totalAmountMinor),
+    totalAmountMinor: requireMinorUnits(json.totalAmountMinor),
     currency: asString(json.currency) ?? asString(json.unit?.currency) ?? 'USD',
   };
 }
@@ -202,8 +224,8 @@ export function mapBooking(row: BookingRow): Booking {
     guestPhone: row.guest_phone,
     specialRequests: asString(row.special_requests),
     currency: row.currency,
-    nightlyRateMinor: row.nightly_rate_minor,
-    totalAmountMinor: row.total_amount_minor,
+    nightlyRateMinor: requireMinorUnits(row.nightly_rate_minor),
+    totalAmountMinor: requireMinorUnits(row.total_amount_minor),
     holdExpiresAt: row.hold_expires_at,
     createdAt: row.created_at,
     confirmedAt: row.confirmed_at,
@@ -219,7 +241,7 @@ export function mapBookingRpcResponse(value: unknown): Booking {
   if (
     !row ||
     typeof row.id !== 'string' ||
-    !BOOKING_STATUSES.includes(row.status as BookingStatus) ||
+    !isBookingStatus(row.status) ||
     typeof row.check_in !== 'string' ||
     typeof row.check_out !== 'string' ||
     !Number.isSafeInteger(row.total_amount_minor) ||

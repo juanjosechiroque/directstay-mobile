@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { skipToken, useQuery } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
 import { bookingKeys } from '@/features/booking/queries/keys';
@@ -29,14 +29,12 @@ export function isBookingQuoteReady({ data, isLoading, isError }: QuoteReadiness
 /** Fetches the server quote and exposes the states used throughout the booking flow. */
 export function useBookingQuote(request: QuoteRequest | null): UseBookingQuoteResult {
   const { booking } = useRepositories();
+  // `skipToken` disables the query (no fetch) until a request exists, without a sentinel key
+  // or a non-null cast. The quote is a price snapshot; always revalidate it on mount so the
+  // flow never starts from a stale amount after the unit rate or availability changed.
   const query = useQuery({
-    queryKey: bookingKeys.quote(
-      request ?? { unitId: '', checkIn: '', checkOut: '', guestCount: 0 },
-    ),
-    queryFn: () => booking.getQuote(request as QuoteRequest),
-    enabled: request !== null,
-    // A quote is a price snapshot; always revalidate it on mount so the flow never
-    // starts from a stale amount after the unit rate or availability changed.
+    queryKey: bookingKeys.quote(request),
+    queryFn: request ? () => booking.getQuote(request) : skipToken,
     staleTime: 0,
   });
   const retry = useCallback(() => {
@@ -66,8 +64,7 @@ export function useBookings(enabled = true) {
 export function useBooking(bookingId: string | undefined) {
   const { booking } = useRepositories();
   return useQuery({
-    queryKey: bookingKeys.detail(bookingId ?? 'missing'),
-    queryFn: () => booking.getBooking(bookingId as string),
-    enabled: Boolean(bookingId),
+    queryKey: bookingKeys.detail(bookingId),
+    queryFn: bookingId ? () => booking.getBooking(bookingId) : skipToken,
   });
 }

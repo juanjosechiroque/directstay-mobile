@@ -34,6 +34,10 @@ export class SupabaseAvailabilityRepository implements AvailabilityRepository {
       p_property_id: propertyId,
     });
 
+    // COMPAT: the remote RPC may still expose the earlier signature without `p_property_id`
+    // (PostgREST reports PGRST202 when no function matches). The retry still lets PostgreSQL
+    // compute availability and price; the client only narrows the public results to the
+    // selected property. Remove once the new signature is guaranteed to be deployed.
     if (error?.code === 'PGRST202') {
       ({ data, error } = await this.client.rpc('search_available_units', baseParams));
     }

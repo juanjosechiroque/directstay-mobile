@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { skipToken, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
 import { normalizeLocale } from '@/lib/locale';
@@ -7,7 +7,9 @@ import { useRepositories } from '@/lib/repositories';
 export const propertyKeys = {
   all: ['property'] as const,
   catalog: (locale: string) => [...propertyKeys.all, 'catalog', locale] as const,
-  unit: (unitId: string, locale: string) => [...propertyKeys.all, 'unit', unitId, locale] as const,
+  /** Accepts `undefined` so the query hook can key before a unit id exists. */
+  unit: (unitId: string | undefined, locale: string) =>
+    [...propertyKeys.all, 'unit', unitId, locale] as const,
 };
 
 /**
@@ -29,8 +31,7 @@ export function useUnit(unitId: string | undefined) {
   const { i18n } = useTranslation();
   const locale = normalizeLocale(i18n.language);
   return useQuery({
-    queryKey: propertyKeys.unit(unitId ?? 'missing', locale),
-    queryFn: () => property.getUnit(unitId as string, locale),
-    enabled: Boolean(unitId),
+    queryKey: propertyKeys.unit(unitId, locale),
+    queryFn: unitId ? () => property.getUnit(unitId, locale) : skipToken,
   });
 }
