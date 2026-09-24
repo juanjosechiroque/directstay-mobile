@@ -13,6 +13,10 @@
     "home": "Home",
     "bookings": "My bookings"
   },
+  "dev": {
+    "telemetryTest": "Send Sentry test event (dev)",
+    "telemetryTestSent": "Event sent — check the Sentry dashboard"
+  },
   "property": {
     "aboutTitle": "About this location",
     "searchCta": "Check availability at this location",

@@ -1,5 +1,6 @@
 import type { PropertyRepository } from '@/features/property/repository/property-repository';
 import type { PropertyCatalog, Unit } from '@/features/property/types';
+import { reportOperationalError } from '@/lib/telemetry';
 import { toAppError } from '@/lib/supabase/errors';
 import type { DatabaseClient } from '@/lib/supabase/client';
 import { createMediaUrlResolver } from '@/lib/supabase/media';
@@ -24,13 +25,19 @@ export class SupabasePropertyRepository implements PropertyRepository {
     this.resolveMediaUrl = createMediaUrlResolver(client);
   }
 
+  private throwOperational(error: unknown, operation: string): never {
+    const appError = toAppError(error);
+    reportOperationalError(appError, { operation });
+    throw appError;
+  }
+
   async getCatalog(locale: Locale): Promise<PropertyCatalog[]> {
     const { data, error } = await this.client.rpc('get_catalog', {
       p_organization_slug: this.organizationSlug,
       p_locale: locale,
     });
     if (error) {
-      throw toAppError(error);
+      this.throwOperational(error, 'property.getCatalog');
     }
     if (!data) {
       return [];
@@ -45,7 +52,7 @@ export class SupabasePropertyRepository implements PropertyRepository {
       p_locale: locale,
     });
     if (error) {
-      throw toAppError(error);
+      this.throwOperational(error, 'property.getUnit');
     }
     if (!data) {
       return null;

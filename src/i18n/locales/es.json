@@ -13,6 +13,10 @@
     "home": "Inicio",
     "bookings": "Mis reservas"
   },
+  "dev": {
+    "telemetryTest": "Enviar evento de prueba a Sentry (dev)",
+    "telemetryTestSent": "Evento enviado — revisa el panel de Sentry"
+  },
   "property": {
     "aboutTitle": "Sobre la sede",
     "searchCta": "Consultar disponibilidad en esta sede",

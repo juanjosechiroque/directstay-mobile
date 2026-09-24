@@ -16,6 +16,7 @@ import {
 import { LanguageSwitch } from '@/components/LanguageSwitch';
 import { useCatalog } from '@/features/property/queries/use-property';
 import { getErrorCode } from '@/lib/errors';
+import { TelemetryTestButton } from '@/lib/telemetry';
 import { colors, fontSize, radius, spacing } from '@/lib/theme';
 
 export function HomeScreen() {
@@ -100,6 +101,8 @@ export function HomeScreen() {
           ))}
         </View>
       </Section>
+
+      <TelemetryTestButton />
     </Screen>
   );
 }

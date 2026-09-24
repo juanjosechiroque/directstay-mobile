@@ -25,14 +25,14 @@ crashes are captured.
 
 Sentry separates events by build profile:
 
-| Build profile | Sentry `environment` | Purpose                                         |
-| ------------- | -------------------- | ----------------------------------------------- |
-| `development` | `development`        | Local Metro runs and development-client builds. |
-| `preview`     | `preview`            | Internal distribution builds.                   |
-| `production`  | `production`         | Store builds.                                   |
+| Build profile | Sentry `environment` | Purpose                                            |
+| ------------- | -------------------- | -------------------------------------------------- |
+| `development` | `development`        | Local native builds (`expo run:*`) and Metro runs. |
+| `preview`     | `preview`            | Internal distribution builds.                      |
+| `production`  | `production`         | Store builds.                                      |
 
 Development events are tagged `development` so they do not pollute production crash
-statistics, but they still report so development-client crashes can be verified.
+statistics, but they still report so crashes in development builds can be verified.
 
 ### Disabled features
 
@@ -118,10 +118,11 @@ parameters, booking identifiers or Supabase error causes to Sentry events.
 
 ## Development-only test error
 
-A tiny `TelemetryTestButton` is rendered only when `__DEV__` is true, so it is removed from
-release bundles. Tapping it calls `captureTestError()`, which sends a test event to Sentry.
-This is only for verifying wiring in a development build; it cannot be triggered in
-production.
+A tiny `TelemetryTestButton` (`src/lib/telemetry/TelemetryTestButton.tsx`) is rendered at
+the bottom of the Home screen only when `__DEV__` is true, so it is removed from release
+bundles. Tapping it calls `captureTestError()`, which sends a test event tagged
+`operation: dev.telemetryTest` to Sentry. This is only for verifying wiring in a
+development build; it cannot be triggered in production.
 
 ## Backend diagnostics with Supabase Logs
 
@@ -170,8 +171,15 @@ Use the Sentry `operation` tag to choose the backend log query:
 
 - `auth.restoreSession` → filter Auth logs by the request timestamp and `anon` or
   `authenticated` role.
+- `property.getCatalog` / `property.getUnit` → filter Postgres/PostgREST logs for
+  `get_catalog` / `get_unit` RPC calls.
+- `search.searchAvailableUnits` → filter Postgres/PostgREST logs for
+  `search_available_units` RPC calls.
+- `booking.getQuote` / `booking.listBookings` / `booking.getBooking` → filter
+  Postgres/PostgREST logs for `search_available_units` or `bookings` table reads.
 - `booking.createBooking` → filter Postgres/PostgREST logs for `create_booking` RPC calls.
 - `booking.confirmDemoPayment` → filter Postgres/PostgREST logs for `confirm_demo_payment`.
+- `stay.getStay` → filter Postgres/PostgREST logs for `get_stay_information` RPC calls.
 
 Because Sentry events do not contain booking IDs or guest identifiers, correlate by
 **timestamp** and **operation name**.

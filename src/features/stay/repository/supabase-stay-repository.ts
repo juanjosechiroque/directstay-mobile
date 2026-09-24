@@ -3,6 +3,7 @@ import type { StayRepository } from '@/features/stay/repository/stay-repository'
 import type { StayInfo } from '@/features/stay/types';
 import type { Locale } from '@/lib/locale';
 import type { DatabaseClient } from '@/lib/supabase/client';
+import { reportOperationalError } from '@/lib/telemetry';
 import { toAppError } from '@/lib/supabase/errors';
 import { mapStayInformation } from '@/lib/supabase/mappers';
 import type { StayInformationJson } from '@/lib/supabase/types';
@@ -20,6 +21,12 @@ export class SupabaseStayRepository implements StayRepository {
     private readonly bookingRepository: BookingRepository,
   ) {}
 
+  private throwOperational(error: unknown, operation: string): never {
+    const appError = toAppError(error);
+    reportOperationalError(appError, { operation });
+    throw appError;
+  }
+
   async getStay(bookingId: string, _locale: Locale): Promise<StayInfo | null> {
     const booking = await this.bookingRepository.getBooking(bookingId);
     if (!booking || booking.status !== 'CONFIRMED') {
@@ -30,7 +37,7 @@ export class SupabaseStayRepository implements StayRepository {
       p_booking_id: bookingId,
     });
     if (error) {
-      throw toAppError(error);
+      this.throwOperational(error, 'stay.getStay');
     }
     if (!data) {
       return null;

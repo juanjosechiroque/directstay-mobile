@@ -141,7 +141,7 @@ rather than assembled in screens.
 
 | EAS profile   | App identifier                            | Delivery                                            |
 | ------------- | ----------------------------------------- | --------------------------------------------------- |
-| `development` | `com.juanjosechiroque.directstay.dev`     | Internal development-client APK on Android          |
+| `development` | `com.juanjosechiroque.directstay.dev`     | Internal development APK on Android                 |
 | `preview`     | `com.juanjosechiroque.directstay.preview` | Internal distribution                               |
 | `production`  | `com.juanjosechiroque.directstay`         | Production channel with build-number auto-increment |
 

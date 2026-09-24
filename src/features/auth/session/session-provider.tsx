@@ -36,6 +36,8 @@ export function SessionProvider({
   useEffect(() => {
     let active = true;
 
+    // Restoring the persisted session can fail transiently (network, AsyncStorage). Retry
+    // before deciding: a read failure must not look like "no session" and sign the guest out.
     const restoreSession = async () => {
       for (let attempt = 0; attempt < 3; attempt += 1) {
         try {
@@ -50,6 +52,9 @@ export function SessionProvider({
             await new Promise((resolve) => setTimeout(resolve, 100 * (attempt + 1)));
             continue;
           }
+          // Kept failing. The stored session is left untouched: the failure is reported to
+          // telemetry, the UI falls back to signed-out so the app stays usable, and a later
+          // auth event or the next launch can still restore the session.
           reportOperationalError(error, { operation: 'auth.restoreSession' });
           setStatus('signedOut');
         }

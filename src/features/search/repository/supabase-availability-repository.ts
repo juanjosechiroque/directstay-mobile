@@ -1,6 +1,7 @@
 import type { AvailabilityRepository } from '@/features/search/repository/availability-repository';
 import type { AvailabilityQuery, AvailableUnit } from '@/features/search/types';
 import type { DatabaseClient } from '@/lib/supabase/client';
+import { reportOperationalError } from '@/lib/telemetry';
 import { toAppError } from '@/lib/supabase/errors';
 import { mapSearchResult } from '@/lib/supabase/mappers';
 import { createMediaUrlResolver } from '@/lib/supabase/media';
@@ -15,6 +16,12 @@ export class SupabaseAvailabilityRepository implements AvailabilityRepository {
     private readonly organizationSlug: string,
   ) {
     this.resolveMediaUrl = createMediaUrlResolver(client);
+  }
+
+  private throwOperational(error: unknown, operation: string): never {
+    const appError = toAppError(error);
+    reportOperationalError(appError, { operation });
+    throw appError;
   }
 
   async searchAvailableUnits(
@@ -42,7 +49,7 @@ export class SupabaseAvailabilityRepository implements AvailabilityRepository {
       ({ data, error } = await this.client.rpc('search_available_units', baseParams));
     }
     if (error) {
-      throw toAppError(error);
+      this.throwOperational(error, 'search.searchAvailableUnits');
     }
     if (!data) {
       return [];

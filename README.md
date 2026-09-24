@@ -49,24 +49,31 @@ Copy the example environment file and fill it in:
 cp .env.example .env
 ```
 
-| Variable                        | Purpose                                                 |
-| ------------------------------- | ------------------------------------------------------- |
-| `EXPO_PUBLIC_SUPABASE_URL`      | Supabase project URL                                    |
-| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key (public by design; RLS protects)      |
-| `EXPO_PUBLIC_ORGANIZATION_SLUG` | Which brand this deployment serves (`ayni-hospitality`) |
+| Variable                        | Purpose                                                                       |
+| ------------------------------- | ----------------------------------------------------------------------------- |
+| `EXPO_PUBLIC_SUPABASE_URL`      | Supabase project URL                                                          |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key (public by design; RLS protects)                            |
+| `EXPO_PUBLIC_ORGANIZATION_SLUG` | Which brand this deployment serves (`ayni-hospitality`)                       |
+| `EXPO_PUBLIC_SENTRY_DSN`        | Optional Sentry DSN (public by design); without it, crash reporting stays off |
 
 Only `EXPO_PUBLIC_*` variables are inlined into the client bundle. **Never** put the
-Supabase service-role key or a Stripe secret key behind that prefix. Missing values fail at
-startup with a clear message (`src/lib/supabase/config.ts`).
+Supabase service-role key, a Stripe secret key or the Sentry auth token behind that prefix.
+Missing Supabase values fail at startup with a clear message (`src/lib/supabase/config.ts`).
 
 ## Run the app (remote Supabase)
 
 Everyday development points `.env` at the hosted development project — get the URL and
-anon key from the Supabase dashboard (Project Settings > API). Then:
+anon key from the Supabase dashboard (Project Settings > API). The app bundles native code
+(the Sentry SDK), so it cannot run in Expo Go; use a local native build:
 
 ```bash
-npm start                      # Expo dev server
+npm run ios                    # or: npm run android
 ```
+
+The first run prebuilds the native projects (`ios/`, `android/` — generated and
+git-ignored) and compiles the app, so it takes several minutes and requires Xcode or the
+Android SDK. Afterwards, `npm start` starts Metro and the installed debug build connects
+to it; re-run `npm run ios` after adding or upgrading native dependencies.
 
 Schema, RLS/RPC and seed data live in this repo (`supabase/migrations`, `supabase/seed.sql`)
 and are applied to the remote project with the Supabase CLI:

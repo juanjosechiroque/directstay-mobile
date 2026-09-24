@@ -154,7 +154,11 @@ export function initializeSentry(): void {
     dsn,
     environment,
     release: `directstay-mobile@${Constants.expoConfig?.version ?? '0.0.0'}`,
-    dist: `${Constants.expoConfig?.ios?.bundleIdentifier ?? 'dev'}`,
+    dist:
+      Platform.select({
+        ios: Constants.expoConfig?.ios?.bundleIdentifier,
+        android: Constants.expoConfig?.android?.package,
+      }) ?? 'dev',
     enabled: true,
     sampleRate: 1.0,
     tracesSampleRate: 0,
@@ -304,6 +308,24 @@ const globalReporter = new OperationalErrorReporter();
 
 export function reportOperationalError(error: unknown, context: OperationalErrorContext): void {
   globalReporter.report(error, context);
+}
+
+/**
+ * Development-only trigger for verifying the Sentry wiring end to end (see
+ * docs/OBSERVABILITY.md). Guarded by `__DEV__` so it is compiled out of release bundles and
+ * can never fire in production.
+ */
+export function captureTestError(): void {
+  if (!__DEV__) return;
+  Sentry.captureException(new Error('directstay telemetry test event'), {
+    tags: {
+      operation: 'dev.telemetryTest',
+      appErrorCode: 'error.generic',
+      platform: Platform.OS,
+      version: Constants.expoConfig?.version ?? '0.0.0',
+      environment: getSentryEnvironment(),
+    },
+  });
 }
 
 export function createOperationalErrorReporterForTests(): OperationalErrorReporter {

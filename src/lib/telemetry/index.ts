@@ -2,6 +2,7 @@ export {
   initializeSentry,
   isSentryInitialized,
   reportOperationalError,
+  captureTestError,
   sanitizeEvent,
   beforeBreadcrumb,
   getSentryEnvironment,
@@ -9,3 +10,4 @@ export {
   isNonReportableDomainCode,
 } from './config';
 export type { OperationalErrorContext, SentryEnvironment } from './config';
+export { TelemetryTestButton } from './TelemetryTestButton';
