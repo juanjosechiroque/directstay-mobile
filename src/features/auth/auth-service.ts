@@ -15,7 +15,10 @@ import { toAuthError } from '@/lib/supabase/errors';
 export async function getSessionUser(client: DatabaseClient): Promise<AuthUser | null> {
   const { data, error } = await client.auth.getSession();
   if (error) {
-    return null;
+    // "No session" and "could not read the session" are different outcomes. A transient
+    // network/AsyncStorage failure must not be reported as a signed-out guest, so it is
+    // surfaced as a typed error for the caller to retry instead of silently ending the session.
+    throw toAuthError(error);
   }
   return toAuthUser(data.session?.user ?? null);
 }

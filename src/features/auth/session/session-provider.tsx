@@ -35,13 +35,31 @@ export function SessionProvider({
   useEffect(() => {
     let active = true;
 
-    void getSessionUser(client).then((nextUser) => {
-      if (!active) {
-        return;
+    // Restoring the persisted session can fail transiently (network, AsyncStorage). Retry
+    // before deciding: a read failure must not look like "no session" and sign the guest out.
+    const restoreSession = async () => {
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        try {
+          const nextUser = await getSessionUser(client);
+          if (!active) return;
+          setUser(nextUser);
+          setStatus(nextUser ? 'signedIn' : 'signedOut');
+          return;
+        } catch (error) {
+          if (!active) return;
+          if (attempt < 2) {
+            await new Promise((resolve) => setTimeout(resolve, 100 * (attempt + 1)));
+            continue;
+          }
+          // Kept failing. Leave the stored Supabase session untouched and log it: the UI falls
+          // back to signed-out so the app stays usable, and a later auth event or the next
+          // launch can still restore the session.
+          console.warn('[session] could not restore the persisted session', error);
+          setStatus('signedOut');
+        }
       }
-      setUser(nextUser);
-      setStatus(nextUser ? 'signedIn' : 'signedOut');
-    });
+    };
+    void restoreSession();
 
     const { data } = client.auth.onAuthStateChange((event, session) => {
       const nextUser = toAuthUser(session?.user ?? null);

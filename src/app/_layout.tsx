@@ -3,18 +3,19 @@ import '@/i18n';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { EmptyState, Screen } from '@/components';
 import { SessionProvider } from '@/features/auth/session/session-provider';
+import { getAppBootstrap } from '@/lib/bootstrap';
 import { queryClient } from '@/lib/query-client';
 import { RepositoryProvider } from '@/lib/repositories';
-import { getSupabaseClient } from '@/lib/supabase/client';
-import { getSupabaseConfig } from '@/lib/supabase/config';
-import { createSupabaseRepositories } from '@/lib/supabase/repositories';
 import { colors } from '@/lib/theme';
+
+// Composed once, outside React render: the Supabase client/repositories are a module-level
+// lazy singleton, so re-renders and StrictMode cannot create a second client.
+const bootstrap = getAppBootstrap();
 
 /**
  * Root composition.
@@ -25,19 +26,6 @@ import { colors } from '@/lib/theme';
  */
 export default function RootLayout() {
   const { t } = useTranslation();
-  const bootstrap = useMemo(() => {
-    try {
-      const config = getSupabaseConfig();
-      const client = getSupabaseClient();
-      return {
-        ok: true as const,
-        client,
-        repositories: createSupabaseRepositories(client, config.organizationSlug),
-      };
-    } catch (error) {
-      return { ok: false as const, error };
-    }
-  }, []);
 
   if (!bootstrap.ok) {
     return (

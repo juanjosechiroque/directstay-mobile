@@ -62,10 +62,11 @@ Expo Router route
 - `src/i18n` owns translated UI resources.
 
 Repository interfaces keep screens independent from Supabase payloads and make data-edge
-tests deterministic; data tests use small fake repositories local to each test. The root
-composes one Supabase client and the deployment's organization slug into concrete
-repositories. Adapters translate RPC/table responses into app models through validating
-mappers.
+tests deterministic; data tests use small fake repositories local to each test. A lazy,
+module-level bootstrap (`src/lib/bootstrap.ts`) composes one Supabase client and the
+deployment's organization slug into concrete repositories, so composition never runs inside
+React render and a configuration error is captured for the root's explicit error screen.
+Adapters translate RPC/table responses into app models through validating mappers.
 
 ## Server state and sessions
 

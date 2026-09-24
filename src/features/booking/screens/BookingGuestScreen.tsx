@@ -33,7 +33,7 @@ import { PhoneNumberField } from '@/features/booking/components/PhoneNumberField
 export function BookingGuestScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { stay, guest, setGuest } = useBookingDraft();
+  const { stay, guest, pending, setGuest, setPending } = useBookingDraft();
   const { ensureGuestSession } = useAuthActions();
   const createBooking = useCreateBooking();
   const submitLock = useRef(false);
@@ -78,6 +78,23 @@ export function BookingGuestScreen() {
 
   const handleSubmit = async () => {
     if (submitLock.current) return;
+
+    // Idempotency: if this exact stay already has a live pending booking, reuse it instead of
+    // creating another. The server cancels a previous pending booking with SYSTEM when a new
+    // one is created, so the risk of re-creating is UX confusion (two pending rows), never
+    // inventory. Reusing keeps the guest on a single pending booking.
+    const hasLivePending =
+      pending !== null &&
+      pending.unitId === stay.unitId &&
+      pending.checkIn === stay.checkIn &&
+      pending.checkOut === stay.checkOut &&
+      pending.guestCount === stay.guestCount &&
+      Date.parse(pending.holdExpiresAt) > Date.now();
+    if (hasLivePending) {
+      router.push({ pathname: '/booking/payment', params: { bookingId: pending.id } });
+      return;
+    }
+
     const phone = buildInternationalPhone(phoneCountryCode, phoneLocalNumber);
     const nextErrors = validateGuestForm({ fullName, email, phone });
     setErrors(nextErrors);
@@ -105,6 +122,14 @@ export function BookingGuestScreen() {
         guestEmail: email.trim(),
         guestPhone: phone || null,
         specialRequests: specialRequests.trim() || null,
+      });
+      setPending({
+        id: created.id,
+        unitId: created.unitId,
+        checkIn: created.checkIn,
+        checkOut: created.checkOut,
+        guestCount: created.guestCount,
+        holdExpiresAt: created.holdExpiresAt,
       });
       router.push({ pathname: '/booking/payment', params: { bookingId: created.id } });
     } catch (error) {

@@ -115,6 +115,37 @@ describe('BookingGuestScreen', () => {
     );
   });
 
+  it('reuses a live pending booking for the same stay instead of creating another', async () => {
+    const createBooking = jest
+      .fn()
+      .mockResolvedValue(
+        buildBooking({ id: 'pending-1', holdExpiresAt: '2999-01-01T00:00:00.000Z' }),
+      );
+    const repositories = fakeRepositories({
+      booking: { getQuote: jest.fn().mockResolvedValue(quote), createBooking },
+    });
+    await renderWithProviders(withDraft(<BookingGuestScreen />), { repositories });
+    await screen.findByText('Total');
+
+    await user.type(screen.getByLabelText(NAME), 'Ana Quispe');
+    await user.type(screen.getByLabelText(EMAIL), 'ana@example.com');
+    await user.press(screen.getByRole('button', { name: CONTINUE }));
+
+    expect(createBooking).toHaveBeenCalledTimes(1);
+    expect(router.push).toHaveBeenLastCalledWith({
+      pathname: '/booking/payment',
+      params: { bookingId: 'pending-1' },
+    });
+
+    // Coming back from payment and submitting again must not create a second pending booking.
+    await user.press(screen.getByRole('button', { name: CONTINUE }));
+    expect(createBooking).toHaveBeenCalledTimes(1);
+    expect(router.push).toHaveBeenLastCalledWith({
+      pathname: '/booking/payment',
+      params: { bookingId: 'pending-1' },
+    });
+  });
+
   it('prefills the form from the draft and keeps it after a failed attempt', async () => {
     const createBooking = jest.fn().mockRejectedValue(new AppError('error.unavailable'));
     const { repositories } = setup({ createBooking });

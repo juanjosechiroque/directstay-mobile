@@ -1,9 +1,30 @@
-import { ensureGuestSession } from '@/features/auth/auth-service';
+import { ensureGuestSession, getSessionUser } from '@/features/auth/auth-service';
 import type { DatabaseClient } from '@/lib/supabase/client';
 
 function clientWithAuth(auth: Record<string, unknown>): DatabaseClient {
   return { auth } as unknown as DatabaseClient;
 }
+
+describe('getSessionUser', () => {
+  it('returns null when there is genuinely no session', async () => {
+    const client = clientWithAuth({
+      getSession: jest.fn().mockResolvedValue({ data: { session: null }, error: null }),
+    });
+
+    await expect(getSessionUser(client)).resolves.toBeNull();
+  });
+
+  it('propagates a transient read failure instead of reporting a signed-out guest', async () => {
+    const client = clientWithAuth({
+      getSession: jest.fn().mockResolvedValue({
+        data: { session: null },
+        error: { code: 'unexpected_failure', message: 'network request failed', status: 0 },
+      }),
+    });
+
+    await expect(getSessionUser(client)).rejects.toMatchObject({ code: 'error.generic' });
+  });
+});
 
 describe('ensureGuestSession', () => {
   it('reuses an existing session without creating another identity', async () => {
