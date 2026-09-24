@@ -4,7 +4,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SUPPORTED_LOCALES } from '@/i18n';
 import { colors, fontSize, radius, spacing } from '@/lib/theme';
 
-const LABELS: Record<string, string> = { es: 'settings.languageEs', en: 'settings.languageEn' };
+const LABELS: Record<string, string> = { es: 'ES', en: 'EN' };
+const NAMES: Record<string, string> = { es: 'settings.languageEs', en: 'settings.languageEn' };
 
 export function LanguageSwitch() {
   const { t, i18n } = useTranslation();
@@ -18,10 +19,11 @@ export function LanguageSwitch() {
             key={locale}
             onPress={() => void i18n.changeLanguage(locale)}
             accessibilityRole="button"
+            accessibilityLabel={t(NAMES[locale])}
             accessibilityState={{ selected: active }}
             style={[styles.option, active && styles.optionActive]}
           >
-            <Text style={[styles.label, active && styles.labelActive]}>{t(LABELS[locale])}</Text>
+            <Text style={[styles.label, active && styles.labelActive]}>{LABELS[locale]}</Text>
           </Pressable>
         );
       })}
@@ -30,10 +32,13 @@ export function LanguageSwitch() {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: spacing.sm },
+  row: { flexDirection: 'row', gap: spacing.sm, alignSelf: 'flex-end' },
   option: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
+    minWidth: 44,
+    minHeight: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.md,
     borderRadius: radius.pill,
     backgroundColor: colors.surfaceMuted,
   },

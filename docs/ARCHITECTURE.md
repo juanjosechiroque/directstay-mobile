@@ -37,7 +37,8 @@ protect invariants during concurrent writes. The Supabase anon key is public by 
 service-role and provider secrets must never enter the app bundle.
 
 `create_booking` and `confirm_demo_payment` are transactional SECURITY DEFINER RPCs
-granted to `authenticated` guests. The app submits guest details and then a booking id;
+granted to `authenticated` guests. The app submits guest details, an optional special
+request, and then a booking id;
 PostgreSQL alone sets the price, hold and confirmed status. Demo confirmation does not
 create a Stripe payment record.
 
@@ -54,7 +55,7 @@ Expo Router route
 
 - `src/app` contains thin route files for the tab shell and stack routes.
 - `src/features` groups screens, queries, types, and repository contracts by capability:
-  auth, property, search, booking, stay, and settings.
+  auth, property, search, booking, and stay.
 - `src/lib` holds cross-cutting configuration, dates, formatting, errors, the query
   client, repository composition, and Supabase mapping.
 - `src/components` contains shared presentation components.
@@ -69,7 +70,7 @@ mappers.
 ## Server state and sessions
 
 TanStack Query owns asynchronous server state, retries, cache keys, and invalidation.
-Keys include the inputs that change a result, such as locale, unit, dates, and guest count.
+Keys include the inputs that change a result, such as locale, property, unit, dates, and guest count.
 Loading, error, empty, and retry states are rendered by the feature screens.
 
 `SessionProvider` restores the persisted Supabase session and subscribes to auth changes.
@@ -81,17 +82,27 @@ the actual privacy boundary remains RLS and RPC authorization. Creating a sessio
 identity-scoped query caches. The guest screen then creates a pending booking by RPC and
 passes only its id to Payment. Payment reads the persisted booking price and deadline,
 asks the confirmation RPC to change state, and invalidates booking, availability and stay
-queries. The confirmation route replaces Payment in navigation history.
+queries. An unexpired pending booking can reopen Payment from booking detail. The
+confirmation route replaces Payment in navigation history.
 
 ## Data access
 
 - `get_catalog` and `get_unit` return localized, active catalog data for the configured
-  organization.
+  organization. The catalog may include a property's public map reference and coordinates.
+  The property page displays the reference as an address, opens a Google Maps search for
+  it without a Maps API key, and shows the property's public phone and contact actions.
 - `search_available_units` is the only availability and quote calculation used by the
-  app. It applies capacity, active-state, booking, hold-expiry, and availability-block
-  rules in PostgreSQL.
+  app. Guest searches pass the selected property id, while unit quote requests pass the
+  unit id. It applies capacity, active-state, booking, hold-expiry, and availability-block
+  rules in PostgreSQL. While a remote deployment still has the earlier RPC signature,
+  the repository retries that RPC without the property argument and narrows its
+  server-computed public results to the selected property. The client does not calculate
+  availability or price in either case.
 - Anonymous authenticated users read their own bookings and profile through RLS-protected
-  tables; the contact details used for a reservation live on the booking row.
+  tables; the contact details used for a reservation live on the booking row. Booking
+  history does not request `special_requests`, since cards do not display it. Detail reads
+  retry without that field only when PostgreSQL reports that specific column is missing,
+  so older remote schemas can still display booking details during rollout.
 - `get_stay_information` returns private property information only to the owner of a
   confirmed booking.
 - Storage exposes catalog images for public reads and has no client write policy.

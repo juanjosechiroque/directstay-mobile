@@ -12,6 +12,7 @@ const row = {
   guest_name: 'Guest',
   guest_email: 'guest@example.test',
   guest_phone: null,
+  special_requests: null,
   currency: 'USD',
   nightly_rate_minor: 12000,
   total_amount_minor: 24000,
@@ -59,6 +60,7 @@ describe('SupabaseBookingRepository mutations', () => {
       guestName: 'Guest',
       guestEmail: 'guest@example.test',
       guestPhone: null,
+      specialRequests: null,
     });
     expect(rpc).toHaveBeenCalledWith('create_booking', {
       p_unit_id: row.unit_id,
@@ -68,6 +70,7 @@ describe('SupabaseBookingRepository mutations', () => {
       p_guest_name: 'Guest',
       p_guest_email: 'guest@example.test',
       p_guest_phone: null,
+      p_special_requests: null,
     });
     expect(eq).toHaveBeenCalledWith('id', row.id);
     expect(booking).toMatchObject({ id: row.id, unitName: 'Test unit', totalAmountMinor: 24000 });
@@ -106,6 +109,7 @@ describe('SupabaseBookingRepository mutations', () => {
         guestName: 'Guest',
         guestEmail: 'guest@example.test',
         guestPhone: null,
+        specialRequests: null,
       }),
     ).rejects.toMatchObject({ code: 'error.generic' });
     expect(eq).not.toHaveBeenCalled();

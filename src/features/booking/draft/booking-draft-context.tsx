@@ -3,15 +3,6 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
 import type { Quote } from '@/features/booking/types';
 import type { IsoDate } from '@/lib/dates';
 
-/**
- * In-memory booking draft for the `booking/` route group.
- *
- * Guest PII (name, email, phone) must never travel through route params, URLs or deep
- * links, so it lives here — scoped to the provider mounted by `booking/_layout.tsx`.
- * Nothing is persisted (no AsyncStorage, files or logs); leaving the booking flow
- * unmounts the provider and drops the draft.
- */
-
 export interface BookingStayDraft {
   unitId: string;
   checkIn: IsoDate;
@@ -22,7 +13,9 @@ export interface BookingStayDraft {
 export interface BookingGuestDraft {
   fullName: string;
   email: string;
-  phone: string;
+  phoneCountryCode: string;
+  phoneLocalNumber: string;
+  specialRequests: string;
 }
 
 interface BookingDraftValue {

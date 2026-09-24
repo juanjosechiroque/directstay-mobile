@@ -1,9 +1,10 @@
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import {
   Button,
+  Card,
   CatalogImage,
   EmptyState,
   ErrorState,
@@ -11,11 +12,10 @@ import {
   Screen,
   Section,
 } from '@/components';
-import { PropertyHighlights } from '@/features/property/components/PropertyHighlights';
-import { UnitCard } from '@/features/property/components/UnitCard';
+import { LanguageSwitch } from '@/components/LanguageSwitch';
 import { useCatalog } from '@/features/property/queries/use-property';
 import { getErrorCode } from '@/lib/errors';
-import { colors, fontSize, spacing } from '@/lib/theme';
+import { colors, fontSize, radius, spacing } from '@/lib/theme';
 
 export function HomeScreen() {
   const { t } = useTranslation();
@@ -56,6 +56,7 @@ export function HomeScreen() {
   return (
     <Screen scroll contentContainerStyle={styles.content}>
       <View style={styles.intro}>
+        <LanguageSwitch />
         <Text style={styles.tagline}>{t('home.title')}</Text>
       </View>
 
@@ -67,39 +68,35 @@ export function HomeScreen() {
         style={styles.cta}
       />
 
-      {/* Every property gets its own hero image, description and unit list — no single
-          property is treated as "the" featured one. */}
-      {catalog.map(({ property, units }) => (
-        <View key={property.id} style={styles.propertyBlock}>
-          <CatalogImage image={property.heroImage} height={220} borderRadius={24}>
-            <Text style={styles.heroTitle}>{property.name}</Text>
-            <Text style={styles.heroLocation}>{property.locationLabel}</Text>
-          </CatalogImage>
-
-          <PropertyHighlights highlights={property.highlights} description={property.description} />
-
-          <Section spaced title={t('home.unitsTitle')}>
-            {units.length ? (
-              <View style={styles.units}>
-                {units.map((unit) => (
-                  <UnitCard
-                    key={unit.id}
-                    unit={unit}
-                    onPress={() =>
-                      router.push({ pathname: '/units/[unitId]', params: { unitId: unit.id } })
-                    }
-                  />
-                ))}
-              </View>
-            ) : (
-              <EmptyState
-                title={t('search.noResultsTitle')}
-                message={t('search.noResultsMessage')}
-              />
-            )}
-          </Section>
+      <Section title={t('home.propertiesTitle')}>
+        <View style={styles.properties}>
+          {catalog.map(({ property }) => (
+            <Pressable
+              key={property.id}
+              accessibilityRole="button"
+              accessibilityLabel={t('home.viewProperty', { name: property.name })}
+              onPress={() =>
+                router.push({
+                  pathname: '/properties/[propertyId]',
+                  params: { propertyId: property.id },
+                })
+              }
+              style={({ pressed }) => [styles.propertyPressable, pressed && styles.pressed]}
+            >
+              <Card padded={false} style={styles.propertyCard}>
+                <CatalogImage image={property.heroImage} height={210} borderRadius={0}>
+                  <View style={styles.heroTitleRow}>
+                    <Text style={styles.heroTitle}>{property.name}</Text>
+                    <Text style={styles.heroArrow}>›</Text>
+                  </View>
+                  <Text style={styles.heroLocation}>{property.locationLabel}</Text>
+                </CatalogImage>
+                <Text style={styles.summary}>{property.shortDescription}</Text>
+              </Card>
+            </Pressable>
+          ))}
         </View>
-      ))}
+      </Section>
     </Screen>
   );
 }
@@ -109,6 +106,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxxl,
   },
   heroTitle: {
+    flex: 1,
     color: colors.white,
     fontSize: fontSize.xxl,
     fontWeight: '700',
@@ -118,6 +116,15 @@ const styles = StyleSheet.create({
     color: '#EDE4D3',
     fontSize: fontSize.sm,
     marginTop: spacing.xs,
+  },
+  heroTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  heroArrow: {
+    color: colors.white,
+    fontSize: fontSize.xxxl,
   },
   intro: {
     marginTop: spacing.xl,
@@ -131,11 +138,22 @@ const styles = StyleSheet.create({
   cta: {
     marginTop: spacing.lg,
   },
-  propertyBlock: {
-    marginTop: spacing.xxl,
-    gap: spacing.md,
+  properties: {
+    gap: spacing.xxl,
   },
-  units: {
-    gap: spacing.lg,
+  propertyPressable: {
+    borderRadius: radius.lg,
+  },
+  propertyCard: {
+    overflow: 'hidden',
+  },
+  pressed: {
+    opacity: 0.9,
+  },
+  summary: {
+    padding: spacing.lg,
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    lineHeight: 21,
   },
 });

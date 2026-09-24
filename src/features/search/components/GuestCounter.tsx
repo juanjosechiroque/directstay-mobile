@@ -7,12 +7,22 @@ interface GuestCounterProps {
   value: number;
   onChange: (value: number) => void;
   min?: number;
-  max?: number;
+  max: number;
+  disabled?: boolean;
   error?: string;
 }
 
-export function GuestCounter({ value, onChange, min = 1, max = 8, error }: GuestCounterProps) {
+export function GuestCounter({
+  value,
+  onChange,
+  min = 1,
+  max,
+  disabled = false,
+  error,
+}: GuestCounterProps) {
   const { t } = useTranslation();
+  const decreaseDisabled = disabled || value <= min;
+  const increaseDisabled = disabled || value >= max;
 
   return (
     <View style={styles.container}>
@@ -20,14 +30,14 @@ export function GuestCounter({ value, onChange, min = 1, max = 8, error }: Guest
       <View style={[styles.controls, error ? styles.controlsError : null]}>
         <Pressable
           onPress={() => onChange(Math.max(min, value - 1))}
-          disabled={value <= min}
+          disabled={decreaseDisabled}
           accessibilityRole="button"
           accessibilityLabel={t('search.decreaseGuests')}
-          accessibilityState={{ disabled: value <= min }}
+          accessibilityState={{ disabled: decreaseDisabled }}
           style={({ pressed }) => [
             styles.stepButton,
             pressed && styles.pressed,
-            value <= min && styles.disabled,
+            decreaseDisabled && styles.disabled,
           ]}
         >
           <Text style={styles.stepGlyph}>−</Text>
@@ -37,14 +47,14 @@ export function GuestCounter({ value, onChange, min = 1, max = 8, error }: Guest
         </Text>
         <Pressable
           onPress={() => onChange(Math.min(max, value + 1))}
-          disabled={value >= max}
+          disabled={increaseDisabled}
           accessibilityRole="button"
           accessibilityLabel={t('search.increaseGuests')}
-          accessibilityState={{ disabled: value >= max }}
+          accessibilityState={{ disabled: increaseDisabled }}
           style={({ pressed }) => [
             styles.stepButton,
             pressed && styles.pressed,
-            value >= max && styles.disabled,
+            increaseDisabled && styles.disabled,
           ]}
         >
           <Text style={styles.stepGlyph}>+</Text>

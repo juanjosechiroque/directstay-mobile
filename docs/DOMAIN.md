@@ -44,6 +44,9 @@ erDiagram
         time check_in_time
         time check_out_time
         text currency
+        text map_reference
+        numeric map_latitude
+        numeric map_longitude
         boolean is_active
     }
     UNIT {
@@ -71,6 +74,7 @@ erDiagram
         date check_out
         daterange date_range
         bigint total_amount_minor
+        text special_requests
         timestamptz hold_expires_at
         cancellation_reason cancellation_reason
     }
@@ -93,8 +97,8 @@ erDiagram
 
 The diagram omits catalog join-table columns for readability. The schema also contains
 localized image text, unit amenities, property highlights, and media provenance. There
-are no persisted stays, extras, service requests, reviews, chat, housekeeping, or room-
-type inventory entities.
+are no persisted stays, extras, service-request workflows, reviews, chat, housekeeping,
+or room-type inventory entities. A booking may carry one free-text special request.
 
 ## Catalog, localization, and media
 
@@ -106,6 +110,12 @@ brand selection, not a confidentiality boundary.
 Localized catalog copy is stored by `(entity_id, locale)` in property and unit translation
 tables. Base tables retain fallback copy; proper unit names are not translated. Spanish is
 the default UI locale, and English resources already exist.
+
+Each property may expose a public `map_reference`, displayed as its address and passed
+to a Google Maps search URL. Paired coordinates remain optional but are not used by the
+current client. The Ayni demo addresses are illustrative and must be replaced with
+verified property addresses before serving real guests. Its contact numbers are also
+illustrative and are not verified WhatsApp accounts.
 
 Catalog images are served from the public-read `catalog-media` bucket. Client roles have
 no upload, update, or delete policy. Image records can store source, author, license,
@@ -119,8 +129,8 @@ Supabase Auth owns guest identities. Guests use anonymous Supabase users (`is_an
 true`) without login credentials; these users still receive the `authenticated` Postgres
 role and a stable `auth.uid()` on their device. An `auth.users` insert triggers creation
 of the matching `profiles` row. Clients cannot insert profiles and may read or update only
-their own profile row. Guest name, email, and phone belong to the reservation, not the
-profile.
+their own profile row. Guest name, email, phone, and special requests belong to the
+reservation, not the profile.
 
 The anonymous identity is tied to its device. A guest who installs the app elsewhere cannot
 recover those reservations. Anonymous sign-in has a local IP-based limit of 30 per hour
@@ -150,7 +160,13 @@ does not submit an authoritative price.
 The booking RPC rejects check-in before today in the property timezone with
 `invalid_date_range`.
 
-`search_available_units` checks the active brand/property/unit, guest capacity,
+A guest may attach an optional special request of up to 500 characters to the booking.
+The request is stored with the owner-scoped booking, not in the public catalog or guest
+profile, and does not guarantee that the property can fulfill it.
+
+`search_available_units` can narrow a search to a selected property or unique unit. The
+guest-facing search always selects one property; unit quotes use the unit filter. The RPC
+checks the active brand/property/unit, guest capacity,
 availability blocks, confirmed bookings, and pending bookings whose hold has not expired.
 Canceled, refunded, and expired pending bookings do not appear as inventory claims in
 search results.
@@ -173,6 +189,9 @@ concurrent booking creation by the same guest. Time passing alone does not chang
 a row to `CANCELED`: there is no scheduled expiry job. Search ignores an expired hold,
 and the next `create_booking` call for that unit records `HOLD_EXPIRED` before inserting.
 The confirmation RPC also cancels an expired pending booking.
+The booking detail can reopen the demonstration payment screen while a pending hold is
+still valid; that screen rechecks the absolute deadline and the server remains the only
+authority that confirms payment.
 
 ```mermaid
 stateDiagram-v2

@@ -1,5 +1,9 @@
 import i18n, { DEFAULT_LOCALE } from '../index';
 
+jest.mock('@react-native-async-storage/async-storage', () =>
+  jest.requireActual('@react-native-async-storage/async-storage/jest/async-storage-mock'),
+);
+
 describe('i18n index', () => {
   it('uses Spanish as the default locale', () => {
     expect(DEFAULT_LOCALE).toBe('es');

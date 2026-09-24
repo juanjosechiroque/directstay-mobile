@@ -1,5 +1,3 @@
--- DirectStay demo / reference data (entirely fictional).
---
 -- config.toml declares [db.seed] enabled with sql_paths = ["./seed.sql"], so this file
 -- is applied after the migrations on every `supabase db reset`.
 --
@@ -35,20 +33,26 @@ on conflict (id) do nothing;
 insert into public.properties (
   id, organization_id, name, slug, description,
   timezone, check_in_time, check_out_time, currency, is_active,
-  contact_whatsapp, contact_phone
+  contact_whatsapp, contact_phone, map_reference, map_latitude, map_longitude
 )
 values
   ('22222222-2222-2222-2222-222222222222',
    '11111111-1111-1111-1111-111111111111',
    'Ayni Mountain Cabins', 'ayni-mountain-cabins',
    'Ayni Mountain Cabins es un pequeño refugio familiar en el Valle Sagrado. Cada cabaña se construyó con madera local y está pensada para descansar: chimenea, vistas a la montaña y silencio. Atendemos directamente a nuestros huéspedes, sin intermediarios.',
-   'America/Lima', '15:00', '12:00', 'USD', true, '+51999000111', '+51845550123'),
+   'America/Lima', '15:00', '12:00', 'USD', true, '+51987654321', '+51987654321',
+   'Jirón Grau 447, Urubamba, Cusco, Perú', null, null),
   ('22222222-2222-2222-2222-222222222223',
    '11111111-1111-1111-1111-111111111111',
    'Ayni Cusco', 'ayni-cusco',
    'Ayni Cusco es una casa de huéspedes en el centro histórico. Habitaciones cálidas con paredes de adobe, patio interior y desayuno casero. Ideal para explorar la ciudad a pie.',
-   'America/Lima', '14:00', '11:00', 'USD', true, '+51999000222', '+51845550456')
-on conflict (id) do update set description = excluded.description;
+   'America/Lima', '14:00', '11:00', 'USD', true, '+51987654322', '+51987654322',
+   'Calle Plateros 365, Cusco, Perú', null, null)
+on conflict (id) do update set
+  description = excluded.description,
+  map_reference = excluded.map_reference,
+  map_latitude = excluded.map_latitude,
+  map_longitude = excluded.map_longitude;
 
 -- ---------------------------------------------------------------------------
 -- Units

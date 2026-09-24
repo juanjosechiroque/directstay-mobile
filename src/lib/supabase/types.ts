@@ -31,6 +31,9 @@ export interface CatalogPropertyJson {
   name: string;
   slug: string;
   locationLabel: string | null;
+  mapReference?: string | null;
+  mapLatitude?: number | null;
+  mapLongitude?: number | null;
   shortDescription: string | null;
   description: string | null;
   timezone: string;
@@ -92,6 +95,7 @@ export interface BookingRow {
   guest_name: string;
   guest_email: string;
   guest_phone: string | null;
+  special_requests?: string | null;
   currency: string;
   nightly_rate_minor: number;
   total_amount_minor: number;

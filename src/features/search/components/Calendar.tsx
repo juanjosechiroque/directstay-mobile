@@ -10,20 +10,21 @@ interface CalendarProps {
   onSelect: (date: IsoDate) => void;
   minDate?: IsoDate;
   maxDate?: IsoDate;
+  todayDate?: IsoDate;
 }
 
 /**
  * Minimal, dependency-free month calendar tuned for touch. Booking dates are handled as
  * `YYYY-MM-DD` business dates in UTC, so there is no timezone drift when rendering.
  */
-export function Calendar({ selected, onSelect, minDate, maxDate }: CalendarProps) {
+export function Calendar({ selected, onSelect, minDate, maxDate, todayDate }: CalendarProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language.startsWith('en') ? 'en-US' : 'es-PE';
-  const today = todayIso();
+  const today = todayDate ?? todayIso();
   const minimum = minDate ?? today;
 
   const [visibleMonth, setVisibleMonth] = useState(() => {
-    const anchor = selected ?? minimum;
+    const anchor = selected && selected >= minimum ? selected : minimum;
     const date = parseIsoDate(anchor);
     return { year: date.getUTCFullYear(), month: date.getUTCMonth() };
   });
@@ -91,6 +92,16 @@ export function Calendar({ selected, onSelect, minDate, maxDate }: CalendarProps
         </Pressable>
       </View>
 
+      {today >= minimum && (!maxDate || today <= maxDate) ? (
+        <Pressable
+          onPress={() => onSelect(today)}
+          accessibilityRole="button"
+          style={styles.todayButton}
+        >
+          <Text style={styles.todayLabel}>{t('search.today')}</Text>
+        </Pressable>
+      ) : null}
+
       <View style={styles.weekdays}>
         {weekdayLabels.map((label) => (
           <Text key={label} style={styles.weekday}>
@@ -105,7 +116,8 @@ export function Calendar({ selected, onSelect, minDate, maxDate }: CalendarProps
             return <View key={`empty-${index}`} style={styles.cell} />;
           }
           const disabled = date < minimum || (maxDate ? date > maxDate : false);
-          const isSelected = date === selected;
+          const isSelected = date === selected && !disabled;
+          const isToday = date === today && !disabled;
           return (
             <Pressable
               key={date}
@@ -115,7 +127,9 @@ export function Calendar({ selected, onSelect, minDate, maxDate }: CalendarProps
               accessibilityState={{ selected: isSelected, disabled }}
               style={styles.cell}
             >
-              <View style={[styles.day, isSelected && styles.daySelected]}>
+              <View
+                style={[styles.day, isToday && styles.dayToday, isSelected && styles.daySelected]}
+              >
                 <Text
                   style={[
                     styles.dayLabel,
@@ -145,6 +159,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: spacing.sm,
+  },
+  todayButton: {
+    alignSelf: 'flex-end',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primarySoft,
+    marginBottom: spacing.sm,
+  },
+  todayLabel: {
+    color: colors.primaryDark,
+    fontSize: fontSize.sm,
+    fontWeight: '600',
   },
   navButton: {
     width: 40,
@@ -196,6 +223,10 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  dayToday: {
+    borderWidth: 1,
+    borderColor: colors.primary,
   },
   daySelected: {
     backgroundColor: colors.primary,

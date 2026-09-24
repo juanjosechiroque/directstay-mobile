@@ -38,6 +38,7 @@ export interface Booking {
   guestName: string;
   guestEmail: string;
   guestPhone: string | null;
+  specialRequests: string | null;
   currency: string;
   nightlyRateMinor: number;
   totalAmountMinor: number;
@@ -72,4 +73,5 @@ export interface CreateBookingInput extends QuoteRequest {
   guestName: string;
   guestEmail: string;
   guestPhone: string | null;
+  specialRequests: string | null;
 }

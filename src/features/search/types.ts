@@ -2,6 +2,8 @@ import type { Unit } from '@/features/property/types';
 import type { IsoDate } from '@/lib/dates';
 
 export interface AvailabilityQuery {
+  propertyId: string;
+  unitId?: string;
   checkIn: IsoDate;
   checkOut: IsoDate;
   guests: number;

@@ -70,6 +70,9 @@ export interface Property {
   name: string;
   slug: string;
   locationLabel: string;
+  mapReference: string | null;
+  mapLatitude: number | null;
+  mapLongitude: number | null;
   shortDescription: string;
   description: string;
   timezone: string;

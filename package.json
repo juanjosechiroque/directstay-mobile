@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:ci": "jest --ci --watchAll=false",
-    "format": "prettier --write .",
+    "format": "expo lint --fix && prettier --write .",
     "format:check": "prettier --check ."
   },
   "dependencies": {

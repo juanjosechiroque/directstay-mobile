@@ -18,8 +18,10 @@ import { useBookingQuote } from '@/features/booking/queries/use-booking';
 import { useCreateBooking } from '@/features/booking/queries/use-booking-mutations';
 import { useAuthActions } from '@/features/auth/queries/use-session';
 import { getErrorCode } from '@/lib/errors';
+import { buildInternationalPhone } from '@/lib/phone';
 import { colors, fontSize, spacing } from '@/lib/theme';
 import { hasErrors, validateGuestForm, type GuestFormErrors } from '@/lib/validation';
+import { PhoneNumberField } from '@/features/booking/components/PhoneNumberField';
 
 export function BookingGuestScreen() {
   const { t } = useTranslation();
@@ -32,7 +34,9 @@ export function BookingGuestScreen() {
   // Reuse any previously entered guest data (e.g. coming back from payment).
   const [fullName, setFullName] = useState(guest?.fullName ?? '');
   const [email, setEmail] = useState(guest?.email ?? '');
-  const [phone, setPhone] = useState(guest?.phone ?? '');
+  const [phoneCountryCode, setPhoneCountryCode] = useState(guest?.phoneCountryCode ?? '51');
+  const [phoneLocalNumber, setPhoneLocalNumber] = useState(guest?.phoneLocalNumber ?? '');
+  const [specialRequests, setSpecialRequests] = useState(guest?.specialRequests ?? '');
   const [errors, setErrors] = useState<GuestFormErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<unknown>(null);
@@ -63,6 +67,7 @@ export function BookingGuestScreen() {
 
   const handleSubmit = async () => {
     if (submitLock.current) return;
+    const phone = buildInternationalPhone(phoneCountryCode, phoneLocalNumber);
     const nextErrors = validateGuestForm({ fullName, email, phone });
     setErrors(nextErrors);
     if (hasErrors(nextErrors) || !quoteState.isReady) {
@@ -71,7 +76,13 @@ export function BookingGuestScreen() {
     submitLock.current = true;
     setSubmitting(true);
     setSubmitError(null);
-    setGuest({ fullName: fullName.trim(), email: email.trim(), phone: phone.trim() });
+    setGuest({
+      fullName: fullName.trim(),
+      email: email.trim(),
+      phoneCountryCode,
+      phoneLocalNumber,
+      specialRequests: specialRequests.trim(),
+    });
     try {
       await ensureGuestSession();
       const created = await createBooking.mutateAsync({
@@ -81,7 +92,8 @@ export function BookingGuestScreen() {
         guestCount: stay.guestCount,
         guestName: fullName.trim(),
         guestEmail: email.trim(),
-        guestPhone: phone.trim() || null,
+        guestPhone: phone || null,
+        specialRequests: specialRequests.trim() || null,
       });
       router.push({ pathname: '/booking/payment', params: { bookingId: created.id } });
     } catch (error) {
@@ -127,19 +139,28 @@ export function BookingGuestScreen() {
           textContentType="emailAddress"
           returnKeyType="next"
         />
-        <TextField
-          label={`${t('booking.phone')} (${t('booking.phoneOptional')})`}
-          value={phone}
-          onChangeText={(text) => {
-            setPhone(text);
+        <PhoneNumberField
+          countryCode={phoneCountryCode}
+          localNumber={phoneLocalNumber}
+          onCountryCodeChange={(code) => {
+            setPhoneCountryCode(code);
+            setErrors((current) => ({ ...current, phone: undefined }));
+          }}
+          onLocalNumberChange={(number) => {
+            setPhoneLocalNumber(number);
             setErrors((current) => ({ ...current, phone: undefined }));
           }}
           error={errors.phone ? t(errors.phone) : undefined}
-          helper={t('booking.phoneHelper')}
-          keyboardType="phone-pad"
-          autoComplete="tel"
-          textContentType="telephoneNumber"
-          returnKeyType="done"
+        />
+        <TextField
+          label={t('booking.specialRequests')}
+          value={specialRequests}
+          onChangeText={setSpecialRequests}
+          helper={t('booking.specialRequestsHelper')}
+          multiline
+          maxLength={500}
+          textAlignVertical="top"
+          style={styles.requestsInput}
         />
       </Card>
 
@@ -184,6 +205,9 @@ const styles = StyleSheet.create({
   },
   form: {
     gap: spacing.lg,
+  },
+  requestsInput: {
+    minHeight: 96,
   },
   privacyNote: {
     marginTop: spacing.md,

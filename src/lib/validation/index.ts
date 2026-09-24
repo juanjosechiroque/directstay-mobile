@@ -53,7 +53,7 @@ export interface GuestFormInput {
 export type GuestFormErrors = Partial<Record<keyof GuestFormInput, string>>;
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_PATTERN = /^[+()\-\s\d]{6,}$/;
+const PHONE_PATTERN = /^\+[1-9]\d{5,14}$/;
 
 export function validateGuestForm(input: GuestFormInput): GuestFormErrors {
   const errors: GuestFormErrors = {};

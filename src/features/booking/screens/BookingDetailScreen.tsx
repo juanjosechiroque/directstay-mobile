@@ -1,6 +1,7 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { AppState, StyleSheet, Text, View } from 'react-native';
 
 import {
   Button,
@@ -18,6 +19,7 @@ import {
 } from '@/components';
 import { ContactActions } from '@/components/ContactActions';
 import { BookingStatusBadge } from '@/features/booking/components/BookingStatusBadge';
+import { formatHoldCountdown, remainingHoldSeconds } from '@/features/booking/hold-countdown';
 import { useBooking } from '@/features/booking/queries/use-booking';
 import type { Booking } from '@/features/booking/types';
 import { useSession } from '@/features/auth/queries/use-session';
@@ -26,13 +28,17 @@ import { formatCancellationDeadline, isCancellationEligible } from '@/lib/dates/
 import { getErrorCode } from '@/lib/errors';
 import { colors, fontSize, spacing } from '@/lib/theme';
 
-function StatusMessage({ booking }: { booking: Booking }) {
+function StatusMessage({ booking, holdExpired }: { booking: Booking; holdExpired: boolean }) {
   const { t } = useTranslation();
   if (booking.status === 'CONFIRMED') {
     return <Text style={styles.statusMessage}>{t('bookings.confirmedMessage')}</Text>;
   }
   if (booking.status === 'PENDING_PAYMENT') {
-    return <Text style={styles.statusMessage}>{t('bookings.pendingMessage')}</Text>;
+    return (
+      <Text style={styles.statusMessage}>
+        {t(holdExpired ? 'bookings.pendingExpiredMessage' : 'bookings.pendingMessage')}
+      </Text>
+    );
   }
   if (booking.status === 'CANCELED') {
     return <Text style={styles.statusMessage}>{t('bookings.canceledMessage')}</Text>;
@@ -48,6 +54,21 @@ export function BookingDetailScreen() {
   const bookingId = typeof params.bookingId === 'string' ? params.bookingId : undefined;
 
   const bookingQuery = useBooking(status === 'signedIn' ? bookingId : undefined);
+  const [nowMs, setNowMs] = useState(() => Date.now());
+
+  useFocusEffect(
+    useCallback(() => {
+      setNowMs(Date.now());
+      const timer = setInterval(() => setNowMs(Date.now()), 1000);
+      const subscription = AppState.addEventListener('change', (state) => {
+        if (state === 'active') setNowMs(Date.now());
+      });
+      return () => {
+        clearInterval(timer);
+        subscription.remove();
+      };
+    }, []),
+  );
 
   if (status === 'loading' || bookingQuery.isLoading) {
     return (
@@ -82,6 +103,9 @@ export function BookingDetailScreen() {
   }
 
   const booking = bookingQuery.data;
+  const pendingSeconds =
+    booking.status === 'PENDING_PAYMENT' ? remainingHoldSeconds(booking.holdExpiresAt, nowMs) : 0;
+  const holdExpired = booking.status === 'PENDING_PAYMENT' && pendingSeconds === 0;
   const eligible =
     booking.status === 'CONFIRMED' &&
     isCancellationEligible({
@@ -100,7 +124,12 @@ export function BookingDetailScreen() {
           <BookingStatusBadge status={booking.status} />
         </View>
         {booking.propertyName ? <Text style={styles.property}>{booking.propertyName}</Text> : null}
-        <StatusMessage booking={booking} />
+        <StatusMessage booking={booking} holdExpired={holdExpired} />
+        {booking.status === 'PENDING_PAYMENT' && !holdExpired ? (
+          <Text style={styles.countdown}>
+            {t('booking.holdCountdown', { time: formatHoldCountdown(pendingSeconds) })}
+          </Text>
+        ) : null}
         <Divider spaced />
         <InfoRow
           label={t('bookings.datesLabel')}
@@ -140,6 +169,9 @@ export function BookingDetailScreen() {
           <InfoRow label={t('bookings.emailLabel')} value={booking.guestEmail} />
           {booking.guestPhone ? (
             <InfoRow label={t('bookings.phoneLabel')} value={booking.guestPhone} />
+          ) : null}
+          {booking.specialRequests ? (
+            <InfoRow label={t('bookings.specialRequestsLabel')} value={booking.specialRequests} />
           ) : null}
           <InfoRow
             label={t('bookings.createdLabel')}
@@ -181,9 +213,33 @@ export function BookingDetailScreen() {
             )}
             <Text style={styles.statusMessage}>{t('bookings.cancelNotEnabledMessage')}</Text>
             <Text style={styles.contactLabel}>{t('bookings.contactProperty')}</Text>
-            <ContactActions whatsapp={booking.propertyWhatsapp} phone={booking.propertyPhone} />
+            <ContactActions
+              whatsapp={booking.propertyWhatsapp}
+              phone={booking.propertyPhone}
+              propertyName={booking.propertyName}
+            />
           </Card>
         </Section>
+      ) : null}
+
+      {booking.status === 'PENDING_PAYMENT' ? (
+        <View style={styles.footer}>
+          {holdExpired ? (
+            <Button
+              title={t('booking.goToSearch')}
+              fullWidth
+              onPress={() => router.push('/search')}
+            />
+          ) : (
+            <Button
+              title={t('booking.demoPayCta')}
+              fullWidth
+              onPress={() =>
+                router.push({ pathname: '/booking/payment', params: { bookingId: booking.id } })
+              }
+            />
+          )}
+        </View>
       ) : null}
 
       {booking.status === 'CONFIRMED' ? (
@@ -225,6 +281,12 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     color: colors.textMuted,
     lineHeight: 20,
+  },
+  countdown: {
+    marginTop: spacing.sm,
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.text,
   },
   actionsCard: {
     gap: spacing.md,

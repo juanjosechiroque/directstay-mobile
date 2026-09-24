@@ -22,6 +22,15 @@ const BOOKING_SELECT = `
     properties ( name, timezone, check_in_time, check_out_time, contact_whatsapp, contact_phone )
   )
 `;
+const BOOKING_DETAIL_SELECT = BOOKING_SELECT.replace(
+  'guest_phone, currency',
+  'guest_phone, special_requests, currency',
+);
+
+function isMissingSpecialRequestsColumn(error: unknown): boolean {
+  const source = error as { code?: string; message?: string } | null;
+  return source?.code === '42703' && source.message?.includes('special_requests') === true;
+}
 
 export class SupabaseBookingRepository implements BookingRepository {
   constructor(
@@ -71,9 +80,18 @@ export class SupabaseBookingRepository implements BookingRepository {
   async getBooking(bookingId: string): Promise<Booking | null> {
     const { data, error } = await this.client
       .from('bookings')
-      .select(BOOKING_SELECT)
+      .select(BOOKING_DETAIL_SELECT)
       .eq('id', bookingId)
       .maybeSingle();
+    if (isMissingSpecialRequestsColumn(error)) {
+      const fallback = await this.client
+        .from('bookings')
+        .select(BOOKING_SELECT)
+        .eq('id', bookingId)
+        .maybeSingle();
+      if (fallback.error) throw toAppError(fallback.error);
+      return fallback.data ? mapBooking(fallback.data as unknown as BookingRow) : null;
+    }
     if (error) {
       throw toAppError(error);
     }
@@ -89,6 +107,7 @@ export class SupabaseBookingRepository implements BookingRepository {
       p_guest_name: input.guestName,
       p_guest_email: input.guestEmail,
       p_guest_phone: input.guestPhone,
+      p_special_requests: input.specialRequests,
     });
     if (error) throw toAppError(error);
     const created = mapBookingRpcResponse(data);

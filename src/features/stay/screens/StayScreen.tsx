@@ -115,8 +115,8 @@ export function StayScreen() {
           <ContactActions
             whatsapp={stayQuery.data.contactWhatsapp}
             phone={stayQuery.data.contactPhone}
+            propertyName={stayQuery.data.propertyName}
           />
-          <Text style={styles.note}>{t('stay.privacyNote')}</Text>
         </Card>
       </Section>
     </Screen>
@@ -145,9 +145,5 @@ const styles = StyleSheet.create({
   },
   contactCard: {
     gap: spacing.md,
-  },
-  note: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
   },
 });

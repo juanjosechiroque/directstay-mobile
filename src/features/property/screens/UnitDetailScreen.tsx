@@ -41,11 +41,14 @@ export function UnitDetailScreen() {
   const galleryWidth = Math.min(width - spacing.lg * 2, 420);
 
   const handleBook = () => {
-    if (!unitId) {
+    if (!unitId || !unitQuery.data) {
       return;
     }
     if (!checkIn || !checkOut || !guests) {
-      router.push('/search');
+      router.push({
+        pathname: '/search',
+        params: { propertyId: unitQuery.data.propertyId },
+      });
       return;
     }
     router.push({
@@ -101,18 +104,14 @@ export function UnitDetailScreen() {
         decelerationRate="fast"
         contentContainerStyle={styles.gallery}
       >
-        {unit.images.map((image, index) => (
+        {unit.images.map((image) => (
           <CatalogImage
             key={image.id}
             image={image}
             height={240}
             borderRadius={radius.lg}
             style={{ width: galleryWidth }}
-          >
-            <Text style={styles.galleryCaption}>
-              {t('unit.imageAlt', { name: unit.name, index: index + 1 })}
-            </Text>
-          </CatalogImage>
+          />
         ))}
       </ScrollView>
 
@@ -145,14 +144,19 @@ export function UnitDetailScreen() {
         </Section>
 
         <Button
-          title={t('unit.continueCta')}
+          title={t('unit.bookCta')}
           size="lg"
           fullWidth
           onPress={handleBook}
           style={styles.cta}
         />
         <Pressable
-          onPress={() => router.push('/search')}
+          onPress={() =>
+            router.push({
+              pathname: '/search',
+              params: { propertyId: unit.propertyId },
+            })
+          }
           accessibilityRole="button"
           style={styles.secondaryLink}
         >
@@ -171,11 +175,6 @@ const styles = StyleSheet.create({
   gallery: {
     paddingHorizontal: spacing.lg,
     gap: spacing.md,
-  },
-  galleryCaption: {
-    color: colors.white,
-    fontSize: fontSize.xs,
-    fontWeight: '600',
   },
   content: {
     paddingHorizontal: spacing.lg,

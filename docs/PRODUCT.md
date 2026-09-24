@@ -13,17 +13,26 @@ recurrence and “My Stay.”
 
 ## Guest journey
 
-1. Browse active properties and units on Home (`/`).
-2. Search dates and party size (`/search`), then inspect a unit (`/units/[unitId]`).
-3. Review the refreshed quote (`/booking/review`) and enter guest details
-   (`/booking/guest`); the details remain in memory.
+1. Browse active properties on Home (`/`), then open a property
+   (`/properties/[propertyId]`) to see its units, address, phone and compact Google Maps
+   and contact links.
+2. Choose a property for every availability search (`/search`), enter dates and party
+   size, then inspect a unit (`/units/[unitId]`). Entering search from a property or unit
+   keeps its property selected; results never mix properties. Dates start empty. The calendar opens
+   at today in the selected property's timezone, offers a Today shortcut for check-in,
+   and choosing check-in suggests the next day for check-out. Guest selection stops at the
+   largest unit capacity in that property.
+3. Review the refreshed quote (`/booking/review`) and enter guest details and an optional
+   special request (`/booking/guest`). An optional phone uses a selectable international
+   code and is sent as one full number; details remain in memory until booking creation.
 4. When the guest continues, the app creates or reuses an anonymous Supabase session on
    this device and requests a pending booking. Payment (`/booking/payment`) shows the
-   server-held price and five-minute countdown. “Pagar (demostración)” asks the server to
+   server-held price and five-minute countdown. An unexpired pending booking can also
+   return to Payment from its booking detail. “Pagar (demostración)” asks the server to
    confirm the reservation; it makes no charge.
 5. Confirmation (`/booking/confirmed`) shows the reservation summary and links to My
    bookings (`/bookings`), booking detail (`/bookings/[bookingId]`) and My Stay
-   (`/stay/[bookingId]`). Settings (`/settings`) contains language and brand contact.
+   (`/stay/[bookingId]`). Language (ES/EN) is switched from a compact control on Home and persisted on the device.
 
 ## Available today
 
@@ -32,7 +41,9 @@ recurrence and “My Stay.”
 - Booking creation, demonstration confirmation, owner-only booking history, and
   confirmed-booking stay and contact information.
 
-Ayni Hospitality is reference data only.
+Ayni Hospitality is reference data only. Its mobile contact numbers are placeholders.
+The WhatsApp action opens a prepared inquiry and asks the guest to choose a recipient;
+direct chat with a property requires a verified WhatsApp number before real use.
 
 ## Guest identity decision
 

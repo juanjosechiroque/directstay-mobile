@@ -11,6 +11,8 @@ export const availabilityKeys = {
     [
       ...availabilityKeys.all,
       'search',
+      query.propertyId,
+      query.unitId ?? null,
       query.checkIn,
       query.checkOut,
       query.guests,
@@ -23,7 +25,10 @@ export function useAvailabilitySearch(criteria: AvailabilityQuery | null) {
   const { i18n } = useTranslation();
   const locale = normalizeLocale(i18n.language);
   return useQuery({
-    queryKey: availabilityKeys.search(criteria ?? { checkIn: '', checkOut: '', guests: 0 }, locale),
+    queryKey: availabilityKeys.search(
+      criteria ?? { propertyId: '', checkIn: '', checkOut: '', guests: 0 },
+      locale,
+    ),
     queryFn: () => availability.searchAvailableUnits(criteria as AvailabilityQuery, locale),
     enabled: criteria !== null,
   });

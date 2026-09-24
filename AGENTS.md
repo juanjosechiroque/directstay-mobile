@@ -44,6 +44,6 @@ npm run typecheck   # tsc --noEmit
 npm run lint        # expo lint
 npm test            # jest (watch)
 npm run test:ci     # jest --ci --watchAll=false
-npm run format      # prettier --write .
+npm run format      # expo lint --fix && prettier --write .
 npm run format:check
 ```

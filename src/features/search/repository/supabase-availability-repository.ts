@@ -7,13 +7,6 @@ import { createMediaUrlResolver } from '@/lib/supabase/media';
 import type { SearchUnitJson } from '@/lib/supabase/types';
 import type { Locale } from '@/lib/locale';
 
-/**
- * Supabase-backed availability search.
- *
- * All availability, capacity, active-state and organization rules live in the
- * `search_available_units` RPC. The client sends only the criteria and renders the
- * server's answer: there is no divergent availability algorithm in TypeScript.
- */
 export class SupabaseAvailabilityRepository implements AvailabilityRepository {
   private readonly resolveMediaUrl: (storagePath: string) => string;
 
@@ -25,22 +18,33 @@ export class SupabaseAvailabilityRepository implements AvailabilityRepository {
   }
 
   async searchAvailableUnits(
-    { checkIn, checkOut, guests }: AvailabilityQuery,
+    { propertyId, unitId, checkIn, checkOut, guests }: AvailabilityQuery,
     locale: Locale,
   ): Promise<AvailableUnit[]> {
-    const { data, error } = await this.client.rpc('search_available_units', {
+    const baseParams = {
       p_organization_slug: this.organizationSlug,
       p_check_in: checkIn,
       p_check_out: checkOut,
       p_guests: guests,
       p_locale: locale,
+      p_unit_id: unitId ?? null,
+    };
+    let { data, error } = await this.client.rpc('search_available_units', {
+      ...baseParams,
+      p_property_id: propertyId,
     });
+
+    if (error?.code === 'PGRST202') {
+      ({ data, error } = await this.client.rpc('search_available_units', baseParams));
+    }
     if (error) {
       throw toAppError(error);
     }
     if (!data) {
       return [];
     }
-    return (data as SearchUnitJson[]).map((row) => mapSearchResult(row, this.resolveMediaUrl));
+    return (data as SearchUnitJson[])
+      .map((row) => mapSearchResult(row, this.resolveMediaUrl))
+      .filter((available) => available.propertyId === propertyId);
   }
 }

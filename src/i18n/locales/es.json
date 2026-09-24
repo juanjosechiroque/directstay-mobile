@@ -10,11 +10,21 @@
   },
   "tabs": {
     "home": "Inicio",
-    "bookings": "Mis reservas",
-    "settings": "Ajustes"
+    "bookings": "Mis reservas"
   },
   "property": {
-    "aboutTitle": "Sobre la propiedad"
+    "aboutTitle": "Sobre la sede",
+    "searchCta": "Consultar disponibilidad en esta sede",
+    "locationTitle": "Ubicación",
+    "openMap": "Ver en Google Maps",
+    "openMapAccessibility": "Ver {{address}} en Google Maps",
+    "contactTitle": "Contacto",
+    "phoneLabel": "Teléfono",
+    "unitsTitle": "Alojamientos",
+    "noUnitsTitle": "Sin alojamientos",
+    "noUnitsMessage": "Esta sede aún no tiene alojamientos para mostrar.",
+    "notFoundTitle": "Sede no encontrada",
+    "notFoundMessage": "Esta sede ya no está disponible."
   },
   "highlights": {
     "mountain_view": "Vista a la montaña",
@@ -38,13 +48,17 @@
   "home": {
     "title": "Alojamiento directo, sin intermediarios",
     "searchCta": "Buscar disponibilidad",
-    "unitsTitle": "Unidades disponibles",
+    "propertiesTitle": "Nuestras sedes",
+    "viewProperty": "Ver alojamientos de {{name}}",
     "emptyTitle": "Catálogo no disponible",
     "emptyMessage": "La organización configurada no tiene propiedades activas por ahora."
   },
   "search": {
     "title": "Buscar disponibilidad",
-    "subtitle": "Elige tus fechas y cuántos viajan.",
+    "subtitle": "Elige una sede para comenzar.",
+    "propertyTitle": "Sede",
+    "propertyErrorTitle": "No pudimos cargar las sedes",
+    "today": "Hoy",
     "checkIn": "Entrada",
     "checkOut": "Salida",
     "checkInPlaceholder": "Selecciona una fecha",
@@ -57,15 +71,14 @@
     "nextMonth": "Mes siguiente",
     "guestsValue_one": "{{count}} huésped",
     "guestsValue_other": "{{count}} huéspedes",
-    "resultsTitle": "Unidades disponibles",
-    "resultsCount_one": "{{count}} unidad disponible",
-    "resultsCount_other": "{{count}} unidades disponibles",
+    "resultsTitle": "Resultados",
+    "resultsCount_one": "{{count}} alojamiento disponible",
+    "resultsCount_other": "{{count}} alojamientos disponibles",
     "noResultsTitle": "Sin disponibilidad",
-    "noResultsMessage": "No encontramos unidades para esas fechas y huéspedes. Prueba con otras fechas.",
+    "noResultsMessage": "No encontramos alojamientos en esta sede para esas fechas y huéspedes. Prueba con otras fechas.",
     "loadingMessage": "Buscando disponibilidad…",
     "errorTitle": "No pudimos buscar disponibilidad",
-    "changeSearch": "Cambiar búsqueda",
-    "hint": "La disponibilidad y el precio los calcula el alojamiento."
+    "changeSearch": "Cambiar búsqueda"
   },
   "unit": {
     "maxGuests_one": "Hasta {{count}} huésped",
@@ -73,8 +86,8 @@
     "perNight": "por noche",
     "amenitiesTitle": "Amenidades",
     "descriptionTitle": "La unidad",
-    "imageAlt": "{{name}} — imagen {{index}}",
-    "continueCta": "Reservar esta unidad",
+    "bookCta": "Reservar",
+    "viewDetails": "Ver detalles de {{name}}",
     "notFoundTitle": "Unidad no encontrada",
     "notFoundMessage": "Esta unidad ya no está disponible."
   },
@@ -111,7 +124,28 @@
     "email": "Correo electrónico",
     "phone": "Teléfono",
     "phoneOptional": "opcional",
-    "phoneHelper": "Nos ayuda a coordinar tu llegada.",
+    "phoneHelper": "Sin el prefijo internacional ni el 0 inicial. Nos ayuda a coordinar tu llegada.",
+    "phoneCountryCode": "Código",
+    "phoneNumber": "Número",
+    "phoneOtherCode": "Otro código",
+    "phoneCustomCode": "Código internacional",
+    "phoneUseCode": "Usar código",
+    "phoneCountries": {
+      "peru": "Perú",
+      "usCanada": "EE. UU. y Canadá",
+      "spain": "España",
+      "mexico": "México",
+      "colombia": "Colombia",
+      "chile": "Chile",
+      "argentina": "Argentina",
+      "brazil": "Brasil",
+      "bolivia": "Bolivia",
+      "uk": "Reino Unido",
+      "germany": "Alemania",
+      "france": "Francia"
+    },
+    "specialRequests": "Solicitudes especiales (opcional)",
+    "specialRequestsHelper": "Indica tus preferencias. No podemos garantizar que se atiendan.",
     "guestContinueCta": "Continuar al pago",
     "guestPrivacyNote": "Tu reserva quedará guardada en este teléfono. Usa un correo al que tengas acceso para recibir la confirmación.",
     "paymentTitle": "Pago",
@@ -141,6 +175,7 @@
     "guestLabel": "Huésped",
     "emailLabel": "Correo",
     "phoneLabel": "Teléfono",
+    "specialRequestsLabel": "Solicitudes especiales",
     "cancellationTitle": "Cancelación",
     "cancelNotAllowedTitle": "Cancelación no disponible",
     "cancelNotAllowedMessage": "Las reservas confirmadas se cancelan hasta 24 horas antes del check-in. Para cambios de último momento, contacta directamente al alojamiento.",
@@ -148,12 +183,15 @@
     "cancelDeadline": "Puedes cancelar hasta el {{date}}.",
     "contactProperty": "Contactar al alojamiento",
     "whatsappCta": "Escribir por WhatsApp",
+    "whatsappShortCta": "Escribir",
+    "whatsappDraft": "Hola, quisiera consultar sobre una reserva en {{propertyName}}.",
     "callCta": "Llamar",
     "stayCta": "Ver Mi estancia",
     "notFoundTitle": "Reserva no encontrada",
     "notFoundMessage": "No encontramos esta reserva.",
     "confirmedMessage": "Tu reserva está confirmada.",
     "pendingMessage": "Completa el pago para confirmar tu reserva.",
+    "pendingExpiredMessage": "El tiempo para pagar venció. Busca nuevamente para reservar.",
     "canceledMessage": "Esta reserva se canceló antes de pagar.",
     "refundedMessage": "El reembolso total fue procesado.",
     "cancellationReasonLabel": "Motivo"
@@ -170,20 +208,15 @@
     "checkInLabel": "Entrada",
     "checkOutLabel": "Salida",
     "directionsTitle": "Cómo llegar",
-    "contactTitle": "Contacto",
-    "privacyNote": "Esta información es privada y solo se muestra a la reserva confirmada."
+    "contactTitle": "Contacto"
   },
   "settings": {
-    "title": "Ajustes",
-    "languageTitle": "Idioma",
-    "contactTitle": "Contacto de la marca",
-    "contactError": "No pudimos cargar el contacto de la marca.",
     "languageEs": "Español",
-    "languageEn": "English",
-    "aboutTitle": "Acerca de",
-    "aboutVersion": "Versión {{version}}"
+    "languageEn": "English"
   },
   "validation": {
+    "propertyRequired": "Elige una sede para buscar.",
+    "checkInPast": "La entrada debe ser hoy o una fecha posterior en la sede elegida.",
     "checkInRequired": "Elige una fecha de entrada.",
     "checkOutRequired": "Elige una fecha de salida.",
     "checkOutAfterCheckIn": "La salida debe ser posterior a la entrada.",

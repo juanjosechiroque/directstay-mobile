@@ -13,7 +13,9 @@ interface DateFieldProps {
   placeholder: string;
   minDate?: IsoDate;
   maxDate?: IsoDate;
+  todayDate?: IsoDate;
   error?: string;
+  disabled?: boolean;
 }
 
 export function DateField({
@@ -23,7 +25,9 @@ export function DateField({
   placeholder,
   minDate,
   maxDate,
+  todayDate,
   error,
+  disabled = false,
 }: DateFieldProps) {
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -33,9 +37,11 @@ export function DateField({
       <Text style={styles.label}>{label}</Text>
       <Pressable
         onPress={() => setOpen(true)}
+        disabled={disabled}
         accessibilityRole="button"
         accessibilityLabel={`${label}: ${value ?? placeholder}`}
-        style={[styles.field, error ? styles.fieldError : null]}
+        accessibilityState={{ disabled }}
+        style={[styles.field, error ? styles.fieldError : null, disabled && styles.fieldDisabled]}
       >
         <Text style={value ? styles.value : styles.placeholder}>
           {value ? formatIsoDate(value, i18n.language) : placeholder}
@@ -52,9 +58,11 @@ export function DateField({
           <Pressable style={styles.sheet} onPress={(event) => event.stopPropagation()}>
             <Text style={styles.sheetTitle}>{label}</Text>
             <Calendar
+              key={minDate}
               selected={value}
               minDate={minDate}
               maxDate={maxDate}
+              todayDate={todayDate}
               onSelect={(date) => {
                 onChange(date);
                 setOpen(false);
@@ -95,6 +103,9 @@ const styles = StyleSheet.create({
   },
   fieldError: {
     borderColor: colors.danger,
+  },
+  fieldDisabled: {
+    opacity: 0.5,
   },
   value: {
     fontSize: fontSize.md,

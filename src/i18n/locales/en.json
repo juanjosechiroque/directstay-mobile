@@ -10,11 +10,21 @@
   },
   "tabs": {
     "home": "Home",
-    "bookings": "My bookings",
-    "settings": "Settings"
+    "bookings": "My bookings"
   },
   "property": {
-    "aboutTitle": "About the property"
+    "aboutTitle": "About this location",
+    "searchCta": "Check availability at this location",
+    "locationTitle": "Location",
+    "openMap": "View in Google Maps",
+    "openMapAccessibility": "View {{address}} in Google Maps",
+    "contactTitle": "Contact",
+    "phoneLabel": "Phone",
+    "unitsTitle": "Places to stay",
+    "noUnitsTitle": "No places to stay",
+    "noUnitsMessage": "This location has no places to stay to show yet.",
+    "notFoundTitle": "Location not found",
+    "notFoundMessage": "This location is no longer available."
   },
   "highlights": {
     "mountain_view": "Mountain view",
@@ -38,13 +48,17 @@
   "home": {
     "title": "Direct booking, no intermediaries",
     "searchCta": "Check availability",
-    "unitsTitle": "Available units",
+    "propertiesTitle": "Our locations",
+    "viewProperty": "View places to stay at {{name}}",
     "emptyTitle": "Catalog unavailable",
     "emptyMessage": "The configured organization has no active properties right now."
   },
   "search": {
     "title": "Check availability",
-    "subtitle": "Choose your dates and how many are travelling.",
+    "subtitle": "Choose a location to get started.",
+    "propertyTitle": "Location",
+    "propertyErrorTitle": "We couldn't load the locations",
+    "today": "Today",
     "checkIn": "Check-in",
     "checkOut": "Check-out",
     "checkInPlaceholder": "Select a date",
@@ -57,15 +71,14 @@
     "nextMonth": "Next month",
     "guestsValue_one": "{{count}} guest",
     "guestsValue_other": "{{count}} guests",
-    "resultsTitle": "Available units",
-    "resultsCount_one": "{{count}} unit available",
-    "resultsCount_other": "{{count}} units available",
+    "resultsTitle": "Results",
+    "resultsCount_one": "{{count}} place available",
+    "resultsCount_other": "{{count}} places available",
     "noResultsTitle": "No availability",
-    "noResultsMessage": "We couldn't find units for those dates and guests. Try different dates.",
+    "noResultsMessage": "We couldn't find places at this location for those dates and guests. Try different dates.",
     "loadingMessage": "Searching availability…",
     "errorTitle": "We couldn't search availability",
-    "changeSearch": "Change search",
-    "hint": "Availability and price are calculated by the property."
+    "changeSearch": "Change search"
   },
   "unit": {
     "maxGuests_one": "Up to {{count}} guest",
@@ -73,8 +86,8 @@
     "perNight": "per night",
     "amenitiesTitle": "Amenities",
     "descriptionTitle": "The unit",
-    "imageAlt": "{{name}} — image {{index}}",
-    "continueCta": "Book this unit",
+    "bookCta": "Book",
+    "viewDetails": "View details of {{name}}",
     "notFoundTitle": "Unit not found",
     "notFoundMessage": "This unit is no longer available."
   },
@@ -111,7 +124,28 @@
     "email": "Email",
     "phone": "Phone",
     "phoneOptional": "optional",
-    "phoneHelper": "It helps us coordinate your arrival.",
+    "phoneHelper": "Without the international code or leading zero. It helps us coordinate your arrival.",
+    "phoneCountryCode": "Code",
+    "phoneNumber": "Number",
+    "phoneOtherCode": "Other code",
+    "phoneCustomCode": "International code",
+    "phoneUseCode": "Use code",
+    "phoneCountries": {
+      "peru": "Peru",
+      "usCanada": "US and Canada",
+      "spain": "Spain",
+      "mexico": "Mexico",
+      "colombia": "Colombia",
+      "chile": "Chile",
+      "argentina": "Argentina",
+      "brazil": "Brazil",
+      "bolivia": "Bolivia",
+      "uk": "United Kingdom",
+      "germany": "Germany",
+      "france": "France"
+    },
+    "specialRequests": "Special requests (optional)",
+    "specialRequestsHelper": "Tell us your preferences. Requests cannot be guaranteed.",
     "guestContinueCta": "Continue to payment",
     "guestPrivacyNote": "Your reservation will be saved on this phone. Use an email address you can access to receive the confirmation.",
     "paymentTitle": "Payment",
@@ -141,6 +175,7 @@
     "guestLabel": "Guest",
     "emailLabel": "Email",
     "phoneLabel": "Phone",
+    "specialRequestsLabel": "Special requests",
     "cancellationTitle": "Cancellation",
     "cancelNotAllowedTitle": "Cancellation unavailable",
     "cancelNotAllowedMessage": "Confirmed bookings can be canceled until 24 hours before check-in. For last-minute changes, contact the property directly.",
@@ -148,12 +183,15 @@
     "cancelDeadline": "You can cancel until {{date}}.",
     "contactProperty": "Contact the property",
     "whatsappCta": "Message on WhatsApp",
+    "whatsappShortCta": "Write",
+    "whatsappDraft": "Hello, I'd like to ask about a booking at {{propertyName}}.",
     "callCta": "Call",
     "stayCta": "View My stay",
     "notFoundTitle": "Booking not found",
     "notFoundMessage": "We couldn't find this booking.",
     "confirmedMessage": "Your booking is confirmed.",
     "pendingMessage": "Complete payment to confirm your booking.",
+    "pendingExpiredMessage": "The payment window ended. Search again to book.",
     "canceledMessage": "This booking was canceled before payment.",
     "refundedMessage": "The full refund was processed.",
     "cancellationReasonLabel": "Reason"
@@ -170,20 +208,15 @@
     "checkInLabel": "Check-in",
     "checkOutLabel": "Check-out",
     "directionsTitle": "Getting there",
-    "contactTitle": "Contact",
-    "privacyNote": "This information is private and shown only to the confirmed booking."
+    "contactTitle": "Contact"
   },
   "settings": {
-    "title": "Settings",
-    "languageTitle": "Language",
-    "contactTitle": "Brand contact",
-    "contactError": "We couldn't load the brand contact.",
     "languageEs": "Español",
-    "languageEn": "English",
-    "aboutTitle": "About",
-    "aboutVersion": "Version {{version}}"
+    "languageEn": "English"
   },
   "validation": {
+    "propertyRequired": "Choose a location to search.",
+    "checkInPast": "Check-in must be today or later at the selected location.",
     "checkInRequired": "Choose a check-in date.",
     "checkOutRequired": "Choose a check-out date.",
     "checkOutAfterCheckIn": "Check-out must be after check-in.",

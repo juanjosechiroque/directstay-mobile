@@ -67,7 +67,7 @@ describe.each<[string, Record<string, unknown>]>([
       'bookings.cancelNotAllowedMessage',
       'stay.title',
       'stay.wifiTitle',
-      'settings.title',
+      'settings.languageEs',
       'error.authRateLimited',
     ]) {
       expect(typeof lookup(resources, key)).toBe('string');

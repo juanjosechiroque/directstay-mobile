@@ -3,7 +3,7 @@
 DirectStay is a mobile direct-booking and guest-stay application for independent
 accommodation businesses (cabins, lodges, boutique hotels, and short-stay apartments).
 
-Guests explore a brand's properties, check availability, make a demonstration booking,
+Guests explore a brand's properties, choose one property to check availability, make a demonstration booking,
 and use an anonymous device session to access their bookings and stay information. No
 charge is made by the demonstration payment button. The app is a
 public catalog and guest area — not a marketplace, PMS or hotel ERP.
@@ -23,8 +23,10 @@ public catalog and guest area — not a marketplace, PMS or hotel ERP.
 
 The reference brand is the **fictional** **Ayni Hospitality**, with two properties:
 **Ayni Mountain Cabins** (Sacred Valley, Urubamba; units Killa, Inti, Wayra, Sumaq) and
-**Ayni Cusco** (historic centre; units Sisa, Illapa). All demo information is fictional;
-it exists as seed data only and must never be reused as domain logic.
+**Ayni Cusco** (historic centre; units Sisa, Illapa). The business and accommodation
+details are fictional reference data and must never be reused as domain logic. Google
+Maps on each property page and Google Maps links point to real public plazas in Cusco and
+Urubamba as approximate references, not to verified accommodation addresses.
 
 ## Prerequisites
 
@@ -78,11 +80,17 @@ supabase db push --include-seed       # also (re)apply supabase/seed.sql
 For the hosted Supabase project, enable **Anonymous Sign-Ins** in **Supabase Dashboard →
 Authentication → Sign In / Providers**. Also allow new users at the Auth level: Supabase's
 anonymous signup endpoint requires the global signup gate. Keep the email provider's
-**Enable Email Signup** off. After applying the migration, run `npm run ios`, search
-future dates, open a unit, review, enter guest details, press “Pagar (demostración)”,
-then open the booking detail and My Stay. The confirmation button makes no charge.
+**Enable Email Signup** off. After applying the migrations, run `npm run ios`, choose a
+property, search future dates, open a unit, review, enter guest details and an optional
+special request, press “Pagar (demostración)”, then open the booking detail and My Stay.
+An unexpired pending booking can return to the demonstration payment from its detail.
+The confirmation button makes no charge. Apply the migrations before using a client
+build that sends special requests.
 
 ## Testing
+
+Run `npm run format` to apply ESLint fixes and Prettier formatting together. The checks
+below do not change files.
 
 ```bash
 npm run typecheck
@@ -176,3 +184,28 @@ docs/                # engineering/product docs
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+The local WhatsApp icon in `assets/images/whatsapp-bootstrap.png` comes from
+[Bootstrap Icons](https://icons.getbootstrap.com/icons/whatsapp/) and is licensed under MIT:
+
+> The MIT License (MIT)
+>
+> Copyright (c) 2019-2024 The Bootstrap Authors
+>
+> Permission is hereby granted, free of charge, to any person obtaining a copy
+> of this software and associated documentation files (the "Software"), to deal
+> in the Software without restriction, including without limitation the rights
+> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+> copies of the Software, and to permit persons to whom the Software is
+> furnished to do so, subject to the following conditions:
+>
+> The above copyright notice and this permission notice shall be included in
+> all copies or substantial portions of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+> THE SOFTWARE.

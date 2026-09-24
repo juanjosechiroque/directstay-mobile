@@ -24,7 +24,6 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="index" options={{ title: t('tabs.home') }} />
       <Tabs.Screen name="bookings" options={{ title: t('tabs.bookings') }} />
-      <Tabs.Screen name="settings" options={{ title: t('tabs.settings') }} />
     </Tabs>
   );
 }

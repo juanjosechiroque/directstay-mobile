@@ -38,7 +38,7 @@ describe('guest form validation', () => {
   const valid = {
     fullName: 'Valeria Quispe',
     email: 'valeria@example.com',
-    phone: '+51 999 000 111',
+    phone: '+51999000111',
   };
 
   it('accepts a valid guest', () => {
@@ -60,6 +60,12 @@ describe('guest form validation', () => {
       'validation.emailInvalid',
     );
     expect(validateGuestForm({ ...valid, phone: 'abc' }).phone).toBe('validation.phoneInvalid');
+    expect(validateGuestForm({ ...valid, phone: '+51 999 000 111' }).phone).toBe(
+      'validation.phoneInvalid',
+    );
+    expect(validateGuestForm({ ...valid, phone: '+1234567890123456' }).phone).toBe(
+      'validation.phoneInvalid',
+    );
   });
 
   it('detects when errors exist', () => {

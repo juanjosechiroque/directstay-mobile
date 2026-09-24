@@ -14,7 +14,12 @@ describe('query keys', () => {
   });
 
   it('scopes availability by criteria and locale', () => {
-    const query = { checkIn: '2026-10-10', checkOut: '2026-10-12', guests: 2 };
+    const query = {
+      propertyId: 'property-1',
+      checkIn: '2026-10-10',
+      checkOut: '2026-10-12',
+      guests: 2,
+    };
     expect(availabilityKeys.search(query, 'es')).not.toEqual(availabilityKeys.search(query, 'en'));
     expect(availabilityKeys.search(query, 'es')).not.toEqual(
       availabilityKeys.search({ ...query, guests: 3 }, 'es'),

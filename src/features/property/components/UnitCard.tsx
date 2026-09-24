@@ -17,7 +17,7 @@ export function UnitCard({ unit, onPress }: UnitCardProps) {
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${unit.name}. ${t('unit.continueCta')}`}
+      accessibilityLabel={t('unit.viewDetails', { name: unit.name })}
       style={({ pressed }) => [styles.pressable, pressed && styles.pressed]}
     >
       <Card padded={false} style={styles.card}>

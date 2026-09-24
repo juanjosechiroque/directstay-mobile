@@ -35,13 +35,16 @@ describe('catalog mappers', () => {
           name: 'Ayni Mountain Cabins',
           slug: 'ayni-mountain-cabins',
           locationLabel: 'Valle Sagrado',
+          mapReference: 'Plaza de Armas, Urubamba, Cusco, Perú',
+          mapLatitude: -13.30594,
+          mapLongitude: -72.11596,
           shortDescription: 'Cabañas',
           description: 'Refugio',
           timezone: 'America/Lima',
           checkInTime: '15:00:00',
           checkOutTime: '12:00:00',
           currency: 'USD',
-          contactWhatsapp: '+51999000111',
+          contactWhatsapp: '+51987654321',
           contactPhone: null,
           highlights: ['mountain_view', 'not_a_highlight'],
           images: [{ id: 'hero', storagePath: 'hero.jpg', altText: null }],
@@ -68,6 +71,9 @@ describe('catalog mappers', () => {
 
     expect(catalog).toHaveLength(1);
     expect(catalog[0].property.checkInTime).toBe('15:00');
+    expect(catalog[0].property.mapReference).toBe('Plaza de Armas, Urubamba, Cusco, Perú');
+    expect(catalog[0].property.mapLatitude).toBe(-13.30594);
+    expect(catalog[0].property.mapLongitude).toBe(-72.11596);
     expect(catalog[0].property.highlights).toEqual(['mountain_view']);
     expect(catalog[0].units[0].amenities).toEqual(['wifi']);
     expect(catalog[0].units[0].summary).toBe('Cabaña íntima');
@@ -86,6 +92,7 @@ describe('booking mapper', () => {
     guest_name: 'Valeria',
     guest_email: 'v@example.test',
     guest_phone: null,
+    special_requests: null,
     currency: 'USD',
     nightly_rate_minor: 12000,
     total_amount_minor: 36000,
@@ -103,7 +110,7 @@ describe('booking mapper', () => {
         timezone: 'America/Lima',
         check_in_time: '15:00:00',
         check_out_time: '12:00:00',
-        contact_whatsapp: '+51999000111',
+        contact_whatsapp: '+51987654321',
         contact_phone: '+51845550123',
       },
     },
