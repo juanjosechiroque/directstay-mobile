@@ -15,7 +15,7 @@ import { toIsoDateParam, toPositiveIntParam } from '@/lib/validation';
 export function BookingReviewScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { setStay, setQuote } = useBookingDraft();
+  const { setStay } = useBookingDraft();
   const params = useLocalSearchParams<{
     unitId?: string;
     checkIn?: string;
@@ -34,21 +34,15 @@ export function BookingReviewScreen() {
       ? { unitId, checkIn, checkOut, guestCount: guests }
       : null;
   const quoteState = useBookingQuote(quoteRequest);
-  const quote = quoteState.data;
 
   // Route params here carry only identifiers/business dates (no PII). Capture them in the
-  // in-memory draft so later steps can use a single source for the stay details.
+  // in-memory draft so later steps can use a single source for the stay details. The quote
+  // itself is not stored: later steps re-request it (a price is a server snapshot, not draft state).
   useEffect(() => {
     if (unitId && checkIn && checkOut && guests) {
       setStay({ unitId, checkIn, checkOut, guestCount: guests });
     }
   }, [unitId, checkIn, checkOut, guests, setStay]);
-
-  useEffect(() => {
-    if (quote) {
-      setQuote(quote);
-    }
-  }, [quote, setQuote]);
 
   if (!unitId || !checkIn || !checkOut || !guests) {
     return (

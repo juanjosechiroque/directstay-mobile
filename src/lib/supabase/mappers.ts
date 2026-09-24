@@ -54,6 +54,10 @@ function asNumber(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : 0;
 }
 
+function asFiniteNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
 function asArray(value: unknown): unknown[] {
   return Array.isArray(value) ? value : [];
 }
@@ -118,8 +122,8 @@ export function mapProperty(
     slug: asString(json.slug) ?? '',
     locationLabel: asString(json.locationLabel) ?? '',
     mapReference: asString(json.mapReference),
-    mapLatitude: typeof json.mapLatitude === 'number' ? json.mapLatitude : null,
-    mapLongitude: typeof json.mapLongitude === 'number' ? json.mapLongitude : null,
+    mapLatitude: asFiniteNumber(json.mapLatitude),
+    mapLongitude: asFiniteNumber(json.mapLongitude),
     shortDescription: asString(json.shortDescription) ?? '',
     description: asString(json.description) ?? '',
     timezone: asString(json.timezone) ?? 'UTC',

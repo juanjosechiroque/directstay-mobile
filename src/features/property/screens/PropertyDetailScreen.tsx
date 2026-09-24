@@ -64,13 +64,23 @@ export function PropertyDetailScreen() {
   }
 
   const { property, units } = entry;
+  // Prefer the server-provided coordinates for a precise pin. The free-text map reference
+  // (or the location label) is only a fallback for properties the server has not geocoded.
+  const hasCoordinates =
+    property.mapLatitude !== null &&
+    property.mapLongitude !== null &&
+    Number.isFinite(property.mapLatitude) &&
+    Number.isFinite(property.mapLongitude);
+  const coordinates = hasCoordinates ? `${property.mapLatitude},${property.mapLongitude}` : null;
   const address = property.mapReference ?? property.locationLabel;
+  const mapQuery = coordinates ?? address;
+  const locationLabelText = address || coordinates;
   const openMap = async () => {
-    if (!address) return;
+    if (!mapQuery) return;
     setMapError(false);
     try {
       await Linking.openURL(
-        `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`,
+        `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`,
       );
     } catch {
       setMapError(true);
@@ -95,15 +105,15 @@ export function PropertyDetailScreen() {
         />
       </View>
 
-      {address ? (
+      {mapQuery ? (
         <Section title={t('property.locationTitle')}>
           <Pressable
             accessibilityRole="link"
-            accessibilityLabel={t('property.openMapAccessibility', { address })}
+            accessibilityLabel={t('property.openMapAccessibility', { address: locationLabelText })}
             onPress={() => void openMap()}
             style={({ pressed }) => [styles.addressLink, pressed && styles.pressed]}
           >
-            <Text style={styles.address}>{address}</Text>
+            <Text style={styles.address}>{locationLabelText}</Text>
             <Text style={styles.mapLink}>{t('property.openMap')}</Text>
           </Pressable>
           {mapError ? <Text style={styles.mapError}>{t('common.linkUnavailable')}</Text> : null}

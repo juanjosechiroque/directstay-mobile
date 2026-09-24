@@ -89,8 +89,10 @@ confirmation route replaces Payment in navigation history.
 
 - `get_catalog` and `get_unit` return localized, active catalog data for the configured
   organization. The catalog may include a property's public map reference and coordinates.
-  The property page displays the reference as an address, opens a Google Maps search for
-  it without a Maps API key, and shows the property's public phone and contact actions.
+  The property page displays the reference as an address, opens Google Maps at the
+  property's coordinates when the server provides valid ones (falling back to a text search
+  on the reference) without a Maps API key, and shows the property's public phone and contact
+  actions.
 - `search_available_units` is the only availability and quote calculation used by the
   app. Guest searches pass the selected property id, while unit quote requests pass the
   unit id. It applies capacity, active-state, booking, hold-expiry, and availability-block
