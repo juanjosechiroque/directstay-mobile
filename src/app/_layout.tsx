@@ -1,17 +1,24 @@
 import '@/i18n';
 
+import { useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import * as SplashScreen from 'expo-splash-screen';
 
 import { EmptyState, Screen } from '@/components';
 import { SessionProvider } from '@/features/auth/session/session-provider';
 import { getAppBootstrap } from '@/lib/bootstrap';
 import { queryClient } from '@/lib/query-client';
 import { RepositoryProvider } from '@/lib/repositories';
+import * as Sentry from '@sentry/react-native';
+
+import { initializeSentry } from '@/lib/telemetry';
 import { colors } from '@/lib/theme';
+
+initializeSentry();
 
 // Composed once, outside React render: the Supabase client/repositories are a module-level
 // lazy singleton, so re-renders and StrictMode cannot create a second client.
@@ -24,8 +31,12 @@ const bootstrap = getAppBootstrap();
  * the session wraps the repository provider, and both share one Supabase client. A missing
  * environment configuration fails here with a clear screen instead of an opaque error.
  */
-export default function RootLayout() {
+function RootLayout() {
   const { t } = useTranslation();
+
+  useEffect(() => {
+    SplashScreen.hideAsync();
+  }, []);
 
   if (!bootstrap.ok) {
     return (
@@ -59,3 +70,5 @@ export default function RootLayout() {
     </QueryClientProvider>
   );
 }
+
+export default Sentry.wrap(RootLayout);

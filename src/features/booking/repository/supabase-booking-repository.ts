@@ -1,6 +1,7 @@
 import type { BookingRepository } from '@/features/booking/repository/booking-repository';
 import type { Booking, CreateBookingInput, Quote, QuoteRequest } from '@/features/booking/types';
 import { AppError } from '@/lib/errors';
+import { reportOperationalError } from '@/lib/telemetry';
 import type { DatabaseClient } from '@/lib/supabase/client';
 import { toAppError } from '@/lib/supabase/errors';
 import { mapBooking, mapBookingRpcResponse } from '@/lib/supabase/mappers';
@@ -63,6 +64,12 @@ export class SupabaseBookingRepository implements BookingRepository {
     private readonly organizationSlug: string,
   ) {}
 
+  private throwOperational(error: unknown, operation: string): never {
+    const appError = toAppError(error);
+    reportOperationalError(appError, { operation });
+    throw appError;
+  }
+
   async getQuote({ unitId, checkIn, checkOut, guestCount }: QuoteRequest): Promise<Quote> {
     const { data, error } = await this.client.rpc('search_available_units', {
       p_organization_slug: this.organizationSlug,
@@ -73,7 +80,7 @@ export class SupabaseBookingRepository implements BookingRepository {
       p_unit_id: unitId,
     });
     if (error) {
-      throw toAppError(error);
+      this.throwOperational(error, 'booking.getQuote');
     }
     const row = ((data ?? []) as SearchUnitJson[]).find((item) => item.unit.id === unitId);
     if (!row) {
@@ -97,7 +104,7 @@ export class SupabaseBookingRepository implements BookingRepository {
       .select(BOOKING_SELECT)
       .order('created_at', { ascending: false });
     if (error) {
-      throw toAppError(error);
+      this.throwOperational(error, 'booking.listBookings');
     }
     return ((data ?? []) as unknown as BookingRow[]).map(mapBooking);
   }
@@ -121,7 +128,7 @@ export class SupabaseBookingRepository implements BookingRepository {
       return fallback.data ? mapBooking(fallback.data as unknown as BookingRow) : null;
     }
     if (error) {
-      throw toAppError(error);
+      this.throwOperational(error, 'booking.getBooking');
     }
     return data ? mapBooking(data as unknown as BookingRow) : null;
   }
@@ -137,7 +144,7 @@ export class SupabaseBookingRepository implements BookingRepository {
       p_guest_phone: input.guestPhone,
       p_special_requests: input.specialRequests,
     });
-    if (error) throw toAppError(error);
+    if (error) this.throwOperational(error, 'booking.createBooking');
     const created = mapBookingRpcResponse(data);
     if (created.status !== 'PENDING_PAYMENT') throw new AppError('error.generic');
     const booking = await this.getBooking(created.id);
@@ -149,7 +156,7 @@ export class SupabaseBookingRepository implements BookingRepository {
     const { data, error } = await this.client.rpc('confirm_demo_payment', {
       p_booking_id: bookingId,
     });
-    if (error) throw toAppError(error);
+    if (error) this.throwOperational(error, 'booking.confirmDemoPayment');
     const confirmed = mapBookingRpcResponse(data);
     if (confirmed.status === 'CANCELED' && confirmed.cancellationReason === 'HOLD_EXPIRED') {
       throw new AppError('error.holdExpired');

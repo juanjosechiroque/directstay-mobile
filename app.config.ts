@@ -1,3 +1,4 @@
+import { withSentry } from '@sentry/react-native/expo';
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 export const APP_SLUG = 'directstay-mobile';
@@ -32,7 +33,7 @@ function resolveProfile(buildProfile: string | undefined): BuildProfile {
   return 'development';
 }
 
-export default ({ config }: ConfigContext): ExpoConfig => {
+function buildConfig({ config }: ConfigContext): ExpoConfig {
   const profile = PROFILES[resolveProfile(process.env.EAS_BUILD_PROFILE)];
 
   return {
@@ -73,4 +74,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       reactCompiler: true,
     },
   };
-};
+}
+
+export default (context: ConfigContext): ExpoConfig =>
+  withSentry(buildConfig(context), {
+    url: 'https://sentry.io/',
+    organization: 'juanjosechiroque',
+    project: 'direct-stay',
+  });

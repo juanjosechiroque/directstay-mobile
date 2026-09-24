@@ -41,9 +41,14 @@ function readEnv(value: string | undefined): string | undefined {
 export function resolveSupabaseConfig(env: NodeJS.ProcessEnv = process.env): SupabaseConfig {
   const missing: string[] = [];
 
-  const url = readEnv(env.EXPO_PUBLIC_SUPABASE_URL);
-  const anonKey = readEnv(env.EXPO_PUBLIC_SUPABASE_ANON_KEY);
-  const organizationSlug = readEnv(env.EXPO_PUBLIC_ORGANIZATION_SLUG);
+  const url =
+    readEnv(process.env.EXPO_PUBLIC_SUPABASE_URL) ?? readEnv(env.EXPO_PUBLIC_SUPABASE_URL);
+  const anonKey =
+    readEnv(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY) ??
+    readEnv(env.EXPO_PUBLIC_SUPABASE_ANON_KEY);
+  const organizationSlug =
+    readEnv(process.env.EXPO_PUBLIC_ORGANIZATION_SLUG) ??
+    readEnv(env.EXPO_PUBLIC_ORGANIZATION_SLUG);
 
   if (!url || !/^https?:\/\//.test(url)) {
     missing.push('EXPO_PUBLIC_SUPABASE_URL');
