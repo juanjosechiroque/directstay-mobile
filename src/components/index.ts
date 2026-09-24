@@ -9,5 +9,6 @@ export { PriceText } from './PriceText';
 export { Screen } from './Screen';
 export { ScreenHeader } from './ScreenHeader';
 export { Section } from './Section';
+export { Skeleton, SkeletonGroup } from './Skeleton';
 export { EmptyState, ErrorState, LoadingState } from './StateViews';
 export { TextField } from './TextField';

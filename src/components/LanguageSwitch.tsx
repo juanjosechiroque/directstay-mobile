@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { SUPPORTED_LOCALES } from '@/i18n';
-import { colors, fontSize, radius, spacing } from '@/lib/theme';
+import { colors, control, fontSize, radius, spacing } from '@/lib/theme';
 
 const LABELS: Record<string, string> = { es: 'ES', en: 'EN' };
 const NAMES: Record<string, string> = { es: 'settings.languageEs', en: 'settings.languageEn' };
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: spacing.sm, alignSelf: 'flex-end' },
   option: {
     minWidth: 44,
-    minHeight: 36,
+    minHeight: control.minTouchSize,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.md,

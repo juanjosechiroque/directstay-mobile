@@ -13,11 +13,7 @@ export function InfoRow({ label, value, valueNode }: InfoRowProps) {
   return (
     <View style={styles.row}>
       <Text style={styles.label}>{label}</Text>
-      {valueNode ?? (
-        <Text style={styles.value} numberOfLines={2}>
-          {value}
-        </Text>
-      )}
+      {valueNode ?? <Text style={styles.value}>{value}</Text>}
     </View>
   );
 }

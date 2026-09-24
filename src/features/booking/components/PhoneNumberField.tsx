@@ -70,6 +70,7 @@ export function PhoneNumberField({
             helper={t('booking.phoneHelper')}
             keyboardType="phone-pad"
             autoComplete="tel-national"
+            textContentType="telephoneNumber"
             maxLength={15 - countryCode.length}
             returnKeyType="done"
           />
@@ -95,7 +96,11 @@ export function PhoneNumberField({
                   <Text style={styles.optionCode}>+{option.code}</Text>
                 </Pressable>
               ))}
-              <Pressable onPress={() => setCustom(true)} style={styles.option}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setCustom(true)}
+                style={styles.option}
+              >
                 <Text style={styles.optionText}>{t('booking.phoneOtherCode')}</Text>
               </Pressable>
             </ScrollView>
@@ -135,7 +140,7 @@ const styles = StyleSheet.create({
   codeButton: {
     minHeight: control.minTouchSize,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderStrong,
     borderRadius: radius.md,
     backgroundColor: colors.surface,
     paddingHorizontal: spacing.md,

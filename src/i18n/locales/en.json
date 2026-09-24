@@ -2,6 +2,7 @@
   "common": {
     "back": "Back",
     "retry": "Try again",
+    "required": "required",
     "close": "Close",
     "loading": "Loading…",
     "linkUnavailable": "We couldn't open the link on this device.",
@@ -58,6 +59,7 @@
     "subtitle": "Choose a location to get started.",
     "propertyTitle": "Location",
     "propertyErrorTitle": "We couldn't load the locations",
+    "selectDateHint": "Opens a calendar to choose a date",
     "today": "Today",
     "checkIn": "Check-in",
     "checkOut": "Check-out",
@@ -151,6 +153,7 @@
     "paymentTitle": "Payment",
     "creationErrorTitle": "We couldn't create your booking",
     "holdExpiredTitle": "The booking expired",
+    "holdMilestone": "{{time}} left to pay",
     "holdCountdown": "Time left to pay: {{time}}",
     "demoPayCta": "Pay (demo)",
     "noChargeNote": "No charge will be made",

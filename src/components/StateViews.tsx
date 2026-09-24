@@ -1,6 +1,7 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/Button';
+import { useAnnounce } from '@/lib/use-announce';
 import { colors, fontSize, spacing } from '@/lib/theme';
 
 interface LoadingStateProps {
@@ -9,7 +10,13 @@ interface LoadingStateProps {
 
 export function LoadingState({ message }: LoadingStateProps) {
   return (
-    <View style={styles.container} accessibilityRole="progressbar">
+    <View
+      style={styles.container}
+      accessible
+      accessibilityRole="progressbar"
+      accessibilityLabel={message}
+      accessibilityState={{ busy: true }}
+    >
       <ActivityIndicator color={colors.primary} size="large" />
       {message ? <Text style={styles.message}>{message}</Text> : null}
     </View>
@@ -24,8 +31,9 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({ title, message, retryLabel, onRetry }: ErrorStateProps) {
+  useAnnounce(message ? `${title}. ${message}` : title);
   return (
-    <View style={styles.container}>
+    <View style={styles.container} accessibilityRole="alert">
       <Text style={styles.title}>{title}</Text>
       {message ? <Text style={styles.message}>{message}</Text> : null}
       <Button title={retryLabel} variant="secondary" onPress={onRetry} style={styles.action} />

@@ -18,7 +18,7 @@ import {
 import { useUnit } from '@/features/property/queries/use-property';
 import type { AmenityCode } from '@/features/property/types';
 import { getErrorCode } from '@/lib/errors';
-import { colors, fontSize, radius, shadows, spacing } from '@/lib/theme';
+import { colors, control, fontSize, radius, shadows, spacing } from '@/lib/theme';
 import { toIsoDateParam, toPositiveIntParam } from '@/lib/validation';
 
 export function UnitDetailScreen() {
@@ -238,7 +238,9 @@ const styles = StyleSheet.create({
   secondaryLink: {
     alignSelf: 'center',
     marginTop: spacing.md,
-    padding: spacing.sm,
+    minHeight: control.minTouchSize,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.lg,
   },
   secondaryLinkText: {
     fontSize: fontSize.sm,

@@ -60,7 +60,10 @@ export function createTestI18n(lng: 'es' | 'en' = 'es') {
 
 export function createTestQueryClient(): QueryClient {
   return new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false } },
+    defaultOptions: {
+      queries: { retry: false, gcTime: Infinity },
+      mutations: { retry: false, gcTime: Infinity },
+    },
   });
 }
 

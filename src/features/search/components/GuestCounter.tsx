@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { useAnnounce } from '@/lib/use-announce';
 import { colors, control, fontSize, radius, spacing } from '@/lib/theme';
 
 interface GuestCounterProps {
@@ -23,6 +24,8 @@ export function GuestCounter({
   const { t } = useTranslation();
   const decreaseDisabled = disabled || value <= min;
   const increaseDisabled = disabled || value >= max;
+  const valueText = t('search.guestsValue', { count: value });
+  useAnnounce(error);
 
   return (
     <View style={styles.container}>
@@ -33,6 +36,8 @@ export function GuestCounter({
           disabled={decreaseDisabled}
           accessibilityRole="button"
           accessibilityLabel={t('search.decreaseGuests')}
+          accessibilityValue={{ text: valueText }}
+          hitSlop={8}
           accessibilityState={{ disabled: decreaseDisabled }}
           style={({ pressed }) => [
             styles.stepButton,
@@ -42,14 +47,16 @@ export function GuestCounter({
         >
           <Text style={styles.stepGlyph}>−</Text>
         </Pressable>
-        <Text style={styles.value} accessibilityLabel={t('search.guestsValue', { count: value })}>
-          {t('search.guestsValue', { count: value })}
+        <Text style={styles.value} accessibilityLiveRegion="polite">
+          {valueText}
         </Text>
         <Pressable
           onPress={() => onChange(Math.min(max, value + 1))}
           disabled={increaseDisabled}
           accessibilityRole="button"
           accessibilityLabel={t('search.increaseGuests')}
+          accessibilityValue={{ text: valueText }}
+          hitSlop={8}
           accessibilityState={{ disabled: increaseDisabled }}
           style={({ pressed }) => [
             styles.stepButton,
@@ -60,11 +67,7 @@ export function GuestCounter({
           <Text style={styles.stepGlyph}>+</Text>
         </Pressable>
       </View>
-      {error ? (
-        <Text style={styles.error} accessibilityLiveRegion="polite">
-          {error}
-        </Text>
-      ) : null}
+      {error ? <Text style={styles.error}>{error}</Text> : null}
     </View>
   );
 }
@@ -82,7 +85,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderStrong,
     borderRadius: radius.md,
     minHeight: control.minTouchSize,
     paddingHorizontal: spacing.md,

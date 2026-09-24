@@ -165,8 +165,17 @@ This split verifies both client contracts and database security/concurrency beha
 
 - **Unit:** pure logic (dates, money, validation, mappers, i18n catalog parity).
 - **Data edge:** repositories and query invalidation against fakes or a stubbed client.
+- **Components:** React Native Testing Library (RNTL) tests in `src/**/__tests__/*.test.tsx`,
+  rendered through `src/test/render.tsx` (fresh TanStack Query client, Spanish i18n, injected
+  fake repositories and a fake guest session). They query by accessible role, name and state.
 - **pgTAP:** schema, RLS/grants, overlap constraints and RPC behavior (`supabase/tests/database`).
 - **E2E (Maestro):** not implemented yet.
+- **Performance harness:** `*.perf.tsx` files (e.g. `src/test/perf/lists.perf.tsx`) are run on
+  demand with `npx jest --testMatch '**/*.perf.tsx' --runInBand`; they are excluded from `npm test`.
+
+New devDependencies: `@testing-library/react-native` (component tests), `test-renderer` (the
+renderer peer required by RNTL 14) and `@types/node` (Node 24 typings for `process.env` and
+`NodeJS.ProcessEnv` in config).
 
 ## Not yet implemented
 

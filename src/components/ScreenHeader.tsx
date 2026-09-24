@@ -46,7 +46,7 @@ export function ScreenHeader({ title, showBack = true, onBack, right }: ScreenHe
         ) : null}
       </View>
       {title ? (
-        <Text style={styles.title} numberOfLines={1} accessibilityRole="header">
+        <Text style={styles.title} numberOfLines={2} accessibilityRole="header">
           {title}
         </Text>
       ) : (

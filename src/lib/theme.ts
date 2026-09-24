@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+
 /**
  * DirectStay visual foundations.
  *
@@ -12,12 +14,14 @@ export const colors = {
   primary: '#2F5D50',
   primaryDark: '#213F36',
   primarySoft: '#DCE8E2',
-  accent: '#B4713D',
+  accent: '#8F5427',
   accentSoft: '#F1E1D0',
   text: '#20211F',
-  textMuted: '#6B6F68',
-  textSubtle: '#8C8F87',
+  textMuted: '#5B5F58',
+  textSubtle: '#686C64',
   border: '#E3DBCC',
+  /** Boundary of interactive controls: >= 3:1 against background and surface (WCAG 1.4.11). */
+  borderStrong: '#80847C',
   danger: '#B23B32',
   dangerSoft: '#F6DEDB',
   success: '#2F6B4F',
@@ -26,7 +30,7 @@ export const colors = {
   warningSoft: '#F4E7CE',
   info: '#3C5A7A',
   infoSoft: '#DDE6F0',
-  neutral: '#6B6F68',
+  neutral: '#5B5F58',
   neutralSoft: '#E7E3DA',
   white: '#FFFFFF',
   overlaySoft: 'rgba(20, 24, 20, 0.18)',
@@ -68,8 +72,9 @@ export const lineHeight = {
   xl: 30,
 } as const;
 
+/** Minimum touch target: 44pt (iOS HIG) / 48dp (Material). */
 export const control = {
-  minTouchSize: 44,
+  minTouchSize: Platform.OS === 'android' ? 48 : 44,
 } as const;
 
 export const shadows = {

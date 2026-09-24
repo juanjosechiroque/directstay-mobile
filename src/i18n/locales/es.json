@@ -2,6 +2,7 @@
   "common": {
     "back": "Atrás",
     "retry": "Reintentar",
+    "required": "obligatorio",
     "close": "Cerrar",
     "loading": "Cargando…",
     "linkUnavailable": "No pudimos abrir el enlace en este dispositivo.",
@@ -58,6 +59,7 @@
     "subtitle": "Elige una sede para comenzar.",
     "propertyTitle": "Sede",
     "propertyErrorTitle": "No pudimos cargar las sedes",
+    "selectDateHint": "Abre el calendario para elegir una fecha",
     "today": "Hoy",
     "checkIn": "Entrada",
     "checkOut": "Salida",
@@ -151,6 +153,7 @@
     "paymentTitle": "Pago",
     "creationErrorTitle": "No pudimos crear tu reserva",
     "holdExpiredTitle": "La reserva venció",
+    "holdMilestone": "Quedan {{time}} para pagar",
     "holdCountdown": "Tiempo para pagar: {{time}}",
     "demoPayCta": "Pagar (demostración)",
     "noChargeNote": "No se realiza ningún cargo",

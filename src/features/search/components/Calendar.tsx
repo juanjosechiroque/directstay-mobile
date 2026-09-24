@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { parseIsoDate, toIsoDate, todayIso, type IsoDate } from '@/lib/dates';
-import { colors, fontSize, radius, spacing } from '@/lib/theme';
+import { colors, control, fontSize, radius, spacing } from '@/lib/theme';
 
 interface CalendarProps {
   selected: IsoDate | null;
@@ -35,6 +35,18 @@ export function Calendar({ selected, onSelect, minDate, maxDate, todayDate }: Ca
       formatter.format(new Date(Date.UTC(2024, 0, 1 + index))),
     );
   }, [locale]);
+
+  const dayFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'UTC',
+      }),
+    [locale],
+  );
 
   const monthLabel = useMemo(
     () =>
@@ -96,13 +108,14 @@ export function Calendar({ selected, onSelect, minDate, maxDate, todayDate }: Ca
         <Pressable
           onPress={() => onSelect(today)}
           accessibilityRole="button"
+          accessibilityLabel={`${t('search.today')}, ${dayFormatter.format(parseIsoDate(today))}`}
           style={styles.todayButton}
         >
           <Text style={styles.todayLabel}>{t('search.today')}</Text>
         </Pressable>
       ) : null}
 
-      <View style={styles.weekdays}>
+      <View style={styles.weekdays} importantForAccessibility="no-hide-descendants">
         {weekdayLabels.map((label) => (
           <Text key={label} style={styles.weekday}>
             {label}
@@ -124,6 +137,11 @@ export function Calendar({ selected, onSelect, minDate, maxDate, todayDate }: Ca
               onPress={() => onSelect(date)}
               disabled={disabled}
               accessibilityRole="button"
+              accessibilityLabel={
+                isToday
+                  ? `${dayFormatter.format(parseIsoDate(date))}, ${t('search.today')}`
+                  : dayFormatter.format(parseIsoDate(date))
+              }
               accessibilityState={{ selected: isSelected, disabled }}
               style={styles.cell}
             >
@@ -131,6 +149,7 @@ export function Calendar({ selected, onSelect, minDate, maxDate, todayDate }: Ca
                 style={[styles.day, isToday && styles.dayToday, isSelected && styles.daySelected]}
               >
                 <Text
+                  maxFontSizeMultiplier={1.4}
                   style={[
                     styles.dayLabel,
                     disabled && styles.dayDisabled,
@@ -162,8 +181,9 @@ const styles = StyleSheet.create({
   },
   todayButton: {
     alignSelf: 'flex-end',
+    minHeight: control.minTouchSize,
+    justifyContent: 'center',
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
     borderRadius: radius.pill,
     backgroundColor: colors.primarySoft,
     marginBottom: spacing.sm,
@@ -213,6 +233,7 @@ const styles = StyleSheet.create({
   cell: {
     width: `${100 / 7}%`,
     aspectRatio: 1,
+    minHeight: control.minTouchSize,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 2,

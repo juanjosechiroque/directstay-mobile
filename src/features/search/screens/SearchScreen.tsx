@@ -12,6 +12,8 @@ import {
   Screen,
   ScreenHeader,
   Section,
+  Skeleton,
+  SkeletonGroup,
 } from '@/components';
 import { UnitCard } from '@/features/property/components/UnitCard';
 import { DateField } from '@/features/search/components/DateField';
@@ -238,7 +240,20 @@ export function SearchScreen() {
               : t('search.resultsTitle')
           }
         >
-          {resultsQuery.isLoading ? <LoadingState message={t('search.loadingMessage')} /> : null}
+          {resultsQuery.isLoading ? (
+            <SkeletonGroup label={t('search.loadingMessage')} style={styles.results}>
+              {[0, 1].map((key) => (
+                <Card key={key} padded={false} style={styles.resultSkeleton}>
+                  <Skeleton height={150} borderRadius={0} />
+                  <View style={styles.resultSkeletonBody}>
+                    <Skeleton width="50%" height={18} />
+                    <Skeleton height={14} />
+                    <Skeleton width="30%" height={14} />
+                  </View>
+                </Card>
+              ))}
+            </SkeletonGroup>
+          ) : null}
 
           {resultsQuery.isError ? (
             <ErrorState
@@ -305,7 +320,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderStrong,
     borderRadius: radius.md,
   },
   propertyOptionSelected: {
@@ -320,7 +335,7 @@ const styles = StyleSheet.create({
     height: 18,
     borderRadius: radius.pill,
     borderWidth: 2,
-    borderColor: colors.border,
+    borderColor: colors.borderStrong,
   },
   radioSelected: {
     borderColor: colors.primary,
@@ -349,5 +364,12 @@ const styles = StyleSheet.create({
   },
   results: {
     gap: spacing.lg,
+  },
+  resultSkeleton: {
+    overflow: 'hidden',
+  },
+  resultSkeletonBody: {
+    padding: spacing.lg,
+    gap: spacing.sm,
   },
 });

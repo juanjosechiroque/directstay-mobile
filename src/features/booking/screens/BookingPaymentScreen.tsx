@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AppState, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, AppState, StyleSheet, Text, View } from 'react-native';
 
 import {
   Button,
@@ -61,6 +61,26 @@ export function BookingPaymentScreen() {
     booking && nowMs !== null ? remainingHoldSeconds(booking.holdExpiresAt, nowMs) : 0;
   const expired =
     serverExpired || Boolean(booking && (booking.status !== 'PENDING_PAYMENT' || seconds === 0));
+
+  // Screen readers hear milestones only (never every second): 60 s, 30 s, 10 s and expiry.
+  const announced = useRef(new Set<number>());
+  useEffect(() => {
+    if (!booking || nowMs === null || booking.status !== 'PENDING_PAYMENT') return;
+    if (expired) {
+      if (!announced.current.has(0)) {
+        announced.current.add(0);
+        AccessibilityInfo.announceForAccessibility(t('error.holdExpired'));
+      }
+      return;
+    }
+    const milestone = [10, 30, 60].find((mark) => seconds <= mark);
+    if (milestone !== undefined && !announced.current.has(milestone)) {
+      for (const mark of [10, 30, 60]) if (mark >= milestone) announced.current.add(mark);
+      AccessibilityInfo.announceForAccessibility(
+        t('booking.holdMilestone', { time: formatHoldCountdown(seconds) }),
+      );
+    }
+  }, [booking, nowMs, expired, seconds, t]);
 
   const pay = async () => {
     if (!id || expired || submitLock.current) return;
@@ -132,7 +152,7 @@ export function BookingPaymentScreen() {
       {expired ? (
         <EmptyState title={t('booking.holdExpiredTitle')} message={t('error.holdExpired')} />
       ) : (
-        <Text style={styles.countdown}>
+        <Text style={styles.countdown} accessibilityRole="timer">
           {t('booking.holdCountdown', { time: formatHoldCountdown(seconds) })}
         </Text>
       )}

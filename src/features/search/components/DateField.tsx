@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { formatIsoDate, type IsoDate } from '@/lib/dates';
+import { useAnnounce } from '@/lib/use-announce';
 import { colors, control, fontSize, radius, spacing } from '@/lib/theme';
 import { Calendar } from '@/features/search/components/Calendar';
 
@@ -31,6 +32,7 @@ export function DateField({
 }: DateFieldProps) {
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
+  useAnnounce(error);
 
   return (
     <View style={styles.container}>
@@ -39,7 +41,8 @@ export function DateField({
         onPress={() => setOpen(true)}
         disabled={disabled}
         accessibilityRole="button"
-        accessibilityLabel={`${label}: ${value ?? placeholder}`}
+        accessibilityLabel={`${label}: ${value ? formatIsoDate(value, i18n.language) : placeholder}`}
+        accessibilityHint={t('search.selectDateHint')}
         accessibilityState={{ disabled }}
         style={[styles.field, error ? styles.fieldError : null, disabled && styles.fieldDisabled]}
       >
@@ -47,11 +50,7 @@ export function DateField({
           {value ? formatIsoDate(value, i18n.language) : placeholder}
         </Text>
       </Pressable>
-      {error ? (
-        <Text style={styles.error} accessibilityLiveRegion="polite">
-          {error}
-        </Text>
-      ) : null}
+      {error ? <Text style={styles.error}>{error}</Text> : null}
 
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
         <Pressable style={styles.backdrop} onPress={() => setOpen(false)}>
@@ -95,7 +94,7 @@ const styles = StyleSheet.create({
   field: {
     minHeight: control.minTouchSize,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderStrong,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     justifyContent: 'center',
@@ -140,7 +139,9 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     alignSelf: 'center',
-    padding: spacing.sm,
+    minHeight: control.minTouchSize,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.lg,
   },
   closeLabel: {
     fontSize: fontSize.sm,

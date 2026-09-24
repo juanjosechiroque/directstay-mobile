@@ -47,3 +47,35 @@ compare it with runs on the same machine (the first run of a process is slower d
 
 Home (2 catalog properties) and Search results (units of one property) were not measured
 separately: their sizes are bounded and small, so `.map` mounts a handful of items.
+
+## After list changes
+
+Same machine, method and harness as the baseline. Changes: My bookings is now a `FlatList`
+(stable `keyExtractor`, item separator, pull-to-refresh, empty/error/skeleton states in
+`ListEmptyComponent`); a shared `Skeleton` replaces the spinner on Home, search results and
+My bookings. Home and search results stay on `.map` (see conclusion).
+
+| Bookings | Mounted items (before → after) | Profiler actualDuration ms (after, 3 runs) |
+| -------- | ------------------------------ | ------------------------------------------ |
+| 10       | 10 → 10                        | 242, 286 (863 on the cold first run)       |
+| 100      | 100 → 10                       | 23, 26, 26 (before: 112–115)               |
+| 500      | 500 → 10                       | 24, 24, 29 (before: 441–445)               |
+
+Bundle size: iOS 3.6 MB, Android 3.9 MB (unchanged at the reported precision).
+
+### Conclusion
+
+- The only list that can grow without bound is My bookings, and virtualizing it is a measured
+  win in the JS harness: first render mounts 10 items regardless of N, and the JS render cost
+  no longer scales with the number of bookings. For 10 bookings there is no gain (all items fit
+  in the initial window); the extra `FlatList` machinery only pays off with many bookings.
+- Home (organization catalog, currently 2 properties), property units (2-6) and search results
+  (available units of one property) are small and bounded. They stay on `.map`: a `FlatList`
+  would add complexity for no measurable gain, and the search results sit under a form inside a
+  `ScrollView`, where nesting a same-direction `FlatList` is discouraged by React Native.
+- These are Node/Jest numbers, not device numbers. Real-device startup time, frame drops and
+  memory were **not** measured, so no claim is made about them. The skeletons are a perceived-
+  loading improvement, not a measured speedup. The visual check of the skeletons and of the
+  layout at large font sizes on the iOS simulator was not run here and is left to a manual pass.
+- No `React.memo`/`useMemo`/`useCallback` were added: the React Compiler is active (verified by
+  transforming a component with `babel-preset-expo` and finding the compiler runtime import).

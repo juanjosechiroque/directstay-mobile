@@ -1,6 +1,8 @@
 import { forwardRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
 
+import { useAnnounce } from '@/lib/use-announce';
 import { colors, control, fontSize, radius, spacing } from '@/lib/theme';
 
 interface TextFieldProps extends TextInputProps {
@@ -14,7 +16,9 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
   { label, error, helper, required, style, ...inputProps },
   ref,
 ) {
+  const { t } = useTranslation();
   const helperColor = error ? colors.danger : colors.textMuted;
+  useAnnounce(error);
 
   return (
     <View style={styles.container}>
@@ -24,16 +28,15 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
       </Text>
       <TextInput
         ref={ref}
-        accessibilityLabel={label}
+        accessibilityLabel={required ? `${label}, ${t('common.required')}` : label}
+        accessibilityHint={error ?? helper}
         accessibilityState={{ disabled: inputProps.editable === false }}
         placeholderTextColor={colors.textSubtle}
         style={[styles.input, error ? styles.inputError : null, style]}
         {...inputProps}
       />
       {error ? (
-        <Text style={[styles.helper, { color: helperColor }]} accessibilityLiveRegion="polite">
-          {error}
-        </Text>
+        <Text style={[styles.helper, { color: helperColor }]}>{error}</Text>
       ) : helper ? (
         <Text style={[styles.helper, { color: helperColor }]}>{helper}</Text>
       ) : null}
@@ -56,7 +59,7 @@ const styles = StyleSheet.create({
   input: {
     minHeight: control.minTouchSize,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderStrong,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,

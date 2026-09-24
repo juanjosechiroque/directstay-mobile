@@ -8,9 +8,10 @@ import {
   CatalogImage,
   EmptyState,
   ErrorState,
-  LoadingState,
   Screen,
   Section,
+  Skeleton,
+  SkeletonGroup,
 } from '@/components';
 import { LanguageSwitch } from '@/components/LanguageSwitch';
 import { useCatalog } from '@/features/property/queries/use-property';
@@ -24,8 +25,8 @@ export function HomeScreen() {
 
   if (catalogQuery.isLoading) {
     return (
-      <Screen scroll>
-        <LoadingState message={t('common.loading')} />
+      <Screen scroll contentContainerStyle={styles.content}>
+        <HomeSkeleton label={t('common.loading')} />
       </Screen>
     );
   }
@@ -57,7 +58,9 @@ export function HomeScreen() {
     <Screen scroll contentContainerStyle={styles.content}>
       <View style={styles.intro}>
         <LanguageSwitch />
-        <Text style={styles.tagline}>{t('home.title')}</Text>
+        <Text style={styles.tagline} accessibilityRole="header">
+          {t('home.title')}
+        </Text>
       </View>
 
       <Button
@@ -101,7 +104,35 @@ export function HomeScreen() {
   );
 }
 
+function HomeSkeleton({ label }: { label: string }) {
+  return (
+    <SkeletonGroup label={label} style={styles.intro}>
+      <Skeleton width="60%" height={28} />
+      <Skeleton height={54} borderRadius={radius.md} style={styles.cta} />
+      <View style={styles.skeletonCards}>
+        {[0, 1].map((key) => (
+          <Card key={key} padded={false} style={styles.propertyCard}>
+            <Skeleton height={210} borderRadius={0} />
+            <View style={styles.skeletonText}>
+              <Skeleton height={14} />
+              <Skeleton width="70%" height={14} />
+            </View>
+          </Card>
+        ))}
+      </View>
+    </SkeletonGroup>
+  );
+}
+
 const styles = StyleSheet.create({
+  skeletonCards: {
+    marginTop: spacing.xxl,
+    gap: spacing.xxl,
+  },
+  skeletonText: {
+    padding: spacing.lg,
+    gap: spacing.sm,
+  },
   content: {
     paddingBottom: spacing.xxxl,
   },

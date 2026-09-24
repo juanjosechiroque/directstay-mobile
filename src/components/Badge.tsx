@@ -23,10 +23,7 @@ export function Badge({ label, tone = 'neutral', small = false }: BadgeProps) {
   const palette = TONES[tone];
   return (
     <View style={[styles.badge, small && styles.small, { backgroundColor: palette.background }]}>
-      <Text
-        style={[styles.label, small && styles.smallLabel, { color: palette.text }]}
-        accessibilityLabel={label}
-      >
+      <Text style={[styles.label, small && styles.smallLabel, { color: palette.text }]}>
         {label}
       </Text>
     </View>

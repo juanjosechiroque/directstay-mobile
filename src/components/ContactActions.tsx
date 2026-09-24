@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { useAnnounce } from '@/lib/use-announce';
 import { colors, control, fontSize, radius, spacing } from '@/lib/theme';
 
 interface ContactActionsProps {
@@ -13,6 +14,7 @@ interface ContactActionsProps {
 export function ContactActions({ whatsapp, phone, propertyName }: ContactActionsProps) {
   const { t } = useTranslation();
   const [failed, setFailed] = useState(false);
+  useAnnounce(failed ? t('common.linkUnavailable') : undefined);
   const whatsappDigits = whatsapp?.replace(/\D/g, '') ?? '';
   const whatsappUrl = `https://wa.me/${whatsappDigits}?text=${encodeURIComponent(t('bookings.whatsappDraft', { propertyName }))}`;
 
@@ -73,11 +75,7 @@ export function ContactActions({ whatsapp, phone, propertyName }: ContactActions
           </Pressable>
         ) : null}
       </View>
-      {failed ? (
-        <Text style={styles.feedback} accessibilityLiveRegion="polite">
-          {t('common.linkUnavailable')}
-        </Text>
-      ) : null}
+      {failed ? <Text style={styles.feedback}>{t('common.linkUnavailable')}</Text> : null}
     </View>
   );
 }

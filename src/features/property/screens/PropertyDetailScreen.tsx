@@ -18,6 +18,7 @@ import { PropertyHighlights } from '@/features/property/components/PropertyHighl
 import { UnitCard } from '@/features/property/components/UnitCard';
 import { useCatalog } from '@/features/property/queries/use-property';
 import { getErrorCode } from '@/lib/errors';
+import { useAnnounce } from '@/lib/use-announce';
 import { colors, fontSize, spacing } from '@/lib/theme';
 
 export function PropertyDetailScreen() {
@@ -26,6 +27,7 @@ export function PropertyDetailScreen() {
   const { propertyId } = useLocalSearchParams<{ propertyId: string }>();
   const catalogQuery = useCatalog();
   const [mapError, setMapError] = useState(false);
+  useAnnounce(mapError ? t('common.linkUnavailable') : undefined);
   const selectedPropertyId = typeof propertyId === 'string' ? propertyId : undefined;
 
   if (catalogQuery.isLoading) {
