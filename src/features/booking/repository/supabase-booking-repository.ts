@@ -135,6 +135,7 @@ export class SupabaseBookingRepository implements BookingRepository {
 
   async createBooking(input: CreateBookingInput): Promise<Booking> {
     const { data, error } = await this.client.rpc('create_booking', {
+      p_organization_slug: this.organizationSlug,
       p_unit_id: input.unitId,
       p_check_in: input.checkIn,
       p_check_out: input.checkOut,

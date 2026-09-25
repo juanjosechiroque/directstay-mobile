@@ -27,10 +27,12 @@ recurrence and “My Stay.”
    code and is sent as one full number; details remain in memory until booking creation.
 4. When the guest continues, the app creates or reuses an anonymous Supabase session on
    this device and requests a pending booking. Payment (`/booking/payment`) shows the
-   server-held price and five-minute countdown. An unexpired pending booking can also
+   server-held price, an explanation of the temporary unit hold, and the five-minute
+   countdown. An unexpired pending booking can also
    return to Payment from its booking detail. “Pagar (demostración)” asks the server to
    confirm the reservation; it makes no charge.
-5. Confirmation (`/booking/confirmed`) shows the reservation summary and links to My
+5. Confirmation (`/booking/confirmed`) shows the reservation summary, offers an editable
+   native calendar form for confirmed stays, and links to My
    bookings (`/bookings`), booking detail (`/bookings/[bookingId]`) and My Stay
    (`/stay/[bookingId]`). Language (ES/EN) is switched from a compact control on Home and persisted on the device.
 
@@ -40,6 +42,7 @@ recurrence and “My Stay.”
 - Spanish-default and English UI; anonymous guest sessions persist on the device.
 - Booking creation, demonstration confirmation, owner-only booking history, and
   confirmed-booking stay and contact information.
+- Add a confirmed stay to the device calendar through the operating system's event form.
 
 Ayni Hospitality is reference data only. Its mobile contact numbers are placeholders.
 The WhatsApp action opens a prepared inquiry and asks the guest to choose a recipient;

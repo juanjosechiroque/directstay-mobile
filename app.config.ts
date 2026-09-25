@@ -65,6 +65,14 @@ function buildConfig({ config }: ConfigContext): ExpoConfig {
       'expo-router',
       'expo-image',
       [
+        'expo-calendar',
+        {
+          writeOnlyAccess: true,
+          writeOnlyCalendarPermission:
+            'DirectStay needs calendar access to prepare your confirmed stay for you to review.',
+        },
+      ],
+      [
         'expo-splash-screen',
         { backgroundColor: '#208AEF', image: './assets/images/splash-icon.png', imageWidth: 76 },
       ],

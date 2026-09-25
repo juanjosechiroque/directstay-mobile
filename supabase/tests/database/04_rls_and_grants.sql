@@ -97,7 +97,7 @@ $$, '42501', null, 'anon cannot execute the private stay RPC');
 
 -- create_booking must not be callable from anon
 select throws_ok($$
-  select public.create_booking('33333333-3333-3333-3333-333333333301', date '2028-02-01', date '2028-02-04', 2, 'Guest', 'g@example.test', null)
+  select public.create_booking('ayni-hospitality', '33333333-3333-3333-3333-333333333301', date '2028-02-01', date '2028-02-04', 2, 'Guest', 'g@example.test', null)
 $$, '42501', null, 'anon cannot execute create_booking');
 select throws_ok($$
   select public.confirm_demo_payment('e0000000-0000-0000-0000-000000000001')
@@ -160,7 +160,7 @@ select throws_ok($$
   update public.bookings set guest_count = 9 where guest_profile_id = 'c0000000-0000-0000-0000-000000000001'
 $$, '42501', null, 'authenticated cannot UPDATE bookings directly');
 select lives_ok($$
-  select public.create_booking('33333333-3333-3333-3333-333333333301', date '2028-02-01', date '2028-02-04', 2, 'Guest', 'g@example.test', null)
+  select public.create_booking('ayni-hospitality', '33333333-3333-3333-3333-333333333301', date '2028-02-01', date '2028-02-04', 2, 'Guest', 'g@example.test', null)
 $$, 'authenticated can execute create_booking');
 
 reset role;

@@ -64,6 +64,7 @@ describe('SupabaseBookingRepository mutations', () => {
       specialRequests: null,
     });
     expect(rpc).toHaveBeenCalledWith('create_booking', {
+      p_organization_slug: 'test-brand',
       p_unit_id: row.unit_id,
       p_check_in: row.check_in,
       p_check_out: row.check_out,

@@ -10,7 +10,7 @@ insert into auth.users (id, email) values
 
 set local role anon;
 set local request.jwt.claims to '{"role":"anon"}';
-select throws_ok($$ select public.create_booking('33333333-3333-3333-3333-333333333301', date '2028-05-01', date '2028-05-03', 2, 'Guest', 'guest@example.test', null) $$,
+select throws_ok($$ select public.create_booking('ayni-hospitality', '33333333-3333-3333-3333-333333333301', date '2028-05-01', date '2028-05-03', 2, 'Guest', 'guest@example.test', null) $$,
   '42501', null, 'anon cannot create a booking');
 select throws_ok($$ select public.confirm_demo_payment('a5000000-0000-0000-0000-000000000099') $$,
   '42501', null, 'anon cannot confirm demo payment');
@@ -18,17 +18,17 @@ select throws_ok($$ select public.confirm_demo_payment('a5000000-0000-0000-0000-
 set local role authenticated;
 set local request.jwt.claims to '{"sub":"a5000000-0000-0000-0000-000000000001","role":"authenticated","is_anonymous":true}';
 create temporary table demo_first as
-  select public.create_booking('33333333-3333-3333-3333-333333333301',
+  select public.create_booking('ayni-hospitality', '33333333-3333-3333-3333-333333333301',
     date '2028-05-01', date '2028-05-03', 2, 'Guest', 'guest@example.test', null) as booking;
 select is((select (booking).total_amount_minor from demo_first), 24000::bigint,
   'the server computes the total from its unit rate');
-select throws_ok($$ select public.create_booking('33333333-3333-3333-3333-333333333301',
+select throws_ok($$ select public.create_booking('ayni-hospitality', '33333333-3333-3333-3333-333333333301',
   ((now() at time zone 'America/Lima')::date - 1),
   ((now() at time zone 'America/Lima')::date + 1), 2, 'Guest', 'guest@example.test', null) $$,
   '22007', 'invalid_date_range', 'past check-in is rejected');
 
 create temporary table demo_second as
-  select public.create_booking('33333333-3333-3333-3333-333333333302',
+  select public.create_booking('ayni-hospitality', '33333333-3333-3333-3333-333333333302',
     date '2028-06-01', date '2028-06-03', 2, 'Guest', 'guest@example.test', null) as booking;
 select is((select status::text from public.bookings where id = (select (booking).id from demo_first)),
   'CANCELED', 'the previous pending booking is canceled');
@@ -39,10 +39,10 @@ select is((select count(*)::int from public.bookings where guest_profile_id = 'a
 
 set local request.jwt.claims to '{"sub":"a5000000-0000-0000-0000-000000000002","role":"authenticated","is_anonymous":true}';
 create temporary table demo_freed as
-  select public.create_booking('33333333-3333-3333-3333-333333333301',
+  select public.create_booking('ayni-hospitality', '33333333-3333-3333-3333-333333333301',
     date '2028-05-01', date '2028-05-03', 2, 'Other', 'other@example.test', null) as booking;
 select ok((select (booking).id is not null from demo_freed), 'the canceled booking released inventory');
-select throws_ok($$ select public.create_booking('33333333-3333-3333-3333-333333333302',
+select throws_ok($$ select public.create_booking('ayni-hospitality', '33333333-3333-3333-3333-333333333302',
   date '2028-06-02', date '2028-06-04', 2, 'Other', 'other@example.test', null) $$,
   '23P01', 'unit_unavailable', 'RPC bookings still enforce exclusion for another guest');
 select throws_ok(
@@ -64,7 +64,7 @@ select is((select count(*)::int from public.payments where booking_id = (select 
 
 set local role authenticated;
 create temporary table demo_expired as
-  select public.create_booking('33333333-3333-3333-3333-333333333303',
+  select public.create_booking('ayni-hospitality', '33333333-3333-3333-3333-333333333303',
     date '2028-07-01', date '2028-07-03', 2, 'Guest', 'guest@example.test', null) as booking;
 reset role;
 update public.bookings set created_at = now() - interval '10 minutes',

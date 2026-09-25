@@ -1,5 +1,5 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AccessibilityInfo, AppState, StyleSheet, Text, View } from 'react-native';
 
@@ -34,33 +34,50 @@ export function BookingPaymentScreen() {
   const bookingQuery = useBooking(id);
   const confirm = useConfirmDemoPayment();
   const [nowMs, setNowMs] = useState<number | null>(null);
+  const [isFocused, setIsFocused] = useState(false);
+  const [isForeground, setIsForeground] = useState(AppState.currentState !== 'background');
   const [serverExpired, setServerExpired] = useState(false);
   const submitLock = useRef(false);
+  const booking = bookingQuery.data;
+  const seconds =
+    booking && nowMs !== null ? remainingHoldSeconds(booking.holdExpiresAt, nowMs) : 0;
+  const expired =
+    serverExpired ||
+    Boolean(booking && (booking.status !== 'PENDING_PAYMENT' || (nowMs !== null && seconds === 0)));
+  const timerEnabled =
+    isFocused &&
+    isForeground &&
+    nowMs !== null &&
+    booking?.status === 'PENDING_PAYMENT' &&
+    !serverExpired &&
+    seconds > 0;
+  useFocusEffect(
+    useCallback(() => {
+      setIsFocused(true);
+      setNowMs(Date.now());
+      const subscription = AppState.addEventListener('change', (state) => {
+        const foreground = state === 'active';
+        setIsForeground(foreground);
+        if (foreground) setNowMs(Date.now());
+      });
+      return () => {
+        setIsFocused(false);
+        subscription?.remove?.();
+      };
+    }, []),
+  );
 
   useEffect(() => {
-    const start = setTimeout(() => setNowMs(Date.now()), 0);
+    if (!timerEnabled) return;
     const timer = setInterval(() => setNowMs(Date.now()), 1000);
-    const subscription = AppState.addEventListener('change', (state) => {
-      if (state === 'active') setNowMs(Date.now());
-    });
-    return () => {
-      clearTimeout(start);
-      clearInterval(timer);
-      subscription.remove();
-    };
-  }, []);
+    return () => clearInterval(timer);
+  }, [timerEnabled]);
 
-  const booking = bookingQuery.data;
   useEffect(() => {
     if (booking?.status === 'CONFIRMED') {
       router.replace({ pathname: '/booking/confirmed', params: { bookingId: booking.id } });
     }
   }, [booking?.id, booking?.status, router]);
-
-  const seconds =
-    booking && nowMs !== null ? remainingHoldSeconds(booking.holdExpiresAt, nowMs) : 0;
-  const expired =
-    serverExpired || Boolean(booking && (booking.status !== 'PENDING_PAYMENT' || seconds === 0));
 
   // Screen readers hear milestones only (never every second): 60 s, 30 s, 10 s and expiry.
   const announced = useRef(new Set<number>());
@@ -152,9 +169,12 @@ export function BookingPaymentScreen() {
       {expired ? (
         <EmptyState title={t('booking.holdExpiredTitle')} message={t('error.holdExpired')} />
       ) : (
-        <Text style={styles.countdown} accessibilityRole="timer">
-          {t('booking.holdCountdown', { time: formatHoldCountdown(seconds) })}
-        </Text>
+        <View style={styles.holdCard}>
+          <Text style={styles.holdText}>{t('booking.holdTemporary')}</Text>
+          <Text style={styles.countdown} accessibilityRole="timer">
+            {t('booking.holdCountdown', { time: formatHoldCountdown(seconds) })}
+          </Text>
+        </View>
       )}
       {confirm.isError && !expired ? (
         <ErrorState
@@ -190,7 +210,20 @@ export function BookingPaymentScreen() {
 const styles = StyleSheet.create({
   card: { gap: spacing.md },
   unit: { fontSize: fontSize.xl, fontWeight: '700', color: colors.text },
-  countdown: { marginTop: spacing.lg, fontSize: fontSize.md, color: colors.text },
+  holdCard: {
+    marginTop: spacing.lg,
+    padding: spacing.md,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+    gap: spacing.xs,
+  },
+  holdText: { fontSize: fontSize.md, color: colors.text, fontWeight: '600' },
+  countdown: {
+    fontSize: fontSize.xl,
+    color: colors.primary,
+    fontWeight: '700',
+    fontVariant: ['tabular-nums'],
+  },
   footer: { marginTop: spacing.xl, gap: spacing.md },
   note: { fontSize: fontSize.sm, color: colors.textMuted, textAlign: 'center' },
 });

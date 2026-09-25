@@ -32,6 +32,9 @@ export function toAppError(error: unknown): AppError {
   if (message.includes('hold_expired')) {
     return new AppError('error.holdExpired', { cause: error });
   }
+  if (message.includes('organization_not_bookable') || message.includes('unit_not_bookable')) {
+    return new AppError('error.notFound', { cause: error });
+  }
 
   const mapped = APP_ERROR_CODE_BY_SUPABASE_CODE[code];
   if (mapped) {

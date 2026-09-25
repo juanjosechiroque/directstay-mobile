@@ -17,6 +17,7 @@ import {
 import { useBooking } from '@/features/booking/queries/use-booking';
 import { getErrorCode } from '@/lib/errors';
 import { colors, fontSize, spacing } from '@/lib/theme';
+import { AddStayToCalendarButton } from '@/features/booking/components/AddStayToCalendarButton';
 
 export function BookingConfirmedScreen() {
   const { t } = useTranslation();
@@ -74,6 +75,7 @@ export function BookingConfirmedScreen() {
         />
       </Card>
       <View style={styles.footer}>
+        <AddStayToCalendarButton booking={booking} />
         <Button
           title={t('booking.viewBookingCta')}
           fullWidth

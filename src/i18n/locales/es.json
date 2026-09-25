@@ -161,11 +161,18 @@
     "holdExpiredTitle": "La reserva venció",
     "holdMilestone": "Quedan {{time}} para pagar",
     "holdCountdown": "Tiempo para pagar: {{time}}",
+    "holdTemporary": "La unidad está retenida temporalmente para ti.",
     "demoPayCta": "Pagar (demostración)",
     "noChargeNote": "No se realiza ningún cargo",
     "paymentErrorTitle": "No pudimos confirmar tu reserva",
     "confirmedTitle": "Reserva confirmada",
     "viewBookingCta": "Ver mi reserva"
+  },
+  "calendar": {
+    "addStay": "Añadir estancia al calendario",
+    "stayTitle": "Estancia en {{property}} · {{unit}}",
+    "permissionDenied": "Sin permiso no podemos abrir el calendario. Puedes cambiarlo en Ajustes.",
+    "unavailable": "No hay un calendario disponible o el sistema no pudo abrir el formulario."
   },
   "bookings": {
     "title": "Mis reservas",

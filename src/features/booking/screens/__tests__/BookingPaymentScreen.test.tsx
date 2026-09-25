@@ -1,5 +1,5 @@
 import { act, screen, userEvent } from '@testing-library/react-native';
-import { AccessibilityInfo } from 'react-native';
+import { AccessibilityInfo, AppState } from 'react-native';
 
 import { BookingPaymentScreen } from '@/features/booking/screens/BookingPaymentScreen';
 import { AppError } from '@/lib/errors';
@@ -33,6 +33,7 @@ describe('BookingPaymentScreen (demo checkout)', () => {
   afterEach(() => {
     jest.useRealTimers();
     announce.mockRestore();
+    jest.restoreAllMocks();
   });
 
   function setup(confirmDemoPayment = jest.fn().mockResolvedValue(buildBooking())) {
@@ -47,6 +48,7 @@ describe('BookingPaymentScreen (demo checkout)', () => {
     await renderWithProviders(<BookingPaymentScreen />, { repositories });
 
     expect(await screen.findByText('Tiempo para pagar: 05:00')).toBeOnTheScreen();
+    expect(screen.getByText('La unidad está retenida temporalmente para ti.')).toBeOnTheScreen();
     expect(screen.getByText('No se realiza ningún cargo')).toBeOnTheScreen();
 
     await advance(61_000);
@@ -65,6 +67,33 @@ describe('BookingPaymentScreen (demo checkout)', () => {
     expect(announce).toHaveBeenCalledTimes(1);
     await advance(10_000); // 00:30
     expect(announce).toHaveBeenLastCalledWith('Quedan 00:30 para pagar');
+  });
+
+  it('recalculates from the absolute server deadline when returning to foreground', async () => {
+    let onChange: ((state: string) => void) | undefined;
+    const addListener = jest
+      .spyOn(AppState, 'addEventListener')
+      .mockImplementation((_, listener) => {
+        onChange = listener as (state: string) => void;
+        return { remove: jest.fn() } as never;
+      });
+    const { repositories } = setup();
+    await renderWithProviders(<BookingPaymentScreen />, { repositories });
+    await screen.findByText('Tiempo para pagar: 05:00');
+    jest.setSystemTime(TEST_NOW.getTime() + 120_000);
+    await act(async () => onChange?.('active'));
+    expect(screen.getByText('Tiempo para pagar: 03:00')).toBeOnTheScreen();
+    addListener.mockRestore();
+  });
+
+  it('does not create a ticking interval for a confirmed booking', async () => {
+    const setIntervalSpy = jest.spyOn(global, 'setInterval');
+    const repositories = fakeRepositories({
+      booking: { getBooking: jest.fn().mockResolvedValue(buildBooking()) },
+    });
+    await renderWithProviders(<BookingPaymentScreen />, { repositories });
+    expect(setIntervalSpy).not.toHaveBeenCalled();
+    setIntervalSpy.mockRestore();
   });
 
   it('expires the hold: disables payment and offers a new search', async () => {

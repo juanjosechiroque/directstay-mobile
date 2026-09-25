@@ -27,6 +27,7 @@ import { formatInstant } from '@/lib/dates';
 import { formatCancellationDeadline, isCancellationEligible } from '@/lib/dates/cancellation';
 import { getErrorCode } from '@/lib/errors';
 import { colors, fontSize, spacing } from '@/lib/theme';
+import { AddStayToCalendarButton } from '@/features/booking/components/AddStayToCalendarButton';
 
 function StatusMessage({ booking, holdExpired }: { booking: Booking; holdExpired: boolean }) {
   const { t } = useTranslation();
@@ -251,6 +252,7 @@ export function BookingDetailScreen() {
 
       {booking.status === 'CONFIRMED' ? (
         <View style={styles.footer}>
+          <AddStayToCalendarButton booking={booking} />
           <Button
             title={t('bookings.stayCta')}
             variant="secondary"

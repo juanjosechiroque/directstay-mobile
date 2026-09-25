@@ -7,7 +7,7 @@ current Supabase migrations. System structure and trust boundaries live in
 
 ## Core model
 
-One deployment serves one `Organization` (a brand), selected by
+One deployment is configured for one `Organization` (a brand), selected by
 `EXPO_PUBLIC_ORGANIZATION_SLUG`. An organization has one or more `Property` records, and
 each property has one or more `Unit` records.
 
@@ -103,9 +103,16 @@ or room-type inventory entities. A booking may carry one free-text special reque
 ## Catalog, localization, and media
 
 Only active organizations, properties, and units appear in the app's catalog and
-availability results. Public RPCs filter by the organization slug supplied by the
-deployment. Active catalog tables are also publicly readable under RLS, so this slug is
-brand selection, not a confidentiality boundary.
+availability results. Catalog/detail/search RPCs filter by the organization slug and all
+three activation flags. Booking writes receive the slug and independently revalidate that
+the organization is active and owns the active property and unit. This is the strongest
+check available in the shared-backend architecture, but `EXPO_PUBLIC_ORGANIZATION_SLUG` is
+public and can be changed in a modified client. It proves which brand the request selected,
+not which signed app installation sent it. RLS grants direct reads of active catalog rows
+across organizations, so this is neither a confidentiality boundary nor exclusive
+app-to-organization authorization. Enforcing that assignment needs isolated Supabase
+projects per app/organization, or a trusted server credential/app attestation verified by
+an Edge Function with the organization mapping stored server-side.
 
 Localized catalog copy is stored by `(entity_id, locale)` in property and unit translation
 tables. Base tables retain fallback copy; proper unit names are not translated. Spanish is
@@ -172,8 +179,11 @@ Canceled, refunded, and expired pending bookings do not appear as inventory clai
 search results.
 
 An availability block represents a unit being unavailable for a non-booking reason. It
-participates in search, but the current schema exposes no client write path and does not
-enforce non-overlap between blocks and bookings.
+participates in search and is checked again in `create_booking`. A per-unit advisory lock
+is shared by booking creation and a database trigger for administrative block inserts and
+updates. Either transaction waits for the other and validates against committed state, so
+they cannot both commit an overlapping reservation and block. Intervals use `[)`; adjacent
+blocks and bookings at check-out/check-in do not overlap.
 
 ## Booking lifecycle and five-minute hold
 
@@ -181,11 +191,17 @@ Every booking starts as `PENDING_PAYMENT`; there is no separate hold table. Post
 requires `hold_expires_at = created_at + interval '5 minutes'`, so the hold is exactly
 five minutes.
 
-The authenticated `create_booking` RPC validates the guest count and dates, obtains
-price and currency from the unit, cancels any previous pending booking for the same guest
-with `SYSTEM`, cancels expired pending bookings for the requested unit, and inserts a new
-pending booking in the same transaction. A transaction-level advisory lock serializes
-concurrent booking creation by the same guest. Time passing alone does not change
+The authenticated `create_booking` RPC receives the selected organization slug and
+validates that it names an active organization which owns the requested active property
+and unit. It validates guest count and dates, obtains price and currency from the unit,
+cancels any previous pending booking for the same guest with `SYSTEM`, cancels expired
+pending bookings for the requested unit, and inserts a new pending booking in the same
+transaction. Organization, activation, capacity, dates and blocks are validated before
+the old pending hold is canceled. A guest advisory lock serializes that guest's booking
+requests; a second per-unit advisory lock serializes inventory writes with administrative
+block inserts/updates. Booking paths acquire guest lock, then unit lock, then row locks;
+block writes take the unit lock before checking bookings. No path takes these locks in
+reverse. Time passing alone does not change
 a row to `CANCELED`: there is no scheduled expiry job. Search ignores an expired hold,
 and the next `create_booking` call for that unit records `HOLD_EXPIRED` before inserting.
 The confirmation RPC also cancels an expired pending booking.
@@ -270,7 +286,22 @@ The booking RPC first cancels expired pending rows for the requested unit becaus
 constraint intentionally considers every row still marked `PENDING_PAYMENT`, while public
 availability ignores pending rows after their five-minute expiry. This cleanup and the
 constraint make the write path safe without relying on a prior client-side availability
-check.
+check. The shared unit lock also coordinates booking writes with availability-block writes.
+
+## Calendar and payment countdown
+
+Only a `CONFIRMED` booking offers “Añadir estancia al calendario”, on confirmation and
+booking detail. Permission is requested after the guest presses the action, then SDK 57's
+system event form opens prefilled. The event is an all-day interval built from local date
+parts `[check_in, check_out)`, with a localized title containing property and unit names.
+No location is included until verified. Contact details, special requests, Wi-Fi and
+private identifiers are excluded. The native form owns the save decision; Android does not
+report whether the event was saved, so the app does not claim success.
+
+Payment displays the existing five-minute countdown against absolute server
+`hold_expires_at`. It ticks only on the focused, foreground payment screen for a pending,
+unexpired booking and stops at confirmation or expiry. Server confirmation remains
+authoritative; expiry disables the action and points back to search.
 
 ## Not yet implemented
 

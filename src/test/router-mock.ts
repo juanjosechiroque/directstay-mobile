@@ -27,6 +27,5 @@ export function resetRouter(): void {
 export const useRouter = () => router;
 export const useLocalSearchParams = () => params;
 export const useFocusEffect = (effect: () => void | (() => void)) => {
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(effect, []);
+  useEffect(effect, [effect]);
 };

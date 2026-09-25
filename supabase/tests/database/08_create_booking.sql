@@ -22,6 +22,7 @@ set local request.jwt.claims to '{"sub":"a3000000-0000-0000-0000-000000000001","
 -- ---- happy path: server computes the price and the hold ----
 create temporary table created as
 select public.create_booking(
+  'ayni-hospitality',
   '33333333-3333-3333-3333-333333333301',
   date '2027-05-01', date '2027-05-04', 2, 'Guest Name', 'GUEST@Example.Test', null
 ) as booking;
@@ -48,6 +49,7 @@ select is((select (booking).confirmed_at from created), null,
 set local request.jwt.claims to '{"sub":"a3000000-0000-0000-0000-000000000002","role":"authenticated"}';
 select throws_ok($$
   select public.create_booking(
+    'ayni-hospitality',
     '33333333-3333-3333-3333-333333333301',
     date '2027-05-02', date '2027-05-05', 2, 'Guest', 'g@example.test', null)
 $$, '23P01', null, 'an overlapping create_booking is rejected by the exclusion constraint');
@@ -56,16 +58,19 @@ set local request.jwt.claims to '{"sub":"a3000000-0000-0000-0000-000000000001","
 -- ---- validation ----
 select throws_ok($$
   select public.create_booking(
+    'ayni-hospitality',
     '33333333-3333-3333-3333-333333333301',
     date '2027-05-10', date '2027-05-12', 3, 'Guest', 'g@example.test', null)
 $$, '22023', null, 'a guest count over the unit capacity is rejected');
 select throws_ok($$
   select public.create_booking(
+    'ayni-hospitality',
     '33333333-3333-3333-3333-333333333301',
     date '2027-05-12', date '2027-05-10', 2, 'Guest', 'g@example.test', null)
 $$, '22007', null, 'an inverted date range is rejected');
 select throws_ok($$
   select public.create_booking(
+    'ayni-hospitality',
     '33333333-3333-3333-3333-333333333301',
     date '2027-05-10', date '2027-05-12', 2, '   ', 'g@example.test', null)
 $$, '22023', null, 'a blank guest name is rejected');
@@ -89,6 +94,7 @@ set local role authenticated;
 
 select lives_ok($$
   select public.create_booking(
+    'ayni-hospitality',
     '33333333-3333-3333-3333-333333333302',
     date '2027-09-01', date '2027-09-03', 2, 'Guest', 'g@example.test', null)
 $$, 'create_booking releases an expired hold and admits a valid claim');
@@ -107,6 +113,7 @@ set local role authenticated;
 set local request.jwt.claims to '{"role":"anon"}';
 select throws_ok($$
   select public.create_booking(
+    'ayni-hospitality',
     '33333333-3333-3333-3333-333333333301',
     date '2027-10-01', date '2027-10-03', 2, 'Guest', 'g@example.test', null)
 $$, '28000', null, 'create_booking refuses anonymous callers');

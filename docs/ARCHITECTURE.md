@@ -37,7 +37,11 @@ protect invariants during concurrent writes. The Supabase anon key is public by 
 service-role and provider secrets must never enter the app bundle.
 
 `create_booking` and `confirm_demo_payment` are transactional SECURITY DEFINER RPCs
-granted to `authenticated` guests. The app submits guest details, an optional special
+granted to `authenticated` guests. The booking RPC receives the public organization slug
+and validates the unit against that active organization in PostgreSQL. The slug is mutable
+public client configuration, not a signed app identity. Exclusive assignment needs
+separate Supabase projects or a server-verified app credential/attestation and
+server-side organization mapping. The app submits guest details, an optional special
 request, and then a booking id;
 PostgreSQL alone sets the price, hold and confirmed status. Demo confirmation does not
 create a Stripe payment record.
@@ -101,6 +105,10 @@ confirmation route replaces Payment in navigation history.
   the repository retries that RPC without the property argument and narrows its
   server-computed public results to the selected property. The client does not calculate
   availability or price in either case.
+- Booking creation revalidates active organization/property/unit state and availability
+  blocks inside its write transaction. A shared per-unit advisory lock coordinates booking
+  writes with a trigger that rejects administrative blocks overlapping confirmed or live
+  pending bookings. The GiST exclusion constraint protects booking races.
 - Anonymous authenticated users read their own bookings and profile through RLS-protected
   tables; the contact details used for a reservation live on the booking row. Booking
   history does not request `special_requests`, since cards do not display it. Detail reads
@@ -172,6 +180,10 @@ This split verifies both client contracts and database security/concurrency beha
   rendered through `src/test/render.tsx` (fresh TanStack Query client, Spanish i18n, injected
   fake repositories and a fake guest session). They query by accessible role, name and state.
 - **pgTAP:** schema, RLS/grants, overlap constraints and RPC behavior (`supabase/tests/database`).
+- **Concurrent integration:** `bash supabase/tests/concurrency/inventory-races.sh` uses two
+  independent `psql` processes against local Postgres, with a transaction-held unit lock,
+  bounded statement timeouts, assertions and cleanup. CI runs it after `supabase db reset`
+  and `supabase test db`.
 - **E2E (Maestro):** not implemented yet.
 - **Performance harness:** `*.perf.tsx` files (e.g. `src/test/perf/lists.perf.tsx`) are run on
   demand with `npx jest --testMatch '**/*.perf.tsx' --runInBand`; they are excluded from `npm test`.
@@ -182,7 +194,9 @@ renderer peer required by RNTL 14) and `@types/node` (Node 24 typings for `proce
 
 The runtime dependency `expo-clipboard` backs the "Copy password" action on My Stay: the Wi-Fi
 password is the one value a guest needs to move out of the app, and React Native core does not
-expose the system clipboard.
+expose the system clipboard. `expo-calendar` presents the SDK 57 native add-event form for a
+guest-requested confirmed stay. Permission is requested only on action; local all-day dates
+avoid timezone shifts, and approximate demo addresses are omitted.
 
 ## Not yet implemented
 

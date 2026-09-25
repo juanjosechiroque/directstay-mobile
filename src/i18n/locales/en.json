@@ -161,11 +161,18 @@
     "holdExpiredTitle": "The booking expired",
     "holdMilestone": "{{time}} left to pay",
     "holdCountdown": "Time left to pay: {{time}}",
+    "holdTemporary": "The unit is temporarily held for you.",
     "demoPayCta": "Pay (demo)",
     "noChargeNote": "No charge will be made",
     "paymentErrorTitle": "We couldn't confirm your booking",
     "confirmedTitle": "Booking confirmed",
     "viewBookingCta": "View my booking"
+  },
+  "calendar": {
+    "addStay": "Add stay to calendar",
+    "stayTitle": "Stay at {{property}} · {{unit}}",
+    "permissionDenied": "We need calendar permission to open the form. You can change it in Settings.",
+    "unavailable": "No calendar is available, or the system could not open its form."
   },
   "bookings": {
     "title": "My bookings",

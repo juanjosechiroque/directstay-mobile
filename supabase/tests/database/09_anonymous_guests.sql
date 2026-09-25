@@ -105,7 +105,7 @@ select throws_ok($$
   delete from public.bookings where id = 'f2000000-0000-0000-0000-000000000002'
 $$, '42501', null, 'an anonymous user cannot delete its own booking');
 select lives_ok($$
-  select public.create_booking('33333333-3333-3333-3333-333333333305', date '2030-01-10',
+  select public.create_booking('ayni-hospitality', '33333333-3333-3333-3333-333333333305', date '2030-01-10',
     date '2030-01-12', 2, 'Guest', 'guest@example.test', null)
 $$, 'an anonymous authenticated user can execute create_booking');
 

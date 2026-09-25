@@ -57,3 +57,6 @@ jobs:
 
       - name: Database tests (pgTAP)
         run: supabase test db
+
+      - name: Independent-connection inventory race tests
+        run: bash supabase/tests/concurrency/inventory-races.sh
