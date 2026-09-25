@@ -37,14 +37,15 @@ protect invariants during concurrent writes. The Supabase anon key is public by 
 service-role and provider secrets must never enter the app bundle.
 
 `create_booking` and `confirm_demo_payment` are transactional SECURITY DEFINER RPCs
-granted to `authenticated` guests. The booking RPC receives the public organization slug
-and validates the unit against that active organization in PostgreSQL. The slug is mutable
-public client configuration, not a signed app identity. Exclusive assignment needs
-separate Supabase projects or a server-verified app credential/attestation and
-server-side organization mapping. The app submits guest details, an optional special
-request, and then a booking id;
-PostgreSQL alone sets the price, hold and confirmed status. Demo confirmation does not
-create a Stripe payment record.
+granted to `authenticated` guests. The booking RPC receives the selected organization's
+public slug and checks that the unit belongs to an active property of that same active
+organization. A mismatched unit and slug are rejected. The slug is public client
+configuration, so a modified client can select another brand on a shared backend by
+supplying that brand's slug and unit. Exclusive app-to-brand authorization would require
+separate Supabase projects or a trusted server-side app-to-organization mapping. The app
+submits guest details, an optional special request, and then a booking id; PostgreSQL
+alone sets the price, hold and confirmed status. Demo confirmation does not create a
+Stripe payment record.
 
 ## Application layers
 

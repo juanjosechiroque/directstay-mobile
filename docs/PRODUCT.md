@@ -13,9 +13,9 @@ recurrence and “My Stay.”
 
 ## Guest journey
 
-1. Browse active properties on Home (`/`), then open a property
-   (`/properties/[propertyId]`) to see its units, address, phone and compact Google Maps
-   and contact links.
+1. Browse active properties of the organization configured for this app on Home (`/`),
+   then open a property (`/properties/[propertyId]`) to see its units, address, phone and
+   compact Google Maps and contact links.
 2. Choose a property for every availability search (`/search`), enter dates and party
    size, then inspect a unit (`/units/[unitId]`). Entering search from a property or unit
    keeps its property selected; results never mix properties. Dates start empty. The calendar opens

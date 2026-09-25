@@ -7,9 +7,11 @@ current Supabase migrations. System structure and trust boundaries live in
 
 ## Core model
 
-One deployment is configured for one `Organization` (a brand), selected by
+One app deployment is configured for one `Organization` (a brand), selected by
 `EXPO_PUBLIC_ORGANIZATION_SLUG`. An organization has one or more `Property` records, and
-each property has one or more `Unit` records.
+each property has one or more `Unit` records. A unit belongs to the selected organization
+through its property; a unit from a different organization cannot appear in that app's
+catalog or availability results and cannot be booked with the selected slug.
 
 A unit is a **specific, uniquely bookable accommodation**, not a room type backed by a
 quantity of interchangeable inventory. This distinction is structural: PostgreSQL
@@ -102,17 +104,19 @@ or room-type inventory entities. A booking may carry one free-text special reque
 
 ## Catalog, localization, and media
 
-Only active organizations, properties, and units appear in the app's catalog and
-availability results. Catalog/detail/search RPCs filter by the organization slug and all
-three activation flags. Booking writes receive the slug and independently revalidate that
-the organization is active and owns the active property and unit. This is the strongest
-check available in the shared-backend architecture, but `EXPO_PUBLIC_ORGANIZATION_SLUG` is
-public and can be changed in a modified client. It proves which brand the request selected,
-not which signed app installation sent it. RLS grants direct reads of active catalog rows
-across organizations, so this is neither a confidentiality boundary nor exclusive
-app-to-organization authorization. Enforcing that assignment needs isolated Supabase
-projects per app/organization, or a trusted server credential/app attestation verified by
-an Edge Function with the organization mapping stored server-side.
+The app lists and searches only active properties and units belonging to its selected,
+active organization. Catalog/detail/search RPCs apply the organization slug and all three
+activation flags. `create_booking` checks again in PostgreSQL that the requested unit
+belongs to an active property of that same active organization. A mismatched unit and slug
+are rejected, even if a modified client bypasses the app's screens.
+
+`EXPO_PUBLIC_ORGANIZATION_SLUG` is public client configuration. A modified client could
+submit another organization's slug together with one of that organization's units when
+both brands share a Supabase project. The checks above keep each request within the brand
+it names; they do not authenticate which app sent the request. RLS also permits direct
+reads of active public catalog rows across organizations. If exclusive app-to-brand
+authorization becomes a requirement, use an isolated Supabase project per brand or a
+trusted server-side app-to-organization mapping.
 
 Localized catalog copy is stored by `(entity_id, locale)` in property and unit translation
 tables. Base tables retain fallback copy; proper unit names are not translated. Spanish is
@@ -314,5 +318,3 @@ authoritative; expiry disables the action and points back to search.
 - No scheduled hold-expiry cleanup exists.
 - If a scheduled expiry job is added, it is cleanup only. Database constraints and the
   transactional booking operation remain the protection against overlapping claims.
-- No transactional administrative operation prevents an availability block from being
-  added over an existing booking.
